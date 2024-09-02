@@ -147,6 +147,32 @@ public class Structure
         }
     }
 
+    public static void RotateChildGlobal(Transform parent, string targetName, Quaternion rotation)
+    {
+        if (parent.name == targetName)
+        {
+            parent.rotation = rotation;
+            return;
+        }
+        foreach (Transform child in parent)
+        {
+            RotateChildGlobal(child, targetName, rotation);
+        }
+    }
+
+    public static void TranslateChild(Transform parent, string targetName, Vector3 pos)
+    {
+        if (parent.name == targetName)
+        {
+            parent.localPosition = pos;
+            return;
+        }
+        foreach (Transform child in parent)
+        {
+            TranslateChild(child, targetName, pos);
+        }
+    }
+
     public static void RecursiveFindAndModify(string targetName, Transform current, Quaternion rotation, bool local)
     {
         // 检查当前Transform的名称是否是我们要找的

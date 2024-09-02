@@ -14,6 +14,7 @@ public class ShowPlants : MonoBehaviour
 {
     // Start is called before the first frame update
     public GameObject player;
+    public GameObject hand;
 
     private List<GeoAnim> animList = new List<GeoAnim>();
     Vector4 ParseLineToVector4(string line)
@@ -51,24 +52,70 @@ public class ShowPlants : MonoBehaviour
             this.length = length;
             this.animaPart = new List<GeoAnimPart>();
         }
-
     }
 
     struct GeoAnimPart
     {
         public string name;
-        public List<float> pos_time;
-        public List<float> rot_time;
+        public List<uint> pos_time;
+        public List<uint> rot_time;
         public List<Vector3> pos;
         public List<Quaternion> rot;
 
         public GeoAnimPart(string name)
         {
             this.name=name;
-            this.pos_time = new List<float>();
-            this.rot_time = new List<float>();
+            this.pos_time = new List<uint>();
+            this.rot_time = new List<uint>();
             this.pos = new List<Vector3>();
             this.rot = new List<Quaternion>();
+        }
+    }
+
+    void RunAnimation(int frameCount)
+    {
+        string animation_name = "animation.normal_zombie.idle";
+        int animation_index = 0;
+        for(int i = 0; i < animList.Count; i++)
+        {
+            if (animList[i].name == animation_name)
+            {
+                animation_index = i;
+            }
+        }
+        
+        for(int i = 0;i < animList[animation_index].animaPart.Count; i++) { 
+            GeoAnimPart part = animList[animation_index].animaPart[i];
+            if(part.rot_time.Count > 0)
+            {
+                int max_rot_time = (int)part.rot_time[part.rot_time.Count - 1];
+                int now_time = frameCount % max_rot_time;
+                for (int j = 0; j < part.rot_time.Count - 1; j++)
+                {
+                    if(now_time >= part.rot_time[j] && now_time < part.rot_time[j + 1])
+                    {
+                        float r = (now_time - part.rot_time[j]) * 1.0f / (part.rot_time[j + 1] - part.rot_time[j]);
+                        Quaternion rot = Quaternion.Lerp(part.rot[j], part.rot[j + 1], r);
+                        RotateChild(generatedPlant.transform, part.name, rot * GetBasicRot(part.name));
+                        break;
+                    }
+                }
+            }
+            if (part.pos_time.Count > 0)
+            {
+                int max_pos_time = (int)part.pos_time[part.pos_time.Count - 1];
+                int now_time = frameCount % max_pos_time;
+                for (int j = 0; j < part.pos_time.Count - 1; j++)
+                {
+                    if (now_time >= part.pos_time[j] && now_time < part.pos_time[j + 1])
+                    {
+                        float r = (now_time - part.pos_time[j]) * 1.0f / (part.pos_time[j + 1] - part.pos_time[j]);
+                        Vector3 pos = Vector3.Lerp(part.pos[j], part.pos[j + 1], r);
+                        TranslateChild(generatedPlant.transform, part.name, GetBasicPos(part.name) +  pos * 0.08f);
+                        break;
+                    }
+                }
+            }
         }
     }
     void LoadAnimation(string path)
@@ -80,6 +127,7 @@ public class ShowPlants : MonoBehaviour
         bool this_line_add = false;
         int brackets_count = 0;
         bool brackets_add = false;
+        bool plog = false;
         foreach (string line in lines)
         {
             this_line_add = false;
@@ -95,36 +143,47 @@ public class ShowPlants : MonoBehaviour
                 brackets_add = false;
                 this_line_add = true;
             }
-
+            if(plog) Debug.Log("brackets num" + brackets_count + " line = " + line);
             if(brackets_count == 3 && brackets_add && this_line_add) {
-                if(anim.name != "")
+                if(anim.length > 0)
                 {
+                    if (plog) Debug.Log("anim list added = " + anim.name + " count " + anim.animaPart.Count);
                     animList.Add(anim);
                 }
-                anim = new GeoAnim(line.Split(':')[0].Trim('"'), true, 0);
+                string anim_name = line.Split(':')[0].Replace('"',' ');
+                anim_name = anim_name.Trim();
+                if (plog) Debug.Log(" anim name = " + anim_name);
+                anim = new GeoAnim(anim_name, true, 1);
             }
             if(brackets_count == 5 && brackets_add && this_line_add)
             {
-                animPart = new GeoAnimPart(line.Split(':')[0].Trim('"'));
+                string anim_part = line.Split(':')[0].Replace('"',' ');
+                anim_part = anim_part.Trim();
+                if (plog) Debug.Log("anim part = " + anim_part);
+                animPart = new GeoAnimPart(anim_part);
             }
             if (brackets_count == 6 && brackets_add && line.Contains("position"))
             {
+                if (plog) Debug.Log("mode pos");
                 mode_pos = true;
             }
             else if (brackets_count == 6 && brackets_add && line.Contains("rotation"))
             {
+                if (plog) Debug.Log("mode rot");
                 mode_pos = false;
             }
-            if (brackets_count == 7 && brackets_add && line.Contains("vector") && this_line_add)
+            if (brackets_count == 7 && brackets_add && this_line_add)
             {
-                float t = float.Parse(line.Split(':')[0].Trim('"'));
+                float t = float.Parse(line.Split(':')[0].Replace('"',' ').Replace(" ", ""));
+                uint tint = (uint)(t * 50);
+                if (plog) Debug.Log("mode pos t = " + t);
                 if (mode_pos)
                 {
-                    animPart.pos_time.Add(t);
+                    animPart.pos_time.Add(tint);
                 }
                 else
                 {
-                    animPart.rot_time.Add(t);
+                    animPart.rot_time.Add(tint);
                 }
                 
             }
@@ -141,42 +200,104 @@ public class ShowPlants : MonoBehaviour
                         .Split(',')
                         .Select(s => float.Parse(s.Trim()))
                         .ToArray();
-
+                    if (plog) Debug.Log("mode pos vec = " + new Vector3(vector[0], vector[1], vector[2]));
                     if (mode_pos)
                     {
                         animPart.pos.Add(new Vector3(vector[0], vector[1], vector[2]));
                     }
                     else
                     {
-                        animPart.rot.Add(Quaternion.Euler(vector[0], vector[1], vector[2]));
+                        animPart.rot.Add(Quaternion.Euler(-vector[0], -vector[1], -vector[2]));
                     }
                 }
             }
 
             if(brackets_count == 4 && brackets_add == false && this_line_add)
             {
+                if (plog) Debug.Log(" added anima part = name " + animPart.name + " count = " + animPart.pos_time.Count);
                 anim.animaPart.Add(animPart);
+            }
+        }
+        foreach(var animx in animList)
+        {
+            if (plog) Debug.Log("animx name" + animx.name);
+            foreach(var animy in animx.animaPart)
+            {
+
+                if (plog) Debug.Log("animy name" + animy.name);
             }
         }
     }
     private List<CameraSetting> cameraSettings = new List<CameraSetting>();
     private List<ActorSettings> actorSettings = new List<ActorSettings>();
     private List<string> subtitles = new List<string>();
-    private GameObject generatedAnimal;
+    private GameObject generatedPlant;
     private float start_time;
 
+
+    struct BasicInfo
+    {
+        public string name;
+        public Vector3 pos;
+        public Quaternion rot;
+
+        public BasicInfo(string name, Vector3 pos, Quaternion rot)
+        {
+            this.name = name;
+            this.pos = pos;
+            this.rot = rot;
+        }
+    }
+
+    private List<BasicInfo> baseInfo = new List<BasicInfo>();
+
+    Vector3 GetBasicPos(string name)
+    {
+        foreach(var info  in baseInfo)
+        {
+            if(info.name == name)
+            {
+                return info.pos;
+            }
+        }
+        return Vector3.zero;
+    }
+
+    Quaternion GetBasicRot(string name)
+    {
+        foreach (var info in baseInfo)
+        {
+            if (info.name == name)
+            {
+                return info.rot;
+            }
+        }
+        return Quaternion.identity;
+    }
+    void TraverseChildren(Transform parent)
+    {
+        foreach (Transform child in parent)
+        {
+            TraverseChildren(child);
+        }
+        baseInfo.Add(new BasicInfo(parent.transform.name, parent.transform.localPosition, parent.transform.localRotation));
+    }
+
     public bool generateStory;
+    private Vector3 handb;
     void Start()
     {
+        handb = hand.transform.localPosition;
         start_time = Time.time;
         string prefab_name = "ZombieYeti";
         string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
         GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-        generatedAnimal = Instantiate(selectedPrefab, new Vector3(0, 0.5f, 0), Quaternion.Euler(0, 0, 0));
-        generatedAnimal.transform.rotation = Quaternion.Euler(0, 270, 0);
+        generatedPlant = Instantiate(selectedPrefab, new Vector3(0, 0.5f, 0), Quaternion.Euler(0, 0, 0));
+        generatedPlant.transform.rotation = Quaternion.Euler(0, 270, 0);
         LoadAnimation("D:\\GameDe\\GLTFmodl\\zombie.animation.json");
 
-        //cameraSettings.Add(addCameraMove(0, 100, new Vector3(-10, 1, 10), new Vector3(10, 1, 10), generatedAnimal));
+        TraverseChildren(generatedPlant.transform);
+        //cameraSettings.Add(addCameraMove(0, 100, new Vector3(-10, 1, 10), new Vector3(10, 1, 10), generatedPlant));
 
         subtitles.Add(AddSub(shape_desc, prefab_name, "", "", ""));
         subtitles.Add(AddSub(desc_character, prefab_name, "", "", ""));
@@ -224,7 +345,7 @@ public class ShowPlants : MonoBehaviour
     void FixedUpdate()
     {
         GlobalFrameCount++;
-
+        RunAnimation(GlobalFrameCount);
 
         for (int i = 0; i < cameraSettings.Count; i++)
         {
@@ -239,6 +360,23 @@ public class ShowPlants : MonoBehaviour
             {
                 break;
             }
+        }
+
+        int handCountCycle = 20;
+        float handCycleScale = 0.1f;
+        float handCycleScaleY = 0.02f;
+        int handCount = GlobalFrameCount % (handCountCycle * 2);
+        if( handCount < handCountCycle ) {
+            float x = (handCount - handCountCycle / 2) * 2.0f / handCountCycle;
+            Debug.Log("x = " + x);
+            Vector3 offset = new Vector3(x * handCycleScale, x * x * handCycleScaleY, 0);
+            hand.transform.localPosition = handb + offset;
+        }
+        else
+        {
+            float x = (handCount - handCountCycle - handCountCycle / 2) * 2.0f / handCountCycle;
+            Vector3 offset = new Vector3(-x * handCycleScale, x * x * handCycleScaleY, 0);
+            hand.transform.localPosition = handb + offset;
         }
 
     }
@@ -266,7 +404,13 @@ public class ShowPlants : MonoBehaviour
     string[] desc_attack = { "there's a small important detail I forgot to mention, he releases a smoke. " +
             "               which is the Sleep smoke so that makes me want to sleep", "this is the power of catnap he can make his enemies fall asleep",
                             "she's peaceful so she's not going to hit me unless I annoy her",
-                             "he is attack me and i was running out for my life, let`s defeat her here"};
+                             "he is attack me and i was running out for my life, let`s defeat her here",
+                            "paparo is going to do everything he can to defend Us"};
+    string[] sur = { " in order to make sure we can witness all of his defense mechanisms, I just have to work on staying alive myself" };
     string[] drop_desc = { "if we defeat the Sheep yes it will drop green wool as I had imagined and all right" };
+
+    string[] desc_got = { "we've got _name looking super cute extra furry" };
+
+    string[] desc_happy = { "and this little guy looks happy all of the time" };
 
 }
