@@ -71,6 +71,8 @@ public class Apply2 : MonoBehaviour
    GameObject generatedAnimal;
    void Start()
    {
+
+
        start_time = Time.time;
        LoadAnimation("D:\\GameDe\\GLTFmodl\\magnet_shroom.animation.json");
        mushMaterial = AddMaterial("Assets/Characters/Plants/zombie_yeti.png");
@@ -83,6 +85,13 @@ public class Apply2 : MonoBehaviour
 
         int[] numbers = ReadNumbersFromFile2("D:/example.txt");
 
+        SubModelReplacer placer = new SubModelReplacer();
+        placer.name = prefab_name;
+        placer.like = "bear";
+        placer.color = "white";
+        placer.desc = "";
+        placer.dir = "";
+
         GameObject emptyObject2 = new GameObject("MyEmptyObject");
         emptyObject2.transform.position = new Vector3(0, 1, 0);
         int continous_time = 0;
@@ -92,7 +101,7 @@ public class Apply2 : MonoBehaviour
             continous_time = (int)(numbers[subtitles.Count] * 0.05f);
         }
         cameras.Add(addCameraMove(activeCount, activeCount + continous_time, new Vector3(-2, 1, -2), new Vector3(-2, 1, -2), emptyObject2));
-        subtitles.Add(AddSub(comment_all_start.ToArray(), prefab_name, "", "", ""));
+        subtitles.Add(AddModelSub(comment_all_start.ToArray(), placer));
         Debug.Log(" first comment " + subtitles[subtitles.Count - 1]);
         activeCount += continous_time;
 
@@ -146,24 +155,23 @@ public class Apply2 : MonoBehaviour
                    {
                        Debug.Log(" name = " + part.transform.name + " time " + continous_time);
                        activeCount += continous_time;
-                       string desc = "";
-                       desc = "higher";
+                       placer.desc = "longer";
                        if(part.transform.GetChild(i).transform.localScale.y < 3)
                        {
-                           desc = "shorter";
+                            placer.desc = "shorter";
                        }
 
                        if (i == count - 1)
                        {
-                         subtitles.Add(AddSub(comment_finish.Concat(comment).ToArray(), part.transform.name, desc, "", ""));
+                         subtitles.Add(AddModelSub(comment_finish.Concat(comment).ToArray(), placer));
                        }
                        else if (first_cube)
                        {
-                          subtitles.Add(AddSub(comment_base.ToArray(), part.transform.name, desc, "", ""));
+                          subtitles.Add(AddModelSub(comment_base.ToArray(), placer));
                        }
                        else
                        {
-                           subtitles.Add(AddSub(comment.ToArray(), "cube",desc, "", ""));
+                           subtitles.Add(AddModelSub(comment.ToArray(), placer));
                        }
 
                        if (first_cube)
@@ -178,8 +186,10 @@ public class Apply2 : MonoBehaviour
                    ActiveParts.Add(new ActivePart(part.transform.name, 
                    part.transform.GetChild(i).transform.name, activeCount - continous_time, continous_time, size,j, part.transform.GetChild(i).transform));
                    GameObject emptyObject = new GameObject("MyEmptyObject");
-                   emptyObject.transform.position = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.center;
-                   cameras.Add(addCameraMove(activeCount - continous_time, activeCount, new Vector3(1, 1, -1), new Vector3(1, 1, -1), emptyObject));
+                    Vector3 bound = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.center;
+                    Vector3 ssize = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
+                    emptyObject.transform.position = bound;
+                   cameras.Add(addCameraMove(activeCount - continous_time, activeCount, new Vector3(1,1,-1), new Vector3(1, 1, -1), emptyObject));
                }
            }
        }
@@ -194,7 +204,7 @@ public class Apply2 : MonoBehaviour
             continous_time = (int)(numbers[subtitles.Count] * 0.05f);
         }
         cameras.Add(addCameraMove(activeCount, activeCount + continous_time, new Vector3(-2, 1, -2), new Vector3(2, 1, -2), emptyObject2));
-        subtitles.Add(AddSub(comment_finish.ToArray(), prefab_name, "", "", ""));
+        subtitles.Add(AddModelSub(comment_finish.ToArray(), placer));
         Debug.Log(" final comment " + subtitles[subtitles.Count - 1]);
 
         if (generateStory)
@@ -299,7 +309,7 @@ void TraverseChildren(Transform parent)
                                 "and on _dir of it, the _part part",
                                 "so I will create here and pull a cube down to make the legs",
                                 "this part here is the _part",
-                                    };
+                                "I'll start by making this _desc piece of _like"};
 
     string[] comment = { " we need a large _part",
                         " and _dir next a slightly a _desc _part",
@@ -332,7 +342,7 @@ void TraverseChildren(Transform parent)
     "select and duplicate to the other side"};
 
     string[] details = { "I just thought of adding a little extra detail" };
-                     
+    string[] comment_legs = { "create some legs for our friends to walk on" };
 
 }
 

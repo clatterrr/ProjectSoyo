@@ -215,14 +215,63 @@ public class Structure
         return numbers;
     }
 
-    public static string AddSub(string[] sentences, string part_name, string desc, string dir, string color)
+    public struct SubModelReplacer
+    {
+        public string name;
+        public string desc;
+        public string dir;
+        public string color;
+        public string like;
+
+        public SubModelReplacer(string name, string des, string dir, string color, string like)
+        {
+            this.name = name;
+            this.desc = des;
+            this.dir = dir;
+            this.color = color;
+            this.like = like;
+        }
+    }
+    public static string AddModelSub(string[] sentences, SubModelReplacer replacer)
     {
         int r = UnityEngine.Random.Range(0, sentences.Length);
         string subtitle = sentences[r];
-        subtitle = subtitle.Replace("_part", part_name);
-        subtitle = subtitle.Replace("_desc", desc);
-        subtitle = subtitle.Replace("_dir", dir);
-        subtitle = subtitle.Replace("_color", color);
+        subtitle = subtitle.Replace("_part", replacer.name);
+        subtitle = subtitle.Replace("_desc", replacer.desc);
+        subtitle = subtitle.Replace("_dir", replacer.dir);
+        subtitle = subtitle.Replace("_color", replacer.color);
+        subtitle = subtitle.Replace("_like", replacer.like);
+        subtitle = System.Text.RegularExpressions.Regex.Replace(subtitle, @"\d", "");
+        return subtitle;
+    }
+
+    public struct SubReplacer
+    {
+        public string name;
+        public string env;
+        public string enemy;
+        public string attack_weapon;
+        public string score;
+
+        public SubReplacer(string name, string env, string enemy, string attack_weapon, string score)
+        {
+            this.name = name;
+            this.env = env;
+            this.enemy = enemy;
+            this.attack_weapon = attack_weapon;
+            this.score = score;
+        }
+    }
+
+    public static string AddSub2(string[] sentences, SubReplacer replacer)
+    {
+        int r = UnityEngine.Random.Range(0, sentences.Length);
+        string subtitle = sentences[r];
+        subtitle = subtitle.Replace("_env", replacer.env);
+        subtitle = subtitle.Replace("_name", replacer.name);
+        subtitle = subtitle.Replace("_enemy", replacer.enemy);
+        subtitle = subtitle.Replace("_attack_weapon", replacer.attack_weapon);
+        subtitle = subtitle.Replace("_score", replacer.score);
         subtitle = System.Text.RegularExpressions.Regex.Replace(subtitle, @"\d", "");
         return subtitle;
     }
