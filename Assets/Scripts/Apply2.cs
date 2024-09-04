@@ -13,6 +13,9 @@ using UnityEngine.Windows;
 using static UnityEditor.PlayerSettings;
 using File = System.IO.File;
 using static Structure;
+using Random = UnityEngine.Random;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 public class Apply2 : MonoBehaviour
 {
@@ -69,153 +72,213 @@ public class Apply2 : MonoBehaviour
 
 
    GameObject generatedAnimal;
-   void Start()
+
+   int[] GenerateComments()
    {
-
-
-       start_time = Time.time;
-       LoadAnimation("D:\\GameDe\\GLTFmodl\\magnet_shroom.animation.json");
-       mushMaterial = AddMaterial("Assets/Characters/Plants/zombie_yeti.png");
-       parts = new List<GameObject>();
-       ActiveParts = new List<ActivePart>();
-        string prefab_name = "ZombieYeti";
-       string path = "Assets/Characters/Plants/Prefab/ZombieYeti.prefab";
-       GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-        generatedAnimal = Instantiate(selectedPrefab, new Vector3(0,0,0), Quaternion.Euler(0,0,0));
-
-        int[] numbers = ReadNumbersFromFile2("D:/example.txt");
+        string prefab_name = "SplitPea";
+        string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
+        GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        generatedAnimal = Instantiate(selectedPrefab, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0));
+        TraverseChildren(generatedAnimal.transform);
 
         SubModelReplacer placer = new SubModelReplacer();
         placer.name = prefab_name;
-        placer.like = "bear";
-        placer.color = "white";
+        placer.like = "pea shooter";
+        placer.color = "green";
         placer.desc = "";
-        placer.dir = "";
+        placer.dir = "top";
+
+        subtitles.Add(AddModelSub(comment_all_start.ToArray(), placer));
+        Debug.Log(" first comment " + subtitles[subtitles.Count - 1]);
+
+        
+
+        for (int j = 0; j < parts.Count; j++)
+        {
+            GameObject part = parts[j];
+            if (part.transform.childCount == 0)
+            {
+                part.SetActive(false);
+            }
+            int count = CountDirectChildCubes(part.transform);
+            if (count > 0)
+            {
+                bool first_cube = true;
+                for (int i = 0; i < count; i++)
+                {
+
+                    if (i < 4)
+                    {
+                        placer.desc = "longer";
+                        if (part.transform.GetChild(i).GetComponent<MeshRenderer>() != null)
+                        {
+                            Vector3 childPart = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
+                            if(childPart.y > 3)
+                            {
+                                placer.desc = "longer";
+                            }
+                            else
+                            {
+                                placer.desc = "shorter";
+                            }
+                        }
+                        
+                        if (i == count - 1)
+                        {
+
+                            placer.name = "cube";
+                            subtitles.Add(AddModelSub(comment_finish.Concat(comment).ToArray(), placer));
+                        }
+                        else if (first_cube)
+                        {
+                            placer.name = part.name;
+                            subtitles.Add(AddModelSub(comment_base.ToArray(), placer));
+                        }
+                        else
+                        {
+                            placer.name = part.name;
+                            subtitles.Add(AddModelSub(comment.ToArray(), placer));
+                        }
+
+                        if (first_cube)
+                        {
+                            first_cube = false;
+                        }
+                        Debug.Log(" parent name =" + part.transform.name + " child index = " + i + " comment " + subtitles[subtitles.Count - 1]);
+
+                    }
+                }
+            }
+        }
+
+        subtitles.Add(AddModelSub(comment_finish.ToArray(), placer));
+        Debug.Log(" final comment " + subtitles[subtitles.Count - 1]);
+
+        string writeto = "";
+        foreach (string sub in subtitles)
+        {
+            writeto += sub + "\n";
+        }
+        // 设置Python脚本路径
+        string pythonScriptPath = "F:/DaisyDay/test.py";
+
+        // 要传递给Python的字符串
+        string stringArg1 = writeto;
+        string stringArg2 = Application.dataPath + "/Resources/Audio/";
+        Debug.Log(stringArg2);
+        // 创建一个新的进程
+        Process pythonProcess = new Process();
+
+        // 设置Python解释器路径
+        pythonProcess.StartInfo.FileName = "python";
+
+        // 传递脚本路径和字符串参数
+        pythonProcess.StartInfo.Arguments = $"{pythonScriptPath} \"{stringArg1}\" \"{stringArg2}\"";
+
+        // 配置其他进程启动信息
+        pythonProcess.StartInfo.UseShellExecute = false;
+        pythonProcess.StartInfo.RedirectStandardOutput = true;
+        pythonProcess.StartInfo.RedirectStandardError = true;
+        pythonProcess.StartInfo.CreateNoWindow = true;
+
+        // 启动Python进程
+        pythonProcess.Start();
+
+        // 等待Python脚本执行完成
+        pythonProcess.WaitForExit();
+
+        // 获取Python输出（如果有）
+        string output = pythonProcess.StandardOutput.ReadToEnd();
+        string error = pythonProcess.StandardError.ReadToEnd();
+
+        Debug.Log("build time = " + output);
+        // 根据空格拆分成字符串数组
+        string[] line_part = output.Split(' ');
+
+        // 将字符串数组转换成整型数组
+        int[] numbers = new int[line_part.Length - 1];
+        for (int i = 0; i < line_part.Length - 1; i++)
+        {
+            numbers[i] = (int)(int.Parse(line_part[i]) * 0.05);
+        }
+
+        return numbers;
+    }
+
+    private string audioClipPath = "Audio/model"; // 声音文件的路径，假设在Assets/Resources/Audio/mySound.wav
+
+    private AudioSource audioSource;
+
+    private AudioClip modelClip;
+    void Start()
+    {
+        parts = new List<GameObject>();
+        ActiveParts = new List<ActivePart>();
+       int[] build_times =  GenerateComments();
+        int build_times_index = 0;
+        int build_time = 0;
+
+       start_time = Time.time;
+       LoadAnimation("D:\\GameDe\\GLTFmodl\\magnet_shroom.animation.json");
+       mushMaterial = AddMaterial("Assets/Characters/Plants/split_pea.png");
+
+        audioSource = gameObject.AddComponent<AudioSource>();
+        modelClip = Resources.Load<AudioClip>(audioClipPath);
+        if(modelClip != null)
+        {
+            audioSource.clip = modelClip;
+            audioSource.Play();
+        }
 
         GameObject emptyObject2 = new GameObject("MyEmptyObject");
         emptyObject2.transform.position = new Vector3(0, 1, 0);
-        int continous_time = 0;
-        continous_time = 30;
-        if (!generateStory)
-        {
-            continous_time = (int)(numbers[subtitles.Count] * 0.05f);
-        }
-        cameras.Add(addCameraMove(activeCount, activeCount + continous_time, new Vector3(-2, 1, -2), new Vector3(-2, 1, -2), emptyObject2));
-        subtitles.Add(AddModelSub(comment_all_start.ToArray(), placer));
-        Debug.Log(" first comment " + subtitles[subtitles.Count - 1]);
-        activeCount += continous_time;
 
+        activeCount = 100;
+        build_time = build_times[build_times_index++];
+        cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-2, 1, -2), new Vector3(-2, 1, -2), emptyObject2, new Vector3(0, 0, 0)));
+        activeCount += build_time;
 
-       Material greenMaterial = new Material(Shader.Find("Standard"));
-       greenMaterial.color = Color.green;
-
-       List<Material> materials = new List<Material>();
-       for(int i = 0; i < 6;i++)
-       {
-           materials.Add(new Material(Shader.Find("Standard")));
-       }
-       materials[0].color = new Color(180 / 256.0f, 212 / 256.0f ,225 / 256.0f);
-       materials[1].color = new Color(198 / 256.0f, 177 / 256.0f, 91 / 256.0f);
-       materials[2].color = new Color(40 / 256.0f, 139 / 256.0f, 85 / 256.0f);
-       materials[3].color = new Color(73 / 256.0f, 190 / 256.0f, 195 / 256.0f);
-       materials[4].color = new Color(146 / 256.0f, 80 / 256.0f, 80 / 256.0f);
-       materials[5].color = new Color(41 / 256.0f, 48 / 256.0f, 58 / 256.0f);
-
-
-       TraverseChildren(generatedAnimal.transform);
-
-       string writeto = "";
         
        for(int j = 0; j < parts.Count; j++)
        {
            GameObject part = parts[j];
-           if(part.GetComponent<MeshRenderer>() != null )
-           {
-               //part.GetComponent<MeshRenderer>().material = materials[UnityEngine.Random.Range(0,6)];
-           }
-           if(part.transform.childCount == 0)
-           {
-               part.SetActive(false);
-           }
+
+
 
            // 处理字幕
            int count = CountDirectChildCubes(part.transform);
            if(count > 0)
            {
-               bool first_cube = true;
                for (int i = 0; i  < count; i++)
                {
-                   continous_time = 30; 
-                   if (!generateStory)
-                   {
-                       continous_time = (int)(numbers[subtitles.Count] * 0.05f);
-                   }
-
                    if(i < 4)
                    {
-                       Debug.Log(" name = " + part.transform.name + " time " + continous_time);
-                       activeCount += continous_time;
-                       placer.desc = "longer";
-                       if(part.transform.GetChild(i).transform.localScale.y < 3)
-                       {
-                            placer.desc = "shorter";
-                       }
-
-                       if (i == count - 1)
-                       {
-                         subtitles.Add(AddModelSub(comment_finish.Concat(comment).ToArray(), placer));
-                       }
-                       else if (first_cube)
-                       {
-                          subtitles.Add(AddModelSub(comment_base.ToArray(), placer));
-                       }
-                       else
-                       {
-                           subtitles.Add(AddModelSub(comment.ToArray(), placer));
-                       }
-
-                       if (first_cube)
-                       {
-                           first_cube = false;
-                       }
-                       Debug.Log(" parent name =" + part.transform.name + " child index = " + i + " comment " + subtitles[subtitles.Count - 1]) ;
-                        
+                       build_time = build_times[build_times_index++];
+                       activeCount += build_time;
                    }
 
                    Vector3 size = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
                    ActiveParts.Add(new ActivePart(part.transform.name, 
-                   part.transform.GetChild(i).transform.name, activeCount - continous_time, continous_time, size,j, part.transform.GetChild(i).transform));
+                   part.transform.GetChild(i).transform.name, activeCount - build_time, build_time, size,j, part.transform.GetChild(i).transform));
                    GameObject emptyObject = new GameObject("MyEmptyObject");
-                    Vector3 bound = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.center;
-                    Vector3 ssize = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
-                    emptyObject.transform.position = bound;
-                   cameras.Add(addCameraMove(activeCount - continous_time, activeCount, new Vector3(1,1,-1), new Vector3(1, 1, -1), emptyObject));
+                   Vector3 bound = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.center;
+                   Vector3 ssize = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
+                   emptyObject.transform.position = bound;
+                   float mag = bound.magnitude;
+                   float bx = bound.x * Random.Range(1.5f, 2.5f) + mag * Random.Range(-0.2f, 0.2f);
+                   float by = bound.y * Random.Range(0.8f, 1.2f) + mag * Random.Range(-0.2f, 0.2f);
+                    float bz = bound.z * Random.Range(1.5f, 2.5f) + mag * Random.Range(-0.2f, 0.2f);
+                    Vector3 bound2 = new Vector3(bx, by, bz);
+                    cameras.Add(addCameraMove(activeCount - build_time, activeCount, bound2, bound2, emptyObject, new Vector3(0, 0, 0)));
                }
            }
        }
        
        generatedAnimal.SetActive(true);
 
-
-
-        continous_time = 30;
-        if (!generateStory)
-        {
-            continous_time = (int)(numbers[subtitles.Count] * 0.05f);
-        }
-        cameras.Add(addCameraMove(activeCount, activeCount + continous_time, new Vector3(-2, 1, -2), new Vector3(2, 1, -2), emptyObject2));
-        subtitles.Add(AddModelSub(comment_finish.ToArray(), placer));
-        Debug.Log(" final comment " + subtitles[subtitles.Count - 1]);
-
-        if (generateStory)
-        {
-            foreach (string sub in subtitles)
-            {
-                writeto += sub + "\n";
-            }
-            File.WriteAllText("D://sub.txt", writeto);
-        }
-    }
+       build_time = build_times[build_times_index++];
+       cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-2, 1, -2), new Vector3(2, 1, -2), emptyObject2, new Vector3(0, 0, 0)));
+ }
     
 
 private int FrameCount = 0;
@@ -232,7 +295,8 @@ void FixedUpdate()
        }
        if(FrameCount >= ActiveParts[i].activeStartFrame && FrameCount < ActiveParts[i].activeStartFrame + ActiveParts[i].continueFrame)
        {
-           float ratio = (FrameCount - ActiveParts[i].activeStartFrame)  * 1.0f / ActiveParts[i].continueFrame;
+           float ratio = (FrameCount - ActiveParts[i].activeStartFrame)  * 1.2f / ActiveParts[i].continueFrame;
+           if(ratio > 1.0f) ratio = 1.0f;
            Vector3 size= ActiveParts[i].size;
            float[] localScale = new float[] { 1, 1, 1};
            int maxIndex = 0;
@@ -241,12 +305,6 @@ void FixedUpdate()
            localScale[maxIndex] = ratio;
            SetChildLocalScale(generatedAnimal.transform, ActiveParts[i].name, new Vector3(localScale[0], localScale[1], localScale[2]));
             
-           /*
-           Vector3 part_pos = ActiveParts[i].transform.GetComponent<MeshRenderer>().bounds.center;
-           Camera.main.transform.position = part_pos + new Vector3(1,1,-1);
-           Camera.main.transform.LookAt(part_pos);
-           */
-
        }
        if (FrameCount == ActiveParts[i].activeStartFrame + activeCount)
        {
@@ -294,6 +352,8 @@ void TraverseChildren(Transform parent)
 
 
     string[] comment_all_start = { "all right I'm already here to start making our _part mob" };
+
+    // 由于是第一，所以必须说明_part
     // 每组中的第一个正方体
     string[] comment_base = { "i am going to create a base for his _part， i`ll make a _part like this", 
                                 " then i`ll add a base to start making his _part",
@@ -301,10 +361,10 @@ void TraverseChildren(Transform parent)
                                 "to make the head I think it has to be another color",
                                 "he has a somewhat smiling head, so I would have to make it like this",
                                 "these _part will be _desc ones like these",
-                                "so I adjusted hugs head to make it more pointed",
-                                "so I created with scarier _part much _desc_adj for _name looks like _desc_noun",
-                                "put a tail to be able to make a very cool animation",
-                                "i made her dress and then added all the details",
+                                "I adjusted _part to make it more pointed",
+                                //"so I created with scarier _part much _desc_adj for _name looks like _desc_noun",
+                                "i`ll put a _part to be able to make a very cool animation",
+                                "i`ll made his _part and then added all the details",
                                 "then i went to the part of the _part",
                                 "and on _dir of it, the _part part",
                                 "so I will create here and pull a cube down to make the legs",
@@ -352,6 +412,7 @@ import wave
 import random
 from VoicGenerator import TextToSpeech
 from pydub import AudioSegment
+import sys
 
 def get_audio_length(file_path):
     # 打开音频文件
@@ -363,32 +424,27 @@ def get_audio_length(file_path):
         # 计算音频文件的长度（秒）
         audio_length = num_frames / frame_rate
         return round(audio_length, 2)
+    
 
-def contains_letter(s):
-    return any(char.isalpha() for char in s)
-
+lines = sys.argv[1].splitlines()  # 第一个字符串参数
+asset_path = sys.argv[2]
 line_count = 0
 speech = TextToSpeech()
-time = []
-with open("D://sub.txt", 'r', encoding='utf-8') as file:
-    for line in file:
-        if contains_letter(line):
-            speech.save_audio(line.strip())
-            line_count += 1
-        else:
-            time.append(float(line)  * 20)
-                
-                
-strr = ""
+for line in lines:
+    # speech.save_audio(line.strip())
+    line_count += 1
+    
+time_str = ""
+silent_audio = AudioSegment.silent(duration=2000)
 for t in range(1, 1+ line_count):
     audio_file_name = "index_" + str(t) + ".wav"
     audio = AudioSegment.from_file(audio_file_name)
     current_duration = len(audio)  # 当前音频的时长（毫秒）
-    strr += str(current_duration) + " "
+    time_str += str(current_duration) + " "
+    silent_audio += audio
 
-with open("D:/example.txt", "w") as file:
-    file.write(strr)
-    
+silent_audio.export("E:/software/unityproject/gudu/ddd/Assets/Resources/Audio/model.wav", format="wav")
+print(time_str)
             
  
  */

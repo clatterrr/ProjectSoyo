@@ -11,6 +11,7 @@ using UnityEngine;
 
 using static Structure;
 using static UnityEditor.SceneView;
+using Random = UnityEngine.Random;
 
 public class ShowPlants : MonoBehaviour
 {
@@ -76,7 +77,7 @@ public class ShowPlants : MonoBehaviour
 
     void RunAnimation(int frameCount)
     {
-        string animation_name = "animation.normal_zombie.idle";
+        string animation_name = "animation.split_pea.idle";
         int animation_index = 0;
         for(int i = 0; i < animList.Count; i++)
         {
@@ -129,7 +130,7 @@ public class ShowPlants : MonoBehaviour
         bool this_line_add = false;
         int brackets_count = 0;
         bool brackets_add = false;
-        bool plog = false;
+        bool plog = true;
         foreach (string line in lines)
         {
             this_line_add = false;
@@ -146,7 +147,7 @@ public class ShowPlants : MonoBehaviour
                 this_line_add = true;
             }
             if(plog) Debug.Log("brackets num" + brackets_count + " line = " + line);
-            if(brackets_count == 3 && brackets_add && this_line_add) {
+            if(brackets_count == 3  && this_line_add) {
                 if(anim.length > 0)
                 {
                     if (plog) Debug.Log("anim list added = " + anim.name + " count " + anim.animaPart.Count);
@@ -209,7 +210,7 @@ public class ShowPlants : MonoBehaviour
                     }
                     else
                     {
-                        animPart.rot.Add(Quaternion.Euler(-vector[0], -vector[1], -vector[2]));
+                        animPart.rot.Add(Quaternion.Euler(vector[0], vector[1], vector[2]));
                     }
                 }
             }
@@ -293,6 +294,7 @@ public class ShowPlants : MonoBehaviour
     public bool generateStory;
     private Vector3 handb;
 
+    private Vector3 headOffset = new Vector3(0, 2, 0);
     void CameraIdle(int startFrame, int endFrame, Vector3 offset, GameObject lookat, int loops)
     {
         float len = offset.magnitude * 0.03f;
@@ -308,25 +310,60 @@ public class ShowPlants : MonoBehaviour
         {
             int frame = startFrame + i * oneLoops;
             Debug.Log("start frame = " + startFrame + " end frame " + endFrame + " one five = " + oneFive + "len " + len);
-            cameraSettings.Add(addCameraMove(frame, frame + oneFive,                    offset + v0, offset + v1, lookat));
-            cameraSettings.Add(addCameraMove(frame + oneFive , frame + oneFive * 2,     offset + v1, offset + v2, lookat));
-            cameraSettings.Add(addCameraMove(frame + oneFive * 2, frame + oneFive * 3,  offset + v2, offset + v3, lookat));
-            cameraSettings.Add(addCameraMove(frame + oneFive * 3, frame + oneFive * 4,  offset + v3, offset + v4, lookat));
-            cameraSettings.Add(addCameraMove(frame + oneFive * 4, frame + oneFive * 5,  offset + v4, offset + v0, lookat));
+            cameraSettings.Add(addCameraMove(frame, frame + oneFive,                    offset + v0, offset + v1, lookat, headOffset));
+            cameraSettings.Add(addCameraMove(frame + oneFive , frame + oneFive * 2,     offset + v1, offset + v2, lookat, headOffset));
+            cameraSettings.Add(addCameraMove(frame + oneFive * 2, frame + oneFive * 3,  offset + v2, offset + v3, lookat, headOffset));
+            cameraSettings.Add(addCameraMove(frame + oneFive * 3, frame + oneFive * 4,  offset + v3, offset + v4, lookat, headOffset));
+            cameraSettings.Add(addCameraMove(frame + oneFive * 4, frame + oneFive * 5,  offset + v4, offset + v0, lookat, headOffset));
         }
 
     }
+
+    void CameraSharpMovement(int startFrame, int endFrame, GameObject lookat)
+    {
+        float startDegree = Random.Range(0.0f, 360.0f);
+        float nextDegree = Random.Range(-30.0f, 30.0f);
+        float finalDegree = Random.Range(0.5f, 2.0f) * nextDegree;
+        nextDegree = startDegree + nextDegree;
+        finalDegree = nextDegree - startDegree;
+
+        float firstDistance = Random.Range(2, 5f);
+        float secondDistance = Random.Range(2, 5f);
+
+        Vector3 pos0 = new Vector3(Mathf.Cos(startDegree) * firstDistance, 4, Mathf.Sin(startDegree) * firstDistance);
+        Vector3 pos1 = new Vector3(Mathf.Cos(nextDegree) * secondDistance, 4, Mathf.Sin(nextDegree) * secondDistance);
+        Vector3 pos2 = new Vector3(Mathf.Cos(finalDegree) * firstDistance, 4, Mathf.Sin(finalDegree) * firstDistance);
+
+        int oneTwo = (startFrame - endFrame) / 2;
+
+        cameraSettings.Add(addCameraMove(startFrame, startFrame + oneTwo, pos0, pos1, lookat, headOffset));
+        cameraSettings.Add(addCameraMove(startFrame + oneTwo, endFrame, pos1, pos2, lookat, headOffset));
+
+    }
+
+    void RandomCamera(int startFrame, int endFrame)
+    {
+        int r = Random.Range(0, 4);
+        switch (r) {
+            case 0: CameraIdle(startFrame, endFrame, new Vector3(3, 3, 0), generatedPlant, 2);break;
+            case 1: cameraSettings.Add(addCameraMove(startFrame, endFrame, new Vector3(5, 5, 0), new Vector3(5, 5, 0) * 0.3f, generatedPlant, headOffset)); break;
+            case 2: CameraSharpMovement(startFrame, endFrame, generatedPlant);break;
+            case 3: CameraSharpMovement(startFrame, endFrame, player); break;
+            default: break;
+        }
+    }
+
+    // 放下一个对手，然后后退
 
     void Start()
     {
         handb = hand.transform.localPosition;
         start_time = Time.time;
-        string prefab_name = "ZombieYeti";
+        string prefab_name = "SplitPea";
         string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
         GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
         generatedPlant = Instantiate(selectedPrefab, new Vector3(0, 0.5f, 0), Quaternion.Euler(0, 0, 0));
-        generatedPlant.transform.rotation = Quaternion.Euler(0, 270, 0);
-        LoadAnimation("D:\\GameDe\\GLTFmodl\\zombie.animation.json");
+        LoadAnimation("D:\\GameDe\\GLTFmodl\\split_pea.animation.json");
 
         TraverseChildren(generatedPlant.transform);
         //cameraSettings.Add(addCameraMove(0, 100, new Vector3(-10, 1, 10), new Vector3(10, 1, 10), generatedPlant));
@@ -355,18 +392,18 @@ public class ShowPlants : MonoBehaviour
             int start_frame = 0;
             int end_frame = numbers[0];
             actorSettings.Add(addActorMove(start_frame, end_frame, player, MinecraftAnimation.Animation.Wait, new Vector3(-3, 0.5f, -3), new Vector3(3, 0.5f, -3), Quaternion.Euler(0, 270, 0), Quaternion.Euler(0, 270, 0)));
-            CameraIdle(start_frame, end_frame, new Vector3(3, 3, 0), generatedPlant, 2);
+            RandomCamera(start_frame, end_frame);
 
 
              start_frame = numbers[0];
             end_frame = numbers[0] + numbers[1];
             actorSettings.Add(addActorMove(start_frame, end_frame, player, MinecraftAnimation.Animation.Wait, new Vector3(-3, 0.5f, -3), new Vector3(3, 0.5f, -3), Quaternion.Euler(0, 270, 0), Quaternion.Euler(0, 270, 0)));
-            cameraSettings.Add(addCameraMove(start_frame, end_frame, new Vector3(5, 3, 0), new Vector3(5, 3, 0) * 0.3f, generatedPlant));
+            RandomCamera(start_frame, end_frame);
 
             start_frame = numbers[0] + numbers[1];
             end_frame = numbers[0] + numbers[1] + numbers[2];
             actorSettings.Add(addActorMove(start_frame, end_frame, player, MinecraftAnimation.Animation.Wait, new Vector3(-3, 0.5f, -3), new Vector3(3, 0.5f, -3), Quaternion.Euler(0, 270, 0), Quaternion.Euler(0, 270, 0)));
-            cameraSettings.Add(addCameraMove(start_frame, end_frame, new Vector3(5, 3, 0), new Vector3(5, 3, 0), player));
+            RandomCamera(start_frame, end_frame);
 
         }
         else
@@ -386,7 +423,7 @@ public class ShowPlants : MonoBehaviour
     void FixedUpdate()
     {
         GlobalFrameCount++;
-        RunAnimation(GlobalFrameCount);
+        // RunAnimation(GlobalFrameCount);
 
         for (int i = 0; i < cameraSettings.Count; i++)
         {
@@ -475,7 +512,9 @@ public class ShowPlants : MonoBehaviour
             "the _enemy came out ! he's trying to tackle the _enemy ! he got the _enemy knocked down",
             //https://youtu.be/Se0oM5liI-4?t=646
             "around the edge we can see a few _enemy coming in and now _name is preparing defenses as soon as a _enemy threatens us",
-            "if any _enemy tries to come nearby, our _name is going to defend us hopefully "};
+            "if any _enemy tries to come nearby, our _name is going to defend us hopefully ",
+            //https://youtu.be/hewT7YXbOhY?t=70
+            "bring in a _enemy here and let's see our _name go to work. do the rest of your work here. here you go. I think it was four hits"};
     // 动画系统
 
     string[] desc_anim = { "oh and if anyone wants to know the animation of _name turned out like this " +

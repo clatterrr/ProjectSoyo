@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.UI;
 using UnityEngine;
+using static Structure;
 
 public class MinecraftEntity : MonoBehaviour
 {
@@ -23,8 +24,14 @@ public class MinecraftEntity : MonoBehaviour
     private string audioClipPath = "Audio/creatureHurt"; // 声音文件的路径，假设在Assets/Resources/Audio/mySound.wav
 
     private AudioSource audioSource;
+
+    private float health = 0;
+
+    private AudioClip hitClip;
+
     void Start()
     {
+        AddBoxCollider(gameObject);
         SetRandomTargetPosition();
         SetRandomPauseTime();
 
@@ -37,18 +44,9 @@ public class MinecraftEntity : MonoBehaviour
         baseY = transform.position.y;
 
         audioSource = gameObject.AddComponent<AudioSource>();
+        hitClip = Resources.Load<AudioClip>(audioClipPath);
 
-        // 从Resources文件夹中加载声音文件
-        AudioClip clip = Resources.Load<AudioClip>(audioClipPath);
-
-        if (clip != null)
-        {
-            // 设置加载的声音文件为AudioSource的音频片段
-            audioSource.clip = clip;
-
-            // 播放声音
-            audioSource.Play();
-        }
+        
     }
 
     enum Status
@@ -63,9 +61,14 @@ public class MinecraftEntity : MonoBehaviour
     private int DamageMaxCount = 60;
     private int DamageCount = 0;
 
-    void TakeDamge()
+    public void TakeDamge()
     {
         DamageCount = 0;
+        if (hitClip != null)
+        {
+            audioSource.clip = hitClip;
+            audioSource.Play();
+        }
     }
 
     Material GetAnyMateiral(Transform parent)
@@ -131,7 +134,7 @@ public class MinecraftEntity : MonoBehaviour
 
     void FixedUpdate()
     {
-        RandomWalk();
+        //RandomWalk();
         DamageCount++;
         if(DamageCount < DamageMaxCount)
         {

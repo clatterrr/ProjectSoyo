@@ -66,6 +66,12 @@ public class MinecraftAnimation : MonoBehaviour
             frameCount = 0;
         }
     }
+
+    void SimpleLookCamera()
+    {
+        RecursiveFindAndLookat("head", gameObject.transform, Camera.main.transform.position);
+        RecursiveFindAndLookat("headwear", gameObject.transform, Camera.main.transform.position);
+    }
     void Start()
     {
         
@@ -75,7 +81,7 @@ public class MinecraftAnimation : MonoBehaviour
     void Update()
     {
         frameCount++;
-        SimpleWalkAnimation();
+        SimpleLookCamera();
 
     }
 }

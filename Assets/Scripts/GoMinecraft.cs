@@ -100,7 +100,7 @@ public class GoMinecraft : MonoBehaviour
             }
         }
         objectSettings.Add(new ObjectSettings(frame, frame + 300, mapGuided, new Vector3(250, -4, -15), new Vector3(0, -4, -15), Quaternion.identity, Quaternion.identity));
-        cameraSettings.Add(new CameraSetting(frame, frame + 300, new Vector3(30, 30, 30), mapGuided, false));
+        cameraSettings.Add(new CameraSetting(frame, frame + 300, new Vector3(30, 30, 30), mapGuided, new Vector3(0, 0, 0),false));
 
     }
     void GenerateAllCharacters()
@@ -138,7 +138,7 @@ public class GoMinecraft : MonoBehaviour
         arrow.transform.localScale = new Vector3(10, 10, 10);
         objectSettings.Add(new ObjectSettings(frameCount, frameCount + 50, arrow, arrow.transform.position, arrow.transform.position, arrow.transform.rotation, arrow.transform.rotation));
         objectSettings.Add(new ObjectSettings(frameCount + 50, frameCount + 100, arrow, arrow.transform.position, arrow.transform.position, arrow.transform.rotation, Quaternion.Euler(0, - 60 * realIndex - 180, 0)));
-        cameraSettings.Add(new CameraSetting(frameCount, frameCount + 100, new Vector3(10, 10, 10), arrow, false));
+        cameraSettings.Add(new CameraSetting(frameCount, frameCount + 100, new Vector3(10, 10, 10), arrow, new Vector3(0, 0, 0), false));
 
 
         Record(frameCount + 100);
@@ -146,7 +146,7 @@ public class GoMinecraft : MonoBehaviour
         float r = Random.Range(-7, 10);
         Vector3 p = WalkPoint.transform.position + new Vector3(0, 0, r);
         actorSettings.Add(new ActorSettings(frameCount + 200, frameCount + 20000, heros[realIndex], MinecraftFighter.Animation.Walk, p, Quaternion.Euler(0, 90, 0)));
-        cameraSettings.Add(new CameraSetting(frameCount + 200, frameCount + 20000, new Vector3(20, 10, 20), heros[realIndex], true));
+        cameraSettings.Add(new CameraSetting(frameCount + 200, frameCount + 20000, new Vector3(20, 10, 20), heros[realIndex], new Vector3(0, 0, 0), true));
     
     }
     private void SelectRandomTexture(Transform parent)
@@ -297,7 +297,7 @@ public class GoMinecraft : MonoBehaviour
         {
             if(ChangeDeadCount == 0)
             {
-                cameraSettings.Add(new CameraSetting(GlobalFrameCount, GlobalFrameCount + playDead, new Vector3(20, 10, 20), heros[realIndex], false));
+                cameraSettings.Add(new CameraSetting(GlobalFrameCount, GlobalFrameCount + playDead, new Vector3(20, 10, 20), heros[realIndex], new Vector3(0, 0, 0), false));
             }
             ChangeDeadCount++;
             if(ChangeDeadCount == playDead)

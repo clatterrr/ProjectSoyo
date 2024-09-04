@@ -36,5 +36,9 @@ public class FreeCameraController : MonoBehaviour
         {
             transform.Translate(Vector3.down * verticalSpeed * Time.deltaTime);
         }
+        if (Input.GetKey(KeyCode.Space))
+        {
+            transform.Translate(Vector3.up * verticalSpeed * Time.deltaTime);
+        }
     }
 }

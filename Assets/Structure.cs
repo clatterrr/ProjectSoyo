@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 public class Structure
 {
@@ -12,24 +13,27 @@ public class Structure
         public int frameStart;
         public int frameEnd;
         public GameObject lookat;
+        public Vector3 lookatOffset;
         public Vector3 posOffsetStart;
         public Vector3 posOffsetEnd;
         public bool detectDead;
 
-        public CameraSetting(int frameStart, int frameEnd, Vector3 posOffset, GameObject lookat, bool detectDead)
+        public CameraSetting(int frameStart, int frameEnd,  Vector3 posOffset, GameObject lookat, Vector3 lookatOffset, bool detectDead)
         {
             this.frameStart = frameStart;
             this.frameEnd = frameEnd;
+            this.lookatOffset = lookatOffset;
             this.posOffsetStart = posOffset;
             this.posOffsetEnd = posOffset;
             this.lookat = lookat;
             this.detectDead = detectDead;
         }
 
-        public CameraSetting(int frameStart, int frameEnd, Vector3 posOffset, Vector3 posOffset2, GameObject lookat)
+        public CameraSetting(int frameStart, int frameEnd,  Vector3 posOffset, Vector3 posOffset2, GameObject lookat, Vector3 lookatOffset)
         {
             this.frameStart = frameStart;
-            this.frameEnd = frameEnd;
+            this.frameEnd = frameEnd; 
+            this.lookatOffset = lookatOffset;
             this.posOffsetStart = posOffset;
             this.posOffsetEnd = posOffset2;
             this.lookat = lookat;
@@ -40,10 +44,11 @@ public class Structure
         {
             if(frameCount >= frameStart && frameCount < frameEnd) { 
                 float ratio = (frameCount - frameStart) * 1.0f/ (frameEnd - frameStart);
-
                 Vector3 realPosOffset = Vector3.Lerp(posOffsetStart, posOffsetEnd, ratio);
+
+
                 Camera.main.transform.position = lookat.transform.position + realPosOffset;
-                Camera.main.transform.LookAt(lookat.transform.position);
+                Camera.main.transform.LookAt(lookat.transform.position + lookatOffset);
 
                 return true;
             }
@@ -51,9 +56,12 @@ public class Structure
         }
     }
 
-    public static CameraSetting addCameraMove(int frameStart, int frameEnd, Vector3 pos, Vector3 pos2, GameObject lookat)
+
+
+    public static CameraSetting addCameraMove(int frameStart, int frameEnd,  Vector3 pos, Vector3 pos2, GameObject lookat, Vector3 lookatOffset)
     {
-        return new CameraSetting(frameStart, frameEnd, pos, pos2, lookat);
+
+        return new CameraSetting(frameStart, frameEnd, pos, pos2, lookat, lookatOffset);
     }
 
     public struct ActorSettings
@@ -136,7 +144,7 @@ public class Structure
 
     public static void RotateChild(Transform parent, string targetName, Quaternion rotation)
     {
-        if (parent.name == targetName)
+        if (parent.name == targetName || targetName == "Main")
         {
             parent.localRotation = rotation;
             return;
@@ -162,7 +170,9 @@ public class Structure
 
     public static void TranslateChild(Transform parent, string targetName, Vector3 pos)
     {
-        if (parent.name == targetName)
+        
+
+        if (parent.name == targetName || targetName == "Main")
         {
             parent.localPosition = pos;
             return;
@@ -171,6 +181,19 @@ public class Structure
         {
             TranslateChild(child, targetName, pos);
         }
+    }
+
+    public static Vector3 GetChildPos(Transform parent, string targetName)
+    {
+        if (parent.name == targetName)
+        {
+            return parent.position;
+        }
+        foreach (Transform child in parent)
+        {
+            return GetChildPos(child, targetName);
+        }
+        return Vector3.zero;
     }
 
     public static void RecursiveFindAndModify(string targetName, Transform current, Quaternion rotation, bool local)
@@ -194,6 +217,23 @@ public class Structure
         foreach (Transform child in current)
         {
             RecursiveFindAndModify(targetName, child, rotation, local);
+        }
+    }
+
+    public static void RecursiveFindAndLookat(string targetName, Transform current, Vector3 lookat)
+    {
+        // 检查当前Transform的名称是否是我们要找的
+        if (current.name == targetName)
+        {
+            current.transform.LookAt(lookat);
+            current.transform.Rotate(new Vector3(0, 180, 0));
+            return;
+        }
+
+        // 递归遍历所有子物体
+        foreach (Transform child in current)
+        {
+            RecursiveFindAndLookat(targetName, child, lookat);
         }
     }
 
@@ -406,5 +446,36 @@ public class Structure
             SetChildMaterial(child, targetName, material);
         }
     }
+    public static void AddBoxCollider(GameObject obj)
+    {
+        // 获取所有的 MeshRenderer 组件
+        MeshRenderer[] meshRenderers = obj.GetComponentsInChildren<MeshRenderer>();
 
+        if (meshRenderers.Length == 0)
+        {
+            Debug.LogWarning("没有找到任何MeshRenderer组件。");
+            return;
+        }
+
+        // 初始化第一个 bounds 为合并的起点
+        Bounds combinedBounds = meshRenderers[0].bounds;
+
+        // 遍历所有的 MeshRenderer 并合并它们的 bounds
+        foreach (MeshRenderer meshRenderer in meshRenderers)
+        {
+            combinedBounds.Encapsulate(meshRenderer.bounds);
+        }
+
+        // 获取 BoxCollider，如果不存在则添加一个
+        BoxCollider boxCollider = obj.GetComponent<BoxCollider>();
+        if (boxCollider == null)
+        {
+            boxCollider = obj.AddComponent<BoxCollider>();
+        }
+
+        // 设置 BoxCollider 的中心和大小
+        boxCollider.center = combinedBounds.center - obj.transform.position;
+        boxCollider.size = combinedBounds.size;
+        boxCollider.isTrigger = true;
+    }
 }

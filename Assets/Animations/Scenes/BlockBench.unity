@@ -444,7 +444,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1cd25cae71c22794f8b5dab3d7370733, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateStory: 0
+  generateStory: 1
 --- !u!4 &949920939
 Transform:
   m_ObjectHideFlags: 0
