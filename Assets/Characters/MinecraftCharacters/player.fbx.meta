@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: af12b37710f3ae34093b14a4c84e2b7a
+guid: 92abc6bf36d3b694ea1c5db96e0ca726
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -7,7 +7,7 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: zombie
+      name: player.png
     second: {fileID: 2100000, guid: eb0125711167beb459891384b6c12ee0, type: 2}
   materials:
     materialImportMode: 2

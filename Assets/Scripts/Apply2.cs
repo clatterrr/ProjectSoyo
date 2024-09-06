@@ -354,7 +354,7 @@ void TraverseChildren(Transform parent)
     string[] comment_all_start = { "all right I'm already here to start making our _part mob" };
 
     // 由于是第一，所以必须说明_part
-    // 每组中的第一个正方体
+    // 每组中的第一个正方体  
     string[] comment_base = { "i am going to create a base for his _part， i`ll make a _part like this", 
                                 " then i`ll add a base to start making his _part",
                                 "now i`m going to add _part",

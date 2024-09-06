@@ -130,7 +130,7 @@ public class ShowPlants : MonoBehaviour
         bool this_line_add = false;
         int brackets_count = 0;
         bool brackets_add = false;
-        bool plog = true;
+        bool plog = false;
         foreach (string line in lines)
         {
             this_line_add = false;
@@ -294,10 +294,10 @@ public class ShowPlants : MonoBehaviour
     public bool generateStory;
     private Vector3 handb;
 
-    private Vector3 headOffset = new Vector3(0, 2, 0);
+    private Vector3 headOffset = new Vector3(0, 1, 0);
     void CameraIdle(int startFrame, int endFrame, Vector3 offset, GameObject lookat, int loops)
     {
-        float len = offset.magnitude * 0.03f;
+        float len = offset.magnitude * 0.01f;
         Vector3 v0 = new Vector3(0, 0, -len);
         Vector3 v1 = new Vector3(0, 0, len);
         Vector3 v2 = new Vector3(0, len / 2, 0);
@@ -309,7 +309,6 @@ public class ShowPlants : MonoBehaviour
         for(int i = 0; i < loops; i++)
         {
             int frame = startFrame + i * oneLoops;
-            Debug.Log("start frame = " + startFrame + " end frame " + endFrame + " one five = " + oneFive + "len " + len);
             cameraSettings.Add(addCameraMove(frame, frame + oneFive,                    offset + v0, offset + v1, lookat, headOffset));
             cameraSettings.Add(addCameraMove(frame + oneFive , frame + oneFive * 2,     offset + v1, offset + v2, lookat, headOffset));
             cameraSettings.Add(addCameraMove(frame + oneFive * 2, frame + oneFive * 3,  offset + v2, offset + v3, lookat, headOffset));
@@ -334,7 +333,7 @@ public class ShowPlants : MonoBehaviour
         Vector3 pos1 = new Vector3(Mathf.Cos(nextDegree) * secondDistance, 4, Mathf.Sin(nextDegree) * secondDistance);
         Vector3 pos2 = new Vector3(Mathf.Cos(finalDegree) * firstDistance, 4, Mathf.Sin(finalDegree) * firstDistance);
 
-        int oneTwo = (startFrame - endFrame) / 2;
+        int oneTwo = (endFrame - startFrame) / 2;
 
         cameraSettings.Add(addCameraMove(startFrame, startFrame + oneTwo, pos0, pos1, lookat, headOffset));
         cameraSettings.Add(addCameraMove(startFrame + oneTwo, endFrame, pos1, pos2, lookat, headOffset));
@@ -352,8 +351,89 @@ public class ShowPlants : MonoBehaviour
             default: break;
         }
     }
+    //从远处较远的地方，一直走到生物附近，有人
+    void CameraFarToCloseMovement(int startFrame, int endFrame, GameObject lookat)
+    {
+        float degree0 = Random.Range(0f, 3.14f);
+        float degree1 = Random.Range(-1.0f, 1.0f);
+        float degree2 = degree0 + degree1;
+        degree1 = degree0 - degree1;
+
+        float distance0 = Random.Range(10, 20f);
+        float distance1 = Random.Range(5, 10f);
+        float distance2 = Random.Range(3, 5f);
+
+        Vector3 pos0 = new Vector3(Mathf.Cos(degree0) * distance0, 1, Mathf.Sin(degree0) * distance0);
+        Vector3 pos1 = new Vector3(Mathf.Cos(degree1) * distance1, 1, Mathf.Sin(degree1) * distance1);
+        Vector3 pos2 = new Vector3(Mathf.Cos(degree2) * distance2, 1, Mathf.Sin(degree2) * distance2);
+        int oneTwo = (endFrame - startFrame) / 2;
+
+        cameraSettings.Add(addCameraMove(startFrame, startFrame + oneTwo, pos0, pos1, lookat, headOffset));
+        cameraSettings.Add(addCameraMove(startFrame + oneTwo, endFrame, pos1, pos2, lookat, headOffset));
+        actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+        actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
+
+    }
+    // 附近放大看，无人生
+    // 附近，自拍
+    void CameraCloseLookMovement(int startFrame, int endFrame, GameObject lookat)
+    {
+        float degree0 = Random.Range(0f, 3.14f); 
+
+        MeshRenderer[] meshRenderers = lookat.GetComponentsInChildren<MeshRenderer>();
+        Bounds cb = meshRenderers[0].bounds;
+        foreach (MeshRenderer meshRenderer in meshRenderers)
+        {
+            cb.Encapsulate(meshRenderer.bounds);
+        }
+        float distance = Mathf.Sqrt(cb.size.x * cb.size.x + cb.size.z * cb.size.z);
+        float distance2 = Random.Range(2f, 5f) * distance;
+        Vector3 pos0 = new Vector3(Mathf.Cos(degree0) * distance2, 1, Mathf.Sin(degree0) * distance2);
+        CameraIdle(startFrame, endFrame, pos0, lookat, 1);
+        //cameraSettings.Add(addCameraMove(startFrame, endFrame, pos0, pos0, lookat, new Vector3(0, cb.size.y * 0.8f, 0)));
+
+    }
+
+    void CameraCloseLook_WithPlayerLook(int startFrame, int endFrame)
+    {
+        float degree = Random.Range(0f, 3.14f);
+        float distance = Random.Range(2, 5f);
+        Vector3 pos = generatedPlant.transform.position + new Vector3(Mathf.Cos(degree) * distance, 0, Mathf.Sin(degree) * distance);
+
+        actorSettings.Add(addActorMove(startFrame, endFrame, player, MinecraftAnimation.Animation.Wait, pos, pos, Quaternion.identity, Quaternion.identity));
+        actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
+        CameraCloseLookMovement(startFrame, endFrame, player);
+    }
+
+    void CameraCloseLook_WithPlayerWalk(int startFrame, int endFrame)
+    {
+        CameraCloseLookMovement(startFrame, endFrame, player);
+    }
+
+    void CameraCloseLook_WithHand(int startFrame, int endFrame)
+    {
+        actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+        CameraCloseLookMovement(startFrame, endFrame, generatedPlant);
+    }
+
+    void CameraCloseLook_WithNothing(int startFrame, int endFrame)
+    {
+        actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+        actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
+        CameraCloseLookMovement(startFrame, endFrame, generatedPlant);
+    }
 
     // 放下一个对手，然后后退
+
+    enum CameraMode
+    {
+        FarToClose,
+        CloseWithoutAnything,
+        CloseWithPlayer,
+        CloseWithHand,
+        CloseWithPlayerWalk,
+        FiveStarWithHand,
+    }
 
     void Start()
     {
@@ -381,30 +461,49 @@ public class ShowPlants : MonoBehaviour
         subtitles.Add(AddSub2(desc_attack_time, replacer));
         subtitles.Add(AddSub2(desc_grade, replacer));
 
+        // 0 从远处较远的地方，一直走到生物附近，有人
+        // 1 五角星模式
+        // 2 附近放大，无人无手
+        // 3 附近放大，自拍，有人无手
+        // 4 看，有手
+        // 5 人绕着走，自拍，有人无手
+
         if (!generateStory)
         {
 
             int[] numbers = ReadNumbersFromFile("D:/example.txt");
+            CameraMode[] cameraMode = { CameraMode.FarToClose, 
+                CameraMode.CloseWithoutAnything, 
+                CameraMode.CloseWithPlayer,
+                CameraMode.CloseWithHand, 
+                CameraMode.CloseWithPlayerWalk,
+                CameraMode.CloseWithoutAnything, 
+                CameraMode.CloseWithPlayer };
             for(int i = 0; i < numbers.Length;i++)
             {
                 numbers[i] /= 20;
             }
-            int start_frame = 0;
-            int end_frame = numbers[0];
-            actorSettings.Add(addActorMove(start_frame, end_frame, player, MinecraftAnimation.Animation.Wait, new Vector3(-3, 0.5f, -3), new Vector3(3, 0.5f, -3), Quaternion.Euler(0, 270, 0), Quaternion.Euler(0, 270, 0)));
-            RandomCamera(start_frame, end_frame);
+            int startFrame = 0;
+            int endFrame = 0;
+            
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                startFrame = endFrame;
+                endFrame += numbers[i];
+                Debug.Log("start frame = " + startFrame + ", " + endFrame);
+                switch (cameraMode[i])
+                {
+                    case CameraMode.FarToClose: CameraFarToCloseMovement(startFrame, endFrame, generatedPlant); break;
+                    case CameraMode.CloseWithoutAnything: CameraCloseLook_WithNothing(startFrame, endFrame); break;
+                    case CameraMode.CloseWithPlayer: CameraCloseLook_WithPlayerLook(startFrame, endFrame); break;
+                    case CameraMode.CloseWithHand: CameraCloseLook_WithHand(startFrame, endFrame); break;
+                    case CameraMode.CloseWithPlayerWalk: CameraCloseLook_WithPlayerWalk(startFrame, endFrame); break;
+                    case CameraMode.FiveStarWithHand: CameraSharpMovement(startFrame, endFrame, generatedPlant); break;
+                    default: break;
 
+                }
 
-             start_frame = numbers[0];
-            end_frame = numbers[0] + numbers[1];
-            actorSettings.Add(addActorMove(start_frame, end_frame, player, MinecraftAnimation.Animation.Wait, new Vector3(-3, 0.5f, -3), new Vector3(3, 0.5f, -3), Quaternion.Euler(0, 270, 0), Quaternion.Euler(0, 270, 0)));
-            RandomCamera(start_frame, end_frame);
-
-            start_frame = numbers[0] + numbers[1];
-            end_frame = numbers[0] + numbers[1] + numbers[2];
-            actorSettings.Add(addActorMove(start_frame, end_frame, player, MinecraftAnimation.Animation.Wait, new Vector3(-3, 0.5f, -3), new Vector3(3, 0.5f, -3), Quaternion.Euler(0, 270, 0), Quaternion.Euler(0, 270, 0)));
-            RandomCamera(start_frame, end_frame);
-
+            }
         }
         else
         {
@@ -424,6 +523,8 @@ public class ShowPlants : MonoBehaviour
     {
         GlobalFrameCount++;
         // RunAnimation(GlobalFrameCount);
+        hand.SetActive(true);
+        player.SetActive(true);
 
         for (int i = 0; i < cameraSettings.Count; i++)
         {
@@ -436,13 +537,13 @@ public class ShowPlants : MonoBehaviour
         {
             if (actorSettings[i].Run(GlobalFrameCount))
             {
-                break;
+                
             }
         }
 
         int handCountCycle = 20;
-        float handCycleScale = 0.1f;
-        float handCycleScaleY = 0.02f;
+        float handCycleScale = 0.01f;
+        float handCycleScaleY = 0.005f;
         int handCount = GlobalFrameCount % (handCountCycle * 2);
         if( handCount < handCountCycle ) {
             float x = (handCount - handCountCycle / 2) * 2.0f / handCountCycle;

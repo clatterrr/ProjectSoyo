@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static Structure;
 using static UnityEditor.SceneView;
@@ -69,8 +70,23 @@ public class MinecraftAnimation : MonoBehaviour
 
     void SimpleLookCamera()
     {
-        RecursiveFindAndLookat("head", gameObject.transform, Camera.main.transform.position);
-        RecursiveFindAndLookat("headwear", gameObject.transform, Camera.main.transform.position);
+        Vector3 directionToLookAt = Camera.main.transform.position - gameObject.transform.position;
+        Quaternion targetRotation = Quaternion.LookRotation(directionToLookAt) ;
+        Quaternion bodyRotation = targetRotation;
+        float angleDifference = Quaternion.Angle(Quaternion.identity, targetRotation);
+        if (angleDifference > 20)
+        {
+            angleDifference = (int)(angleDifference / 20) * 20;
+            bodyRotation = Quaternion.RotateTowards(Quaternion.identity, targetRotation, angleDifference);
+        }
+        Vector3 euler = bodyRotation.eulerAngles;
+        euler.x = 0;
+        euler.z = 0;
+        bodyRotation = Quaternion.Euler(euler);
+
+        //RotateChild(gameObject.transform, "All", bodyRotation);
+        RotateChild(gameObject.transform, "head", targetRotation * Quaternion.Euler(0, 180, 0));
+        RotateChild(gameObject.transform, "headwear", targetRotation * Quaternion.Euler(0, 180, 0));
     }
     void Start()
     {

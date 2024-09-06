@@ -45,8 +45,6 @@ public class Structure
             if(frameCount >= frameStart && frameCount < frameEnd) { 
                 float ratio = (frameCount - frameStart) * 1.0f/ (frameEnd - frameStart);
                 Vector3 realPosOffset = Vector3.Lerp(posOffsetStart, posOffsetEnd, ratio);
-
-
                 Camera.main.transform.position = lookat.transform.position + realPosOffset;
                 Camera.main.transform.LookAt(lookat.transform.position + lookatOffset);
 
@@ -74,7 +72,8 @@ public class Structure
         public Vector3 posEnd;
         public Quaternion rotationStart;
         public Quaternion rotationEnd;
-        public ActorSettings(int frameStart, int frameEnd, GameObject actor, MinecraftFighter.Animation animation, Vector3 pos, Quaternion rotation)
+        public bool active;
+        public ActorSettings(int frameStart, int frameEnd, GameObject actor, MinecraftFighter.Animation animation, Vector3 pos, Quaternion rotation, bool active)
         {
             this.frameStart = frameStart;
             this.frameEnd = frameEnd;
@@ -84,10 +83,11 @@ public class Structure
             this.posEnd = pos;
             this.rotationStart = rotation;
             this.rotationEnd = rotation;
+            this.active = active;
         }
 
         public ActorSettings(int frameStart, int frameEnd, GameObject actor, MinecraftAnimation.Animation animation, 
-            Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd)
+            Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd, bool active)
         {
             this.frameStart = frameStart;
             this.frameEnd = frameEnd;
@@ -97,17 +97,28 @@ public class Structure
             this.posEnd = posEnd;
             this.rotationStart = rotationStart;
             this.rotationEnd = rotationEnd;
+            this.active = active;
         }
 
         public bool Run(int frameCount)
         {
             if (frameCount >= this.frameStart && frameCount < this.frameEnd)
             {
-                actor.GetComponent<MinecraftAnimation>().SetAnimation(animation);
-                float ratio = (frameCount - this.frameStart) * 1.0f / (this.frameEnd - this.frameStart);
-                Vector3 pos = Vector3.Lerp(posStart, posEnd, ratio);
-                Quaternion rot = Quaternion.Lerp(rotationStart, rotationEnd, ratio);
-                actor.GetComponent<MinecraftAnimation>().SetTransform(pos, rot);
+                if(this.active == false)
+                {
+                    Debug.Log("set false");
+                    actor.SetActive(false);
+                    return true;
+                }
+                if(actor.GetComponent<MinecraftAnimation>() != null)
+                {
+                    actor.GetComponent<MinecraftAnimation>().SetAnimation(animation); 
+                    float ratio = (frameCount - this.frameStart) * 1.0f / (this.frameEnd - this.frameStart);
+                    Vector3 pos = Vector3.Lerp(posStart, posEnd, ratio);
+                    Quaternion rot = Quaternion.Lerp(rotationStart, rotationEnd, ratio);
+                    actor.GetComponent<MinecraftAnimation>().SetTransform(pos, rot);
+                }
+
 
                 return true;
             }
@@ -118,7 +129,12 @@ public class Structure
     public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, MinecraftAnimation.Animation animation,
             Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd)
     {
-        return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, rotationStart, rotationEnd);
+        return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, rotationStart, rotationEnd, true);
+    }
+
+    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, bool active)
+    {
+        return new ActorSettings(frameStart, frameEnd, actor, MinecraftAnimation.Animation.Wait, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity, active);
     }
 
     public struct ObjectSettings
@@ -220,21 +236,40 @@ public class Structure
         }
     }
 
-    public static void RecursiveFindAndLookat(string targetName, Transform current, Vector3 lookat)
+    public static float RecursiveFindAndLookat(string targetName, Transform current, Vector3 lookat)
     {
         // 检查当前Transform的名称是否是我们要找的
         if (current.name == targetName)
         {
-            current.transform.LookAt(lookat);
-            current.transform.Rotate(new Vector3(0, 180, 0));
-            return;
+            Vector3 directionToLookAt = lookat - current.position;
+            Quaternion targetRotation = Quaternion.LookRotation(directionToLookAt) * Quaternion.Euler(0, 180, 0);
+
+            // 计算当前旋转和目标旋转之间的角度差
+            float angleDifference = Quaternion.Angle(Quaternion.identity, targetRotation);
+           // Debug.Log("name " + targetName + " angles = " + angleDifference);
+            // 限制旋转角度
+            if (angleDifference > 60)
+            {
+                // 按最大角度旋转
+                current.rotation = Quaternion.RotateTowards(Quaternion.identity, targetRotation, 60);
+
+                return angleDifference;
+            }
+            else
+            {
+                // 直接朝向目标
+                current.rotation = targetRotation;
+                return angleDifference;
+            }
         }
 
         // 递归遍历所有子物体
         foreach (Transform child in current)
         {
-            RecursiveFindAndLookat(targetName, child, lookat);
+
+            return RecursiveFindAndLookat(targetName, child, lookat);
         }
+        return 0;
     }
 
     public static int[] ReadNumbersFromFile(string filePath)
