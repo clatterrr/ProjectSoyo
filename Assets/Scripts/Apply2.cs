@@ -16,6 +16,7 @@ using static Structure;
 using Random = UnityEngine.Random;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
+using static HumanoidGenerator;
 
 public class Apply2 : MonoBehaviour
 {
@@ -23,7 +24,8 @@ public class Apply2 : MonoBehaviour
     private Material mushMaterial;
     private float start_time;
 
-    public bool generateStory;
+    public bool enableRandomModel;
+    public bool enableVoice;
     public struct ActivePart
     {
         public string parentName;
@@ -71,15 +73,24 @@ public class Apply2 : MonoBehaviour
     }
 
 
-   GameObject generatedAnimal;
+    GameObject generatedAnimal;
 
-   int[] GenerateComments()
-   {
+    int[] GenerateComments()
+    {
         string prefab_name = "SplitPea";
-        string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
-        GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-        generatedAnimal = Instantiate(selectedPrefab, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0));
-        TraverseChildren(generatedAnimal.transform);
+        if (enableRandomModel)
+        {
+            generatedAnimal = HumanoidGenerator.CreateHumaoid();
+            TraverseChildren(generatedAnimal.transform);
+        }
+        else
+        {
+
+            string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
+            GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            generatedAnimal = Instantiate(selectedPrefab, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0));
+            TraverseChildren(generatedAnimal.transform);
+        }
 
         SubModelReplacer placer = new SubModelReplacer();
         placer.name = prefab_name;
@@ -91,7 +102,7 @@ public class Apply2 : MonoBehaviour
         subtitles.Add(AddModelSub(comment_all_start.ToArray(), placer));
         Debug.Log(" first comment " + subtitles[subtitles.Count - 1]);
 
-        
+
 
         for (int j = 0; j < parts.Count; j++)
         {
@@ -113,7 +124,7 @@ public class Apply2 : MonoBehaviour
                         if (part.transform.GetChild(i).GetComponent<MeshRenderer>() != null)
                         {
                             Vector3 childPart = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
-                            if(childPart.y > 3)
+                            if (childPart.y > 3)
                             {
                                 placer.desc = "longer";
                             }
@@ -122,17 +133,18 @@ public class Apply2 : MonoBehaviour
                                 placer.desc = "shorter";
                             }
                         }
-                        
-                        if (i == count - 1)
+
+                        if (first_cube)
+                        {
+                            placer.name = part.transform.name;
+                            subtitles.Add(AddModelSub(comment_base.ToArray(), placer));
+                            first_cube = false;
+                        }
+                        else if (i == count - 1)
                         {
 
                             placer.name = "cube";
                             subtitles.Add(AddModelSub(comment_finish.Concat(comment).ToArray(), placer));
-                        }
-                        else if (first_cube)
-                        {
-                            placer.name = part.name;
-                            subtitles.Add(AddModelSub(comment_base.ToArray(), placer));
                         }
                         else
                         {
@@ -140,10 +152,6 @@ public class Apply2 : MonoBehaviour
                             subtitles.Add(AddModelSub(comment.ToArray(), placer));
                         }
 
-                        if (first_cube)
-                        {
-                            first_cube = false;
-                        }
                         Debug.Log(" parent name =" + part.transform.name + " child index = " + i + " comment " + subtitles[subtitles.Count - 1]);
 
                     }
@@ -159,50 +167,64 @@ public class Apply2 : MonoBehaviour
         {
             writeto += sub + "\n";
         }
-        // 设置Python脚本路径
-        string pythonScriptPath = "F:/DaisyDay/test.py";
 
-        // 要传递给Python的字符串
-        string stringArg1 = writeto;
-        string stringArg2 = Application.dataPath + "/Resources/Audio/";
-        Debug.Log(stringArg2);
-        // 创建一个新的进程
-        Process pythonProcess = new Process();
-
-        // 设置Python解释器路径
-        pythonProcess.StartInfo.FileName = "python";
-
-        // 传递脚本路径和字符串参数
-        pythonProcess.StartInfo.Arguments = $"{pythonScriptPath} \"{stringArg1}\" \"{stringArg2}\"";
-
-        // 配置其他进程启动信息
-        pythonProcess.StartInfo.UseShellExecute = false;
-        pythonProcess.StartInfo.RedirectStandardOutput = true;
-        pythonProcess.StartInfo.RedirectStandardError = true;
-        pythonProcess.StartInfo.CreateNoWindow = true;
-
-        // 启动Python进程
-        pythonProcess.Start();
-
-        // 等待Python脚本执行完成
-        pythonProcess.WaitForExit();
-
-        // 获取Python输出（如果有）
-        string output = pythonProcess.StandardOutput.ReadToEnd();
-        string error = pythonProcess.StandardError.ReadToEnd();
-
-        Debug.Log("build time = " + output);
-        // 根据空格拆分成字符串数组
-        string[] line_part = output.Split(' ');
-
-        // 将字符串数组转换成整型数组
-        int[] numbers = new int[line_part.Length - 1];
-        for (int i = 0; i < line_part.Length - 1; i++)
+        if (enableVoice)
         {
-            numbers[i] = (int)(int.Parse(line_part[i]) * 0.05);
+            // 设置Python脚本路径
+            string pythonScriptPath = "F:/DaisyDay/test.py";
+
+            // 要传递给Python的字符串
+            string stringArg1 = writeto;
+            string stringArg2 = Random3.ToString();
+            Debug.Log(stringArg2);
+            // 创建一个新的进程
+            Process pythonProcess = new Process();
+
+            // 设置Python解释器路径
+            pythonProcess.StartInfo.FileName = "python";
+
+            // 传递脚本路径和字符串参数
+            pythonProcess.StartInfo.Arguments = $"{pythonScriptPath} \"{stringArg1}\" \"{stringArg2}\"";
+
+            // 配置其他进程启动信息
+            pythonProcess.StartInfo.UseShellExecute = false;
+            pythonProcess.StartInfo.RedirectStandardOutput = true;
+            pythonProcess.StartInfo.RedirectStandardError = true;
+            pythonProcess.StartInfo.CreateNoWindow = true;
+
+            // 启动Python进程
+            pythonProcess.Start();
+
+            // 等待Python脚本执行完成
+            pythonProcess.WaitForExit();
+
+            // 获取Python输出（如果有）
+            string output = pythonProcess.StandardOutput.ReadToEnd();
+            string error = pythonProcess.StandardError.ReadToEnd();
+
+            Debug.Log("build time = " + output);
+            // 根据空格拆分成字符串数组
+            string[] line_part = output.Split(' ');
+
+            // 将字符串数组转换成整型数组
+            int[] numbers = new int[line_part.Length - 1];
+            for (int i = 0; i < line_part.Length - 1; i++)
+            {
+                numbers[i] = (int)(int.Parse(line_part[i]) * 0.05);
+            }
+
+            return numbers;
+        }
+        else
+        {
+            List<int> numbers = new List<int>();
+            for (int i = 0; i < subtitles.Count; i++)
+            {
+                numbers.Add(100);
+            }
+            return numbers.ToArray();
         }
 
-        return numbers;
     }
 
     private string audioClipPath = "Audio/model"; // 声音文件的路径，假设在Assets/Resources/Audio/mySound.wav
@@ -210,25 +232,25 @@ public class Apply2 : MonoBehaviour
     private AudioSource audioSource;
 
     private AudioClip modelClip;
+
+    private int Random3;
     void Start()
     {
+        Random3 = Random.Range(1000, 9999);
+        Debug.Log("r 3 = " +  Random3);
+
         parts = new List<GameObject>();
         ActiveParts = new List<ActivePart>();
-       int[] build_times =  GenerateComments();
+        int[] build_times = GenerateComments();
         int build_times_index = 0;
         int build_time = 0;
 
-       start_time = Time.time;
-       LoadAnimation("D:\\GameDe\\GLTFmodl\\magnet_shroom.animation.json");
-       mushMaterial = AddMaterial("Assets/Characters/Plants/split_pea.png");
+        start_time = Time.time;
+        LoadAnimation("D:\\GameDe\\GLTFmodl\\magnet_shroom.animation.json");
+        mushMaterial = AddMaterial("Assets/Characters/Plants/split_pea.png");
 
         audioSource = gameObject.AddComponent<AudioSource>();
-        modelClip = Resources.Load<AudioClip>(audioClipPath);
-        if(modelClip != null)
-        {
-            audioSource.clip = modelClip;
-            audioSource.Play();
-        }
+
 
         GameObject emptyObject2 = new GameObject("MyEmptyObject");
         emptyObject2.transform.position = new Vector3(0, 1, 0);
@@ -238,116 +260,107 @@ public class Apply2 : MonoBehaviour
         cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-2, 1, -2), new Vector3(-2, 1, -2), emptyObject2, new Vector3(0, 0, 0)));
         activeCount += build_time;
 
-        
-       for(int j = 0; j < parts.Count; j++)
-       {
-           GameObject part = parts[j];
 
+        for (int j = 0; j < parts.Count; j++)
+        {
+            GameObject part = parts[j];
+            // 处理字幕
+            int count = CountDirectChildCubes(part.transform);
+            if (count > 0)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    if (i < 4)
+                    {
+                        build_time = build_times[build_times_index++];
+                        activeCount += build_time;
+                    }
 
-
-           // 处理字幕
-           int count = CountDirectChildCubes(part.transform);
-           if(count > 0)
-           {
-               for (int i = 0; i  < count; i++)
-               {
-                   if(i < 4)
-                   {
-                       build_time = build_times[build_times_index++];
-                       activeCount += build_time;
-                   }
-
-                   Vector3 size = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
-                   ActiveParts.Add(new ActivePart(part.transform.name, 
-                   part.transform.GetChild(i).transform.name, activeCount - build_time, build_time, size,j, part.transform.GetChild(i).transform));
-                   GameObject emptyObject = new GameObject("MyEmptyObject");
-                   Vector3 bound = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.center;
-                   Vector3 ssize = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
-                   emptyObject.transform.position = bound;
-                   float mag = bound.magnitude;
-                   float bx = bound.x * Random.Range(1.5f, 2.5f) + mag * Random.Range(-0.2f, 0.2f);
-                   float by = bound.y * Random.Range(0.8f, 1.2f) + mag * Random.Range(-0.2f, 0.2f);
+                    Vector3 size = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
+                    ActiveParts.Add(new ActivePart(part.transform.name,
+                    part.transform.GetChild(i).transform.name, activeCount - build_time, build_time, size, j, part.transform.GetChild(i).transform));
+                    GameObject emptyObject = new GameObject("MyEmptyObject");
+                    Vector3 bound = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.center;
+                    Vector3 ssize = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
+                    emptyObject.transform.position = bound;
+                    float mag = bound.magnitude;
+                    float bx = bound.x * Random.Range(1.5f, 2.5f) + mag * Random.Range(-0.2f, 0.2f);
+                    float by = bound.y * Random.Range(0.8f, 1.2f) + mag * Random.Range(-0.2f, 0.2f);
                     float bz = bound.z * Random.Range(1.5f, 2.5f) + mag * Random.Range(-0.2f, 0.2f);
                     Vector3 bound2 = new Vector3(bx, by, bz);
                     cameras.Add(addCameraMove(activeCount - build_time, activeCount, bound2, bound2, emptyObject, new Vector3(0, 0, 0)));
-               }
-           }
-       }
-       
-       generatedAnimal.SetActive(true);
-
-       build_time = build_times[build_times_index++];
-       cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-2, 1, -2), new Vector3(2, 1, -2), emptyObject2, new Vector3(0, 0, 0)));
- }
-    
-
-private int FrameCount = 0;
-
-// Update is called once per frame
-void FixedUpdate()
-{
-   for (int i = 0; i < ActiveParts.Count; i++)
-   {
-       //Debug.Log(" active name = " + ActiveParts[i].name + " count " + ActiveParts[i].activeCount);
-       if(FrameCount == ActiveParts[i].activeStartFrame)
-       {
-           SetChildActive(generatedAnimal.transform, ActiveParts[i].name);
-       }
-       if(FrameCount >= ActiveParts[i].activeStartFrame && FrameCount < ActiveParts[i].activeStartFrame + ActiveParts[i].continueFrame)
-       {
-           float ratio = (FrameCount - ActiveParts[i].activeStartFrame)  * 1.2f / ActiveParts[i].continueFrame;
-           if(ratio > 1.0f) ratio = 1.0f;
-           Vector3 size= ActiveParts[i].size;
-           float[] localScale = new float[] { 1, 1, 1};
-           int maxIndex = 0;
-           if (size.y > size.x && size.y > size.z) maxIndex = 1;
-           if(size.z > size.y && size.z > size.x) maxIndex = 2;
-           localScale[maxIndex] = ratio;
-           SetChildLocalScale(generatedAnimal.transform, ActiveParts[i].name, new Vector3(localScale[0], localScale[1], localScale[2]));
-            
-       }
-       if (FrameCount == ActiveParts[i].activeStartFrame + activeCount)
-       {
-           SetChildMaterial(generatedAnimal.transform, ActiveParts[i].name, mushMaterial);
-       }
-   }
-
-   for(int i = 0; i < cameras.Count; i++)
-        {
-            if (cameras[i].Run(FrameCount))
-            {
-                break;
+                }
             }
         }
-   
-   float e_time = Time.time - start_time;
-   while(e_time >= vectorList[vectorList.Count - 1].x)
-   {
-       e_time -= vectorList[vectorList.Count - 1].x;
-   }
-   for (int i = 0;i < vectorList.Count - 1; i++)
-   {
-       if(e_time >= vectorList[i].x && e_time < vectorList[i + 1].x)
-       {
-           float r = (e_time - vectorList[i].x) / (vectorList[i + 1].x - vectorList[i].x);
-           float rx = (vectorList[i+1].y - vectorList[i].y)*r + vectorList[i].y  ;
-           float ry = (vectorList[i+1].z - vectorList[i].z)*r + vectorList[i].z ;
-           float rz = (vectorList[i+1].w - vectorList[i].w)*r + vectorList[i].w;
-          // RotateChild(generatedAnimal.transform, "01UpperBody", Quaternion.Euler(rx, ry, rz));
-       }
-   }
-   
-   FrameCount++;
-}
 
-void TraverseChildren(Transform parent)
-{
-   foreach (Transform child in parent)
-   {
-       TraverseChildren(child);
-   }
-   parts.Add(parent.gameObject);
-}
+        generatedAnimal.SetActive(true);
+
+        build_time = build_times[build_times_index++];
+        cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-2, 1, -2), new Vector3(2, 1, -2), emptyObject2, new Vector3(0, 0, 0)));
+    }
+
+
+    private int FrameCount = 0;
+    private int CheckAudioCount = 0;
+    private bool CheckAudio = false;
+
+    // Update is called once per frame
+    void FixedUpdate()
+    {
+        audioClipPath = "Audio/model_" + Random3.ToString();
+        CheckAudioCount++;
+        if (!CheckAudio && CheckAudioCount % 50 == 0 && CheckAudioCount > 200)
+        {
+            FrameCount = -1;
+            Debug.Log("Check Audio Failed " + CheckAudioCount);
+            modelClip = Resources.Load<AudioClip>(audioClipPath);
+            if (modelClip != null)
+            {
+                // 一旦加载成功，设置音频片段并开始播放
+                audioSource.clip = modelClip;
+                audioSource.Play();
+                CheckAudio = true;
+            }
+        }
+
+
+        for (int i = 0; i < ActiveParts.Count; i++)
+        {
+            if (FrameCount == ActiveParts[i].activeStartFrame)
+            {
+                SetChildActive(generatedAnimal.transform, ActiveParts[i].name);
+            }
+            if (FrameCount >= ActiveParts[i].activeStartFrame && FrameCount < ActiveParts[i].activeStartFrame + ActiveParts[i].continueFrame)
+            {
+                float ratio = (FrameCount - ActiveParts[i].activeStartFrame) * 1.2f / ActiveParts[i].continueFrame;
+                if (ratio > 1.0f) ratio = 1.0f;
+                Vector3 size = ActiveParts[i].size;
+                Vector3 scale = ActiveParts[i].transform.localScale;
+                float[] localScale = new float[] { size.x, size.y, size.z };
+                int maxIndex = 0;
+                if (size.y > size.x && size.y > size.z) maxIndex = 1;
+                if (size.z > size.y && size.z > size.x) maxIndex = 2;
+                localScale[maxIndex] = ratio * localScale[maxIndex];
+                SetChildLocalScale(generatedAnimal.transform, ActiveParts[i].name, new Vector3(localScale[0], localScale[1], localScale[2]));
+
+            }
+            if (FrameCount == ActiveParts[i].activeStartFrame + activeCount)
+            {
+                SetChildMaterial(generatedAnimal.transform, ActiveParts[i].name, mushMaterial);
+            }
+        }
+
+        FrameCount++;
+    }
+
+    void TraverseChildren(Transform parent)
+    {
+        foreach (Transform child in parent)
+        {
+            TraverseChildren(child);
+        }
+        parts.Add(parent.gameObject);
+    }
 
 
 
@@ -355,11 +368,11 @@ void TraverseChildren(Transform parent)
 
     // 由于是第一，所以必须说明_part
     // 每组中的第一个正方体  
-    string[] comment_base = { "i am going to create a base for his _part， i`ll make a _part like this", 
+    string[] comment_base = { "i am going to create a base for his _part， i`ll make a _part like this",
                                 " then i`ll add a base to start making his _part",
                                 "now i`m going to add _part",
-                                "to make the head I think it has to be another color",
-                                "he has a somewhat smiling head, so I would have to make it like this",
+                                "to make the _part I think it has to be another color",
+                                "he has a somewhat _desc _part, so I would have to make it like this",
                                 "these _part will be _desc ones like these",
                                 "I adjusted _part to make it more pointed",
                                 //"so I created with scarier _part much _desc_adj for _name looks like _desc_noun",
@@ -367,9 +380,9 @@ void TraverseChildren(Transform parent)
                                 "i`ll made his _part and then added all the details",
                                 "then i went to the part of the _part",
                                 "and on _dir of it, the _part part",
-                                "so I will create here and pull a cube down to make the legs",
+                                "so I will create here and pull a cube down to make the _part",
                                 "this part here is the _part",
-                                "I'll start by making this _desc piece of _like"};
+                                "I'll start by making this _desc piece of _part"};
 
     string[] comment = { " we need a large _part",
                         " and _dir next a slightly a _desc _part",
@@ -378,9 +391,9 @@ void TraverseChildren(Transform parent)
                         " and the _part !!!",
                         "pull one more",
                         "add a cube here",
-                        "we will bring a _part", 
-                        "then add some realistic _part to it", 
-                         "so we will make it a _part", 
+                        "we will bring a _part",
+                        "then add some realistic _part to it",
+                         "so we will make it a _part",
                          "and stretch one more time",
                          "just stretch the _desc one",
                          "and another bigger cube",
@@ -396,7 +409,7 @@ void TraverseChildren(Transform parent)
                                 "so let's see how this turned out in mind", "and our catnap is ready look how it turned out"};
 
     string[] comment_color = { "I'm going to start doing the texture. and start painting him the color he is. in this case it's orange",
-                                "his belly will be a slightly different color", 
+                                "his belly will be a slightly different color",
                                 "I will also start texturing her body", "I use a very good style to make texture",};
     string[] comment_duplicate = { "I duplicated the _part to the other side",
     "select and duplicate to the other side"};

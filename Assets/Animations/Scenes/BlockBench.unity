@@ -426,7 +426,7 @@ GameObject:
   - component: {fileID: 949920939}
   - component: {fileID: 949920938}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -444,7 +444,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1cd25cae71c22794f8b5dab3d7370733, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateStory: 1
+  enableRandomModel: 1
+  enableVoice: 1
 --- !u!4 &949920939
 Transform:
   m_ObjectHideFlags: 0
