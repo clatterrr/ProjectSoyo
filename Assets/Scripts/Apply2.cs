@@ -220,7 +220,7 @@ public class Apply2 : MonoBehaviour
             List<int> numbers = new List<int>();
             for (int i = 0; i < subtitles.Count; i++)
             {
-                numbers.Add(100);
+                numbers.Add(0);
             }
             return numbers.ToArray();
         }
@@ -307,21 +307,25 @@ public class Apply2 : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        audioClipPath = "Audio/model_" + Random3.ToString();
-        CheckAudioCount++;
-        if (!CheckAudio && CheckAudioCount % 50 == 0 && CheckAudioCount > 200)
+        if (enableVoice)
         {
-            FrameCount = -1;
-            Debug.Log("Check Audio Failed " + CheckAudioCount);
-            modelClip = Resources.Load<AudioClip>(audioClipPath);
-            if (modelClip != null)
+            audioClipPath = "Audio/model_" + Random3.ToString();
+            CheckAudioCount++;
+            if (!CheckAudio && CheckAudioCount % 50 == 0 && CheckAudioCount > 200)
             {
-                // 一旦加载成功，设置音频片段并开始播放
-                audioSource.clip = modelClip;
-                audioSource.Play();
-                CheckAudio = true;
+                FrameCount = -1;
+                Debug.Log("Check Audio Failed " + CheckAudioCount);
+                modelClip = Resources.Load<AudioClip>(audioClipPath);
+                if (modelClip != null)
+                {
+                    // 一旦加载成功，设置音频片段并开始播放
+                    audioSource.clip = modelClip;
+                    audioSource.Play();
+                    CheckAudio = true;
+                }
             }
         }
+
 
 
         for (int i = 0; i < ActiveParts.Count; i++)

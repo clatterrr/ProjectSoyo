@@ -1,7 +1,9 @@
+using Palmmedia.ReportGenerator.Core;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-
+using static TextureGenerator;
 public class HumanoidGenerator : MonoBehaviour
 {
     public enum BodyPartName
@@ -14,6 +16,9 @@ public class HumanoidGenerator : MonoBehaviour
         RightLeg,
         HatBottom,
         HatTop,
+        LeftEye,
+        RightEye,
+        Mouth,   
     }
 
     public struct BodyPart
@@ -82,7 +87,46 @@ public class HumanoidGenerator : MonoBehaviour
 
             return new Vector3(x, y, z);
         }
+
+        public Vector3 FrontLeftConntector()
+        {
+
+            float x = actor.transform.position.x + actor.transform.localScale.y / 4;
+            float y = actor.transform.position.y + actor.transform.localScale.y / 4;
+            float z = actor.transform.position.z + actor.transform.localScale.z / 2;
+
+            return new Vector3(x, y, z);
+        }
+
+        public Vector3 HeadMouthConntector()
+        {
+
+            float x = actor.transform.position.x;
+            float y = actor.transform.position.y - actor.transform.localScale.y / 4;
+            float z = actor.transform.position.z + actor.transform.localScale.z / 2;
+
+            return new Vector3(x, y, z);
+        }
+
+        public Vector3 FrontRightEyeConntector()
+        {
+
+            float x = actor.transform.position.x - actor.transform.localScale.y / 4;
+            float y = actor.transform.position.y + actor.transform.localScale.y / 4;
+            float z = actor.transform.position.z + actor.transform.localScale.z / 2;
+            return new Vector3(x, y, z);
+        }
+
+        public Vector3 BackCenterConntector()
+        {
+
+            float x = actor.transform.position.x;
+            float y = actor.transform.position.y;
+            float z = actor.transform.position.z - actor.transform.localScale.z / 2;
+            return new Vector3(x, y, z);
+        }
     }
+
 
     public static BodyPart FindBodyPart(List<BodyPart> parts,BodyPartName name)
     {
@@ -99,6 +143,18 @@ public class HumanoidGenerator : MonoBehaviour
     private void Start()
     {
         CreateHumaoid();
+
+        // 形状： 立方体，圆形，链条状，立方体半中空，立方体全中空，后端尖，后端扁平
+        // 额外附件：有显示屏，有按钮，有天线，有藤蔓，有火焰
+
+        // 眼睛：深凹陷，突出，两侧，无
+
+        // 衣服：元素 肌肉
+        // 翅膀
+        // 角， 长短
+
+
+        string[] wooden = { "leaves", "branches" };
     }
 
     public static GameObject CreateHumaoid()
@@ -134,6 +190,10 @@ public class HumanoidGenerator : MonoBehaviour
 
         CreatePart(parts, BodyPartName.HatBottom, Vector3.zero, 0.1f, 0.1f, 0.1f);
         CreatePart(parts, BodyPartName.HatTop, Vector3.zero, 0.05f, 0.05f, 0.05f);
+
+
+        CreatePart(parts, BodyPartName.LeftEye, Vector3.zero, scale, scale, 0.1f * scale);
+        CreatePart(parts, BodyPartName.RightEye, Vector3.zero, scale, scale, 0.1f *  scale);
 
         // 创建一个新的空的 GameObject 作为父物体
         GameObject parentObject = new GameObject("PartsParent");
@@ -255,7 +315,7 @@ public class HumanoidGenerator : MonoBehaviour
         return combinedObject;
     }
 
-    public static GameObject CreateCube()
+    public static Material generateMaterial()
     {
         // 创建一个新的 2x2 大小的 Texture2D
         Texture2D greenTexture = new Texture2D(2, 2);
@@ -269,14 +329,28 @@ public class HumanoidGenerator : MonoBehaviour
             }
         }
 
+        greenTexture.SetPixel(0, 0, Color.black);
+        greenTexture.SetPixel(1, 0, Color.white);
+        greenTexture.SetPixel(0, 1, Color.black);
+        greenTexture.SetPixel(1, 1, Color.black);
+
         // 应用更改，使得设置的像素生效
         greenTexture.Apply();
+        greenTexture.filterMode = FilterMode.Point;
+        //greenTexture = GeneratePoissonNoise();
 
         // 创建一个新的材质，使用 Unity 默认的 Shader
         Material greenMaterial = new Material(Shader.Find("Standard"));
 
         // 将刚创建的绿色纹理赋给材质的 mainTexture
         greenMaterial.mainTexture = greenTexture;
+
+        return greenMaterial;
+    }
+
+    public static GameObject CreateCube()
+    {
+
 
 
         // 创建一个空的 GameObject
@@ -285,7 +359,7 @@ public class HumanoidGenerator : MonoBehaviour
         // 给它添加 MeshFilter 和 MeshRenderer 组件
         MeshFilter meshFilter = part.AddComponent<MeshFilter>(); 
         MeshRenderer renderer =  part.AddComponent<MeshRenderer>();
-        renderer.material = greenMaterial;
+        //renderer.material = GeneratePoissonNoise();
 
 
         // 创建新的 Mesh
@@ -444,6 +518,37 @@ public class HumanoidGenerator : MonoBehaviour
                     thePart = new BodyPart(part, partName);
                     Vector3 offset = FindBodyPart(parts, BodyPartName.HatBottom).TopCenterConnector() - thePart.BottomCenterConnector();
                     thePart.actor.transform.localPosition += offset;
+                    break;
+                }
+            case BodyPartName.LeftEye:
+                {
+                    part = CreateCube();
+                    part.transform.localPosition = position;
+                    part.transform.localScale = new Vector3(width, height, depth);
+                    part.GetComponent<MeshRenderer>().material = generateMaterial();
+                    thePart = new BodyPart(part, partName);
+                    Vector3 offset = FindBodyPart(parts, BodyPartName.Head).FrontLeftConntector() - thePart.BackCenterConntector();
+                    thePart.actor.transform.localPosition += offset;
+                    break;
+                }
+            case BodyPartName.RightEye:
+                {
+                    part = CreateCube();
+                    part.transform.localPosition = position;
+                    part.transform.localScale = new Vector3(width, height, depth);
+                    part.GetComponent<MeshRenderer>().material = generateMaterial();
+                    thePart = new BodyPart(part, partName);
+                    Vector3 offset = FindBodyPart(parts, BodyPartName.Head).FrontRightEyeConntector() - thePart.BackCenterConntector();
+                    thePart.actor.transform.localPosition += offset;
+                    break;
+                }
+            case BodyPartName.Body:
+                {
+                    part = CreateCube();
+                    part.transform.localPosition = position;
+                    part.transform.localScale = new Vector3(width, height, depth);
+                    part.GetComponent<MeshRenderer>().material.mainTexture = CreateWaterTexture(8,8);
+                    thePart = new BodyPart(part, partName);
                     break;
                 }
             default:

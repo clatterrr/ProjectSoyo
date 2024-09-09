@@ -445,7 +445,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableRandomModel: 1
-  enableVoice: 1
+  enableVoice: 0
 --- !u!4 &949920939
 Transform:
   m_ObjectHideFlags: 0
