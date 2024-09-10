@@ -1,12 +1,16 @@
 using Palmmedia.ReportGenerator.Core;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using TMPro;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using static HumanoidGenerator;
 using static Structure;
 using static TextureEditor;
+using Color = UnityEngine.Color;
+
 public class HumanoidGenerator : MonoBehaviour
 {
     public enum BodyPartName
@@ -143,15 +147,12 @@ public class HumanoidGenerator : MonoBehaviour
         return parts[0];
     }
 
-    private static GameObject sourceModel;
-    private static Texture2D sourceTexture;
 
     private void Start()
     {
         
-        sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/iron_golem.prefab");
-        sourceTexture = LoadTexture("Assets/iron_golem.png");
-        CreateHumaoid();
+       
+        //CreateHumaoid();
 
         // 形状： 立方体，圆形，链条状，立方体半中空，立方体全中空，后端尖，后端扁平
         // 额外附件：有显示屏，有按钮，有天线，有藤蔓，有火焰
@@ -166,7 +167,7 @@ public class HumanoidGenerator : MonoBehaviour
         string[] wooden = { "leaves", "branches" };
     }
 
-    public static GameObject CreateHumaoid()
+    public static GameObject CreateHumaoid(string modelName, GameObject sourceModel, Texture2D sourceTexture)
     {
         List<BodyPart> parts = new List<BodyPart>();
 
@@ -180,31 +181,31 @@ public class HumanoidGenerator : MonoBehaviour
         width = Random.Range(4, 6) * scale;
         height = Random.Range(4, 12) * scale;
         depth = Random.Range(4, 6) * scale;
-        CreatePart(parts, BodyPartName.Body, Vector3.zero, width, height, depth);
-      
-        width = Random.Range(2, 4) * scale;
-        height = Random.Range(2, 6) * scale;
-        depth = Random.Range(2, 4) * scale;
-        CreatePart(parts, BodyPartName.Head, Vector3.zero, width, height, depth);  
+        CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.Body, Vector3.zero, width, height, depth);
         
-        width = Random.Range(2, 4) * scale;
-        height = Random.Range(6, 10) * scale;
-        depth = Random.Range(2, 4) * scale;
-        CreatePart(parts, BodyPartName.LeftArm, Vector3.zero, width, height, depth);
-        CreatePart(parts, BodyPartName.RightArm, Vector3.zero, width, height, depth);
-        width = Random.Range(2, 4) * scale;
-        height = Random.Range(6, 10) * scale;
-        depth = Random.Range(2, 4) * scale;
-        CreatePart(parts, BodyPartName.LeftLeg, Vector3.zero, width, height, depth);
-        CreatePart(parts, BodyPartName.RightLeg, Vector3.zero, width, height, depth);
+         width = Random.Range(2, 4) * scale;
+         height = Random.Range(2, 6) * scale;
+         depth = Random.Range(2, 4) * scale;
+         CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.Head, Vector3.zero, width, height, depth);  
+
+         width = Random.Range(2, 4) * scale;
+         height = Random.Range(6, 10) * scale;
+         depth = Random.Range(2, 4) * scale;
+         CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.LeftArm, Vector3.zero, width, height, depth);
+         CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.RightArm, Vector3.zero, width, height, depth);
+         width = Random.Range(2, 4) * scale;
+         height = Random.Range(6, 10) * scale;
+         depth = Random.Range(2, 4) * scale;
+         CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.LeftLeg, Vector3.zero, width, height, depth);
+         CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.RightLeg, Vector3.zero, width, height, depth);
         /*
-        CreatePart(parts, BodyPartName.HatBottom, Vector3.zero, 0.1f, 0.1f, 0.1f);
-        CreatePart(parts, BodyPartName.HatTop, Vector3.zero, 0.05f, 0.05f, 0.05f);
+         CreatePart(parts, BodyPartName.HatBottom, Vector3.zero, 0.1f, 0.1f, 0.1f);
+         CreatePart(parts, BodyPartName.HatTop, Vector3.zero, 0.05f, 0.05f, 0.05f);
 
 
-        CreatePart(parts, BodyPartName.LeftEye, Vector3.zero, scale, scale, 0.1f * scale);
-        CreatePart(parts, BodyPartName.RightEye, Vector3.zero, scale, scale, 0.1f *  scale);
-        */
+         CreatePart(parts, BodyPartName.LeftEye, Vector3.zero, scale, scale, 0.1f * scale);
+         CreatePart(parts, BodyPartName.RightEye, Vector3.zero, scale, scale, 0.1f *  scale);
+       */
 
         // 创建一个新的空的 GameObject 作为父物体
         GameObject parentObject = new GameObject("PartsParent");
@@ -472,15 +473,46 @@ public class HumanoidGenerator : MonoBehaviour
         }
         RecomputeUV2(uvs, new int[] { 0, 1, 2, 3 }, new Uint2(size.z, 0), new Uint2(size.x, size.y), tSize);
         RecomputeUV2(uvs, new int[] { 4, 5, 6, 7 }, new Uint2(size.z + size.z + size.x, 0), new Uint2(size.x, size.y), tSize);
-        RecomputeUV2(uvs, new int[] { 8, 9, 10, 11 }, new Uint2(0, 0), new Uint2(size.z, size.y), tSize);
-        RecomputeUV2(uvs, new int[] { 12, 13, 14, 15 }, new Uint2(size.x + size.z, 0), new Uint2(size.z, size.y), tSize);
+        RecomputeUV2(uvs, new int[] { 11, 8, 9, 10 }, new Uint2(0, 0), new Uint2(size.z, size.y), tSize);
+        RecomputeUV2(uvs, new int[] {  12, 15, 14, 13 }, new Uint2(size.x + size.z, 0), new Uint2(size.z, size.y), tSize);
         RecomputeUV2(uvs, new int[] { 16, 17, 18, 19 }, new Uint2(size.z, size.y), new Uint2(size.z, size.x), tSize);
         RecomputeUV2(uvs, new int[] { 20, 21, 22, 23 }, new Uint2(size.x + size.z, size.y), new Uint2(size.z, size.x), tSize);
         return uvs;
     }
-    public static void CreatePart(List<BodyPart> parts, BodyPartName partName, Vector3 position, float width, float height, float depth)
-    {
 
+    // 将Texture2D保存为PNG文件
+    private static void SaveTextureToPNG(Texture2D texture, string path)
+    {
+        // 获取Texture的字节数据并保存为PNG
+        byte[] textureBytes = texture.EncodeToPNG();
+        File.WriteAllBytes(path, textureBytes);
+
+        // 将PNG文件导入为Texture资源
+        AssetDatabase.ImportAsset(path);
+    }
+
+    private static void SavePart(GameObject actor, Texture2D sourceTexture, GameObject sourceModel,
+        HumanoidGenerator.BodyPartName bodyPartName, Uint3 size, string modelName)
+    {
+        string part_name = "";
+        switch (bodyPartName)
+        {
+            case HumanoidGenerator.BodyPartName.Body: part_name = "Body"; break;
+            case HumanoidGenerator.BodyPartName.Head: part_name = "Head"; break;
+            case HumanoidGenerator.BodyPartName.LeftArm: part_name = "LeftArm"; break;
+            case HumanoidGenerator.BodyPartName.RightArm: part_name = "RightArm"; break;
+            case HumanoidGenerator.BodyPartName.LeftLeg: part_name = "LeftLeg"; break;
+            case HumanoidGenerator.BodyPartName.RightLeg: part_name = "RightLeg"; break;
+            default: break;
+        }
+        Material tempM = ExpectMaterial(sourceTexture, sourceModel, bodyPartName, size);
+        SaveTextureToPNG((Texture2D)tempM.mainTexture, "Assets/Temp/" + modelName + "_" + part_name + ".png");
+        AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName + "_" + part_name + ".mat");
+        AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName + "_" + part_name + ".mesh");
+    }
+    public static void CreatePart(string modelName, GameObject sourceModel, 
+        Texture2D sourceTexture, List<BodyPart> parts, BodyPartName partName, Vector3 position, float width, float height, float depth)
+    {
         GameObject part ;
         BodyPart thePart;
 
@@ -494,6 +526,7 @@ public class HumanoidGenerator : MonoBehaviour
                     Uint3 size = new Uint3(8, 8, 8);
                     part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                     part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.Head, size);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.Head, size, modelName);
 
                     thePart = new BodyPart(part, partName);
                     BodyPart body = FindBodyPart(parts, BodyPartName.Body);
@@ -510,6 +543,7 @@ public class HumanoidGenerator : MonoBehaviour
                     Uint3 size = new Uint3(8, 8, 8);
                     part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                     part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.LeftArm, size);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.LeftArm, size, modelName);
 
                     thePart = new BodyPart(part, partName);
                     BodyPart body = FindBodyPart(parts, BodyPartName.Body);
@@ -526,6 +560,7 @@ public class HumanoidGenerator : MonoBehaviour
                     Uint3 size = new Uint3(8, 8, 8);
                     part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                     part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightArm, size);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightArm, size, modelName);
 
                     thePart = new BodyPart(part, partName);
                     BodyPart body = FindBodyPart(parts, BodyPartName.Body);
@@ -542,6 +577,7 @@ public class HumanoidGenerator : MonoBehaviour
                     Uint3 size = new Uint3(8, 8, 8);
                     part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                     part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.LeftLeg, size);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.LeftLeg, size, modelName);
 
                     thePart = new BodyPart(part, partName);
                     BodyPart body = FindBodyPart(parts, BodyPartName.Body);
@@ -558,6 +594,7 @@ public class HumanoidGenerator : MonoBehaviour
                     Uint3 size = new Uint3(8, 8, 8);
                     part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                     part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightLeg, size);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightLeg, size, modelName);
 
                     thePart = new BodyPart(part, partName);
                     BodyPart body = FindBodyPart(parts, BodyPartName.Body);
@@ -624,6 +661,7 @@ public class HumanoidGenerator : MonoBehaviour
                     Uint3 size = new Uint3(8,8,8);
                     part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                     part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.Body, size);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.Body, size, modelName);
                     thePart = new BodyPart(part, partName);
                     break;
                 }
@@ -640,6 +678,7 @@ public class HumanoidGenerator : MonoBehaviour
         
 
         parts.Add(thePart);
-
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
     }
 }

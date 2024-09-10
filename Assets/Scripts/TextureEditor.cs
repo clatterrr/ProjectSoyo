@@ -129,15 +129,11 @@ public class TextureEditor
             case HumanoidGenerator.BodyPartName.RightLeg: bodyPartNameString = "right_leg"; break;
             default: break;
         }
-        Debug.Log("body part name = " + bodyPartNameString);
 
         Vector2 sourceStartFloat = FindChildUVStart(sourceModel, bodyPartNameString);
-        Debug.Log(" sourceStartFloat " + sourceStartFloat.ToString("f4"));
         Uint2 sourceStart = new Uint2((uint)(sourceStartFloat.x * sourceTexture.width), (uint)(sourceStartFloat.y * sourceTexture.height));
         Vector3 sourceSizeFloat = FindChildBounds(sourceModel, bodyPartNameString);
         Uint3 sourceSize = new Uint3((uint)(sourceSizeFloat.x * 16.01), (uint)(sourceSizeFloat.y * 16.01), (uint)(sourceSizeFloat.z * 16.01));
-
-        Debug.Log(" sourceSize " + sourceSize.ToString());
 
         Uint2 start0;
         Uint2 start1;
@@ -162,7 +158,7 @@ public class TextureEditor
         start1 = new Uint2(size.z, 0);
         size0 = new Uint2(sourceSize.x, sourceSize.y);
         size1 = new Uint2(size.x, size.y);
-        ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
+     ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
 
         
 
@@ -171,7 +167,7 @@ public class TextureEditor
         start1 = new Uint2(size.z * 2 + size.x, 0);
         size0 = new Uint2(sourceSize.x, sourceSize.y);
         size1 = new Uint2(size.x, size.y);
-      ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
+     ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
 
         //left
         start0 = sourceStart;
@@ -185,24 +181,25 @@ public class TextureEditor
         start1 = new Uint2(size.z + size.x, 0);
         size0 = new Uint2(sourceSize.z, sourceSize.y);
         size1 = new Uint2(size.z, size.y);
-      ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
+   ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
 
         //up
         start0 = sourceStart + new Uint2(sourceSize.z, sourceSize.y);
         start1 = new Uint2(size.z, size.y);
-        size0 = new Uint2(sourceSize.z, sourceSize.x);
-        size1 = new Uint2(size.z, size.x);
-        ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
+        size0 = new Uint2(sourceSize.x, sourceSize.z);
+        size1 = new Uint2(size.x, size.z);
+      ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
 
         //down
         start0 = sourceStart + new Uint2(sourceSize.z + sourceSize.x, sourceSize.y);
         start1 = new Uint2(size.z + size.x, size.y);
-        size0 = new Uint2(sourceSize.z, sourceSize.x);
-        size1 = new Uint2(size.z, size.x);
-        ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
+        size0 = new Uint2(sourceSize.x, sourceSize.z);
+        size1 = new Uint2(size.x, size.z);
+      ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
 
-        SaveTextureAsPNG(texture, "Assets/ModifiedTexture2.png");
+      //  SaveTextureAsPNG(texture, "Assets/ModifiedTexture2.png");
         material.mainTexture = texture;
+        
         return material;
     }
 
@@ -242,7 +239,7 @@ public class TextureEditor
                 }
                 else if (i == targetHeight - 1)
                 {
-                    CopyY = sourceWidth - 1;
+                    CopyY = sourceHeight - 1;
                 }
                 else if (i < yOffset)
                 {
@@ -282,7 +279,6 @@ public class TextureEditor
                 {
                     int featureWidth = featureXEnd - featureXStart;
                     int xOffset = (sourceWidth - featureWidth) / 2;
-                    Debug.Log("x offset = " + xOffset + " fw = " + featureWidth);
                     if(j == 0)
                     {
                         CopyX = 0;
@@ -302,10 +298,10 @@ public class TextureEditor
                     }
                 }
                 targetColors[i, j] = SourceTexture.GetPixel(sourceStartX + CopyX, sourceStartY + CopyY);
-               Debug.Log(" i = " + i + " j = " + j);
-               Debug.Log("CopyX = " + CopyX + " CopY" + CopyY);
-              Debug.Log("Final " + (sourceStartX + CopyX) + " Y = " + (sourceStartY + CopyY));
-              Debug.Log("RGBA = " + SourceTexture.GetPixel(sourceStartX + CopyX, sourceStartY + CopyY));
+             //  Debug.Log(" i = " + i + " j = " + j);
+            //   Debug.Log("CopyX = " + CopyX + " CopY" + CopyY);
+            //  Debug.Log("Final " + (sourceStartX + CopyX) + " Y = " + (sourceStartY + CopyY));
+           //   Debug.Log("RGBA = " + SourceTexture.GetPixel(sourceStartX + CopyX, sourceStartY + CopyY));
                 modifiedTexture.SetPixel(j, i, SourceTexture.GetPixel(sourceStartX + CopyX, sourceStartY + CopyY));
             }
         }
@@ -313,7 +309,7 @@ public class TextureEditor
      
         modifiedTexture.Apply();
         // 将修改后的纹理保存为 PNG 文件
-        SaveTextureAsPNG(modifiedTexture, outputFilePath);
+       // SaveTextureAsPNG(modifiedTexture, outputFilePath);
 
         return targetColors;
     }
@@ -323,11 +319,6 @@ public class TextureEditor
         // 0.25 就是4
         // Body 就是 8， 12， 4，也就是 0.5, 0.75, 0.25 
         //Debug.Log(part.GetComponent<MeshRenderer>().bounds.size.ToString("f6"));
-        if (texture == null)
-        {
-            Debug.LogError("请分配一个纹理！");
-            return;
-        }
         // 创建纹理的副本，避免修改原始纹理
 
         //OutputTargetTexture(10, 6, 8, 64 - 16, 8, 8, 1, 1, 1, 1);

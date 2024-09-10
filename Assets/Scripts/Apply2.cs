@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 using static HumanoidGenerator;
-
+using UnityEngine.SceneManagement;
 public class Apply2 : MonoBehaviour
 {
     private List<GameObject> parts;
@@ -32,20 +32,50 @@ public class Apply2 : MonoBehaviour
         public string name;
         public int index;
         public int activeStartFrame;
-        public int continueFrame;
+        public int buildFrame;
         public Vector3 size;
         public Transform transform;
+        public Material material;
+        public bool modelMode;
 
-        public ActivePart(string parentName, string name, int activeStartFrame, int continueFrame, Vector3 size, int index, Transform transform)
+        public ActivePart(string parentName, GameObject child, int activeStartFrame, int buildFrame, Vector3 size, int index)
         {
-            this.name
-                = name;
+            this.name  = child.name;
             this.activeStartFrame = activeStartFrame;
             this.parentName = parentName;
             this.index = index;
-            this.continueFrame = continueFrame;
+            this.buildFrame = buildFrame;
             this.size = size;
-            this.transform = transform;
+            this.transform =child.transform;
+            if(child.GetComponent<MeshRenderer>() != null)
+            {
+                material = child.GetComponent<MeshRenderer>().material;
+            }
+            else
+            {
+                material = null;
+            }
+            this.modelMode = true;
+        }
+
+        public ActivePart(GameObject pa, int activeStartFrame, int buildFrame)
+        {
+            this.name = pa.name;
+            this.activeStartFrame = activeStartFrame;
+            this.parentName = pa.name;
+            this.index = 0;
+            this.buildFrame = buildFrame;
+            this.size = Vector3.zero;
+            this.transform = pa.transform;
+            if (pa.GetComponent<MeshRenderer>() != null)
+            {
+                material = pa.GetComponent<MeshRenderer>().material;
+            }
+            else
+            {
+                material = null;
+            }
+            this.modelMode = false;
         }
     }
 
@@ -72,15 +102,78 @@ public class Apply2 : MonoBehaviour
         }
     }
 
+    string GetBaseColor(float r, float g, float b)
+    {
+        if (Mathf.Abs(r - g) <= 0.1 && r - b >= 0.1 && g - b >= 0.1) return "yellow";    // 红+绿=黄
+        if (Mathf.Abs(r - b) <= 0.1 && r - g >= 0.1 && b - g >= 0.1) return "pink";   // 红+蓝=品红
+        if (Mathf.Abs(g - b) <= 0.1 && g - r >= 0.1 && b - r >= 0.1) return "cyan";      // 绿+蓝=青
+
+        if (r > g && r > b) return "red";
+        if (g > r && g > b) return "green";
+        if (b > r && b > g) return "blue";
+
+        return "gray"; // 如果三者接近，输出灰色
+    }
+
+    Color GetMainColor(Texture2D tex)
+    {
+
+        Dictionary<Color, int> colorCounts = new Dictionary<Color, int>();
+        Color[] pixels = tex.GetPixels(); // Get all the pixels from the texture
+
+        // Traverse all pixels
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            Color pixel = pixels[i];
+
+            // Ignore fully transparent pixels
+            if (pixel.a != 1.0) continue;
+            // Quantize the RGB values to 17 discrete levels (0, 16, 32, ..., 240)
+            Color quantizedColor = new Color(
+                Mathf.Floor(pixel.r * 255 / 16) * 16 / 255f,
+                Mathf.Floor(pixel.g * 255 / 16) * 16 / 255f,
+                Mathf.Floor(pixel.b * 255 / 16) * 16 / 255f,
+                pixel.a // Keep alpha as it is
+            );
+
+            // Count the occurrence of the quantized color
+            if (colorCounts.ContainsKey(quantizedColor))
+                colorCounts[quantizedColor]++;
+            else
+                colorCounts[quantizedColor] = 1;
+        }
+
+        // Find the most common color
+        Color mainColor = Color.clear;
+        int maxCount = 0;
+
+        foreach (var colorCount in colorCounts)
+        {
+            if (colorCount.Value > maxCount)
+            {
+                maxCount = colorCount.Value;
+                mainColor = colorCount.Key;
+            }
+        }
+
+        return mainColor;
+    }
 
     GameObject generatedAnimal;
 
     int[] GenerateComments()
     {
-        string prefab_name = "SplitPea";
+        string prefab_name = "BlackGoldenGolem";
+
+        GameObject sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/iron_golem.prefab");
+        Texture2D sourceTexture = LoadTexture("Assets/guard.png");
         if (enableRandomModel)
         {
-            generatedAnimal = HumanoidGenerator.CreateHumaoid();
+            generatedAnimal = HumanoidGenerator.CreateHumaoid(prefab_name, sourceModel, sourceTexture);
+            DataTransfer.messageToPass = "Assets/guard.prefab";
+            DataTransfer.prefabName = prefab_name;
+            DataTransfer.modelOffset = new Vector3(0, FindModelOffset(generatedAnimal.transform), 0);
+            PrefabUtility.SaveAsPrefabAsset(generatedAnimal, DataTransfer.messageToPass);
             TraverseChildren(generatedAnimal.transform);
         }
         else
@@ -152,10 +245,16 @@ public class Apply2 : MonoBehaviour
                             subtitles.Add(AddModelSub(comment.ToArray(), placer));
                         }
 
-                        Debug.Log(" parent name =" + part.transform.name + " child index = " + i + " comment " + subtitles[subtitles.Count - 1]);
+                        Debug.Log("name = " + part.transform.name + " child index = " + i + " comment === " + subtitles[subtitles.Count - 1]);
 
                     }
                 }
+
+                placer.name = part.name;
+                Color mainColor = GetMainColor((Texture2D)part.transform.GetChild(0).GetComponent<MeshRenderer>().material.mainTexture);
+                placer.color = GetBaseColor(mainColor.r, mainColor.g, mainColor.b);
+                subtitles.Add(AddModelSub(comment_color.ToArray(), placer)); 
+                Debug.Log(" parent name =" + part.transform.name + " color special comment === " + subtitles[subtitles.Count - 1]);
             }
         }
 
@@ -220,7 +319,7 @@ public class Apply2 : MonoBehaviour
             List<int> numbers = new List<int>();
             for (int i = 0; i < subtitles.Count; i++)
             {
-                numbers.Add(0);
+                numbers.Add(20);
             }
             return numbers.ToArray();
         }
@@ -278,18 +377,23 @@ public class Apply2 : MonoBehaviour
 
                     Vector3 size = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
                     ActiveParts.Add(new ActivePart(part.transform.name,
-                    part.transform.GetChild(i).transform.name, activeCount - build_time, build_time, size, j, part.transform.GetChild(i).transform));
+                    part.transform.GetChild(i).gameObject, activeCount - build_time, build_time, size, j));
                     GameObject emptyObject = new GameObject("MyEmptyObject");
                     Vector3 bound = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.center;
                     Vector3 ssize = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
                     emptyObject.transform.position = bound;
-                    float mag = bound.magnitude;
+                    float mag = ssize.magnitude * 10;
                     float bx = bound.x * Random.Range(1.5f, 2.5f) + mag * Random.Range(-0.2f, 0.2f);
                     float by = bound.y * Random.Range(0.8f, 1.2f) + mag * Random.Range(-0.2f, 0.2f);
                     float bz = bound.z * Random.Range(1.5f, 2.5f) + mag * Random.Range(-0.2f, 0.2f);
                     Vector3 bound2 = new Vector3(bx, by, bz);
                     cameras.Add(addCameraMove(activeCount - build_time, activeCount, bound2, bound2, emptyObject, new Vector3(0, 0, 0)));
                 }
+
+                build_time = build_times[build_times_index++];
+                activeCount += build_time;
+                ActiveParts.Add(new ActivePart(part.transform.GetChild(0).gameObject, activeCount - build_time, build_time));
+                cameras[cameras.Count - 1].AddBuildTime(build_time);
             }
         }
 
@@ -330,31 +434,52 @@ public class Apply2 : MonoBehaviour
 
         for (int i = 0; i < ActiveParts.Count; i++)
         {
-            if (FrameCount == ActiveParts[i].activeStartFrame)
+            int frame0 = ActiveParts[i].activeStartFrame;
+            int frame1 = ActiveParts[i].activeStartFrame + ActiveParts[i].buildFrame;
+            if (FrameCount == frame0)
             {
-                SetChildActive(generatedAnimal.transform, ActiveParts[i].name);
+                if (ActiveParts[i].modelMode)
+                {
+                    SetChildActive(generatedAnimal.transform, ActiveParts[i].name);
+                    SetChildMaterial(generatedAnimal.transform, ActiveParts[i].name, mushMaterial);
+                }
+                else
+                {
+                    SetChildMaterial(generatedAnimal.transform, ActiveParts[i].name, ActiveParts[i].material);
+                }
             }
-            if (FrameCount >= ActiveParts[i].activeStartFrame && FrameCount < ActiveParts[i].activeStartFrame + ActiveParts[i].continueFrame)
+            if (FrameCount >= frame0 && FrameCount < frame1)
             {
-                float ratio = (FrameCount - ActiveParts[i].activeStartFrame) * 1.2f / ActiveParts[i].continueFrame;
-                if (ratio > 1.0f) ratio = 1.0f;
-                Vector3 size = ActiveParts[i].size;
-                Vector3 scale = ActiveParts[i].transform.localScale;
-                float[] localScale = new float[] { size.x, size.y, size.z };
-                int maxIndex = 0;
-                if (size.y > size.x && size.y > size.z) maxIndex = 1;
-                if (size.z > size.y && size.z > size.x) maxIndex = 2;
-                localScale[maxIndex] = ratio * localScale[maxIndex];
-                SetChildLocalScale(generatedAnimal.transform, ActiveParts[i].name, new Vector3(localScale[0], localScale[1], localScale[2]));
+                if (ActiveParts[i].modelMode)
+                {
+                    float ratio = (FrameCount - frame0) * 1.2f / ActiveParts[i].buildFrame;
+                    if (ratio > 1.0f) ratio = 1.0f;
+                    Vector3 size = ActiveParts[i].size;
+                    Vector3 scale = ActiveParts[i].transform.localScale;
+                    float[] localScale = new float[] { size.x, size.y, size.z };
+                    int maxIndex = 0;
+                    if (size.y > size.x && size.y > size.z) maxIndex = 1;
+                    if (size.z > size.y && size.z > size.x) maxIndex = 2;
+                    localScale[maxIndex] = ratio * localScale[maxIndex];
+                    SetChildLocalScale(generatedAnimal.transform, ActiveParts[i].name, new Vector3(localScale[0], localScale[1], localScale[2]));
+                }
+            }
+        }
 
-            }
-            if (FrameCount == ActiveParts[i].activeStartFrame + activeCount)
+        for(int i = 0; i < cameras.Count; i++)
+        {
+            if (cameras[i].Run(FrameCount))
             {
-                SetChildMaterial(generatedAnimal.transform, ActiveParts[i].name, mushMaterial);
+                break;
             }
         }
 
         FrameCount++;
+
+        if(FrameCount > 200)
+        {
+           // SceneManager.LoadScene("ShowTime");
+        }
     }
 
     void TraverseChildren(Transform parent)
@@ -412,9 +537,13 @@ public class Apply2 : MonoBehaviour
                                 "it's already taking a bit of shape", "and look our nightmare _part is practically ready",
                                 "so let's see how this turned out in mind", "and our catnap is ready look how it turned out"};
 
-    string[] comment_color = { "I'm going to start doing the texture. and start painting him the color he is. in this case it's orange",
-                                "his belly will be a slightly different color",
-                                "I will also start texturing her body", "I use a very good style to make texture",};
+    string[] comment_color = { "I'm going to start doing the texture.",
+                                "i start painting him the color he is. in this case it's _color",
+                                "i colored it _color",
+                                "his _part will be a slightly different _color color",
+                                "I will also start texturing her _part", 
+                                "I use a very good style to make _color texture",
+                                };
     string[] comment_duplicate = { "I duplicated the _part to the other side",
     "select and duplicate to the other side"};
 

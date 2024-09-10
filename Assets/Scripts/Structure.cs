@@ -8,7 +8,13 @@ using static UnityEditor.PlayerSettings;
 
 public class Structure
 {
-
+    public static class DataTransfer
+    {
+        public static string messageToPass;
+        public static string prefabName;
+        public static GameObject actor;
+        public static Vector3 modelOffset;
+    }
     public struct Uint2
     {
         public uint x;
@@ -134,6 +140,11 @@ public class Structure
                 return true;
             }
             return false;
+        }
+
+        public void AddBuildTime(int count)
+        {
+            this.frameEnd += count;
         }
     }
 
@@ -548,7 +559,22 @@ public class Structure
         }
         return Vector3.zero;
     }
-
+    public static float FindModelOffset(Transform current)
+    {
+        if (current.parent != null && current.parent.name == "LeftLeg")
+        {
+            return -current.transform.position.y + current.transform.localScale.y / 2;
+        }
+        foreach (Transform child in current)
+        {
+            float v = FindModelOffset(child);
+            if(v != 0)
+            {
+                return v;
+            }
+        }
+        return 0;
+    }
     public static void SetChildMaterial(Transform parent, string targetName, Material material)
     {
         if (parent.name == targetName)

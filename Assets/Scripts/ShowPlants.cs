@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -8,9 +9,10 @@ using System.Text.RegularExpressions;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 using static Structure;
 using static UnityEditor.SceneView;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 public class ShowPlants : MonoBehaviour
@@ -434,25 +436,36 @@ public class ShowPlants : MonoBehaviour
         CloseWithPlayerWalk,
         FiveStarWithHand,
     }
-
-    void Start()
+    public static void AssignMaterial(Transform current)
     {
-        handb = hand.transform.localPosition;
-        start_time = Time.time;
-        string prefab_name = "SplitPea";
-        string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
-        GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-        generatedPlant = Instantiate(selectedPrefab, new Vector3(0, 0.5f, 0), Quaternion.Euler(0, 0, 0));
-        LoadAnimation("D:\\GameDe\\GLTFmodl\\split_pea.animation.json");
+        if (current.name.Contains("cube"))
+        {
+            string parent = current.parent.name;
+            string materialPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + parent + ".mat";
+            string texturePath = "Assets/Temp/" + DataTransfer.prefabName + "_" + parent + ".png";
+            string meshPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + parent + ".mesh";
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+            Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+            Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
+            texture.filterMode = FilterMode.Point;
+            material.mainTexture = texture;
+            current.GetComponent<MeshRenderer>().material = material;
+            current.GetComponent<MeshFilter>().sharedMesh = mesh;
 
-        TraverseChildren(generatedPlant.transform);
-        //cameraSettings.Add(addCameraMove(0, 100, new Vector3(-10, 1, 10), new Vector3(10, 1, 10), generatedPlant));
+            return;
+        }
+        foreach (Transform child in current)
+        {
+            AssignMaterial(child);
+        }
+    }
 
+    int[] GenerateComments()
+    {
         string[] envs = { "grass lands", "desert" };
         string env_string = RandomString(envs);
 
-        SubReplacer replacer = new SubReplacer(prefab_name, env_string, "husk", "air bubbles", "nine");
-
+        SubReplacer replacer = new SubReplacer(DataTransfer.prefabName, env_string, "husk", "air bubbles", "nine");
         subtitles.Add(AddSub2(desc_env, replacer));
         subtitles.Add(AddSub2(desc_nice, replacer));
         subtitles.Add(AddSub2(desc_cute, replacer));
@@ -460,6 +473,89 @@ public class ShowPlants : MonoBehaviour
         subtitles.Add(AddSub2(desc_attack, replacer));
         subtitles.Add(AddSub2(desc_attack_time, replacer));
         subtitles.Add(AddSub2(desc_grade, replacer));
+        string writeto = "";
+        foreach (string sub in subtitles)
+        {
+            writeto += sub + "\n";
+        }
+        Random3 = Random.Range(1000, 9999);
+        Debug.Log("show part random number = " + Random3);
+        if (enableVoice)
+        {
+            // 设置Python脚本路径
+            string pythonScriptPath = "F:/DaisyDay/test.py";
+
+            // 要传递给Python的字符串
+            string stringArg1 = writeto;
+            string stringArg2 = Random3.ToString();
+            Debug.Log(stringArg2);
+            // 创建一个新的进程
+            Process pythonProcess = new Process();
+
+            // 设置Python解释器路径
+            pythonProcess.StartInfo.FileName = "python";
+
+            // 传递脚本路径和字符串参数
+            pythonProcess.StartInfo.Arguments = $"{pythonScriptPath} \"{stringArg1}\" \"{stringArg2}\"";
+
+            // 配置其他进程启动信息
+            pythonProcess.StartInfo.UseShellExecute = false;
+            pythonProcess.StartInfo.RedirectStandardOutput = true;
+            pythonProcess.StartInfo.RedirectStandardError = true;
+            pythonProcess.StartInfo.CreateNoWindow = true;
+
+            // 启动Python进程
+            pythonProcess.Start();
+
+            // 等待Python脚本执行完成
+            pythonProcess.WaitForExit();
+
+            // 获取Python输出（如果有）
+            string output = pythonProcess.StandardOutput.ReadToEnd();
+            string error = pythonProcess.StandardError.ReadToEnd();
+
+            Debug.Log("build time = " + output);
+            // 根据空格拆分成字符串数组
+            string[] line_part = output.Split(' ');
+
+            // 将字符串数组转换成整型数组
+            int[] numbers = new int[line_part.Length - 1];
+            for (int i = 0; i < line_part.Length - 1; i++)
+            {
+                numbers[i] = (int)(int.Parse(line_part[i]) * 0.05);
+            }
+
+            return numbers;
+        }
+        else
+        {
+            List<int> numbers = new List<int>();
+            for (int i = 0; i < subtitles.Count; i++)
+            {
+                numbers.Add(20);
+            }
+            return numbers.ToArray();
+        }
+    }
+    void Start()
+    {
+        handb = hand.transform.localPosition;
+        start_time = Time.time;
+        string prefab_name = "SplitPea";
+        string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
+        Debug.Log("data transfrer " + DataTransfer.messageToPass);
+        GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DataTransfer.messageToPass);
+        generatedPlant = Instantiate(selectedPrefab, new Vector3(0, 0.5f, 0) + DataTransfer.modelOffset, Quaternion.Euler(0, 0, 0));
+        // 加一个SimpleAnimation
+        AssignMaterial(generatedPlant.transform);
+        //LoadAnimation("D:\\GameDe\\GLTFmodl\\split_pea.animation.json");
+
+        TraverseChildren(generatedPlant.transform);
+        //cameraSettings.Add(addCameraMove(0, 100, new Vector3(-10, 1, 10), new Vector3(10, 1, 10), generatedPlant));
+
+       
+
+
 
         // 0 从远处较远的地方，一直走到生物附近，有人
         // 1 五角星模式
@@ -507,20 +603,47 @@ public class ShowPlants : MonoBehaviour
         }
         else
         {
-            string writeto = "";
-            foreach (string sub in subtitles)
-            {
-                writeto += sub + "\n";
-            }
-            File.WriteAllText("D://sub.txt", writeto);
+            
+            //File.WriteAllText("D://sub.txt", writeto);
         }
     }
 
 
-    private int GlobalFrameCount = 0;   
+    private int GlobalFrameCount = 0;
     // Update is called once per frame
+    private int FrameCount = 0;
+    private int CheckAudioCount = 0;
+    private bool CheckAudio = false;
+
+    // Update is called once per frame
+
+    private string audioClipPath = "Audio/model"; // 声音文件的路径，假设在Assets/Resources/Audio/mySound.wav
+
+    private AudioSource audioSource;
+    private int Random3;
+    private AudioClip modelClip;
+    private bool enableVoice = true;
     void FixedUpdate()
     {
+        if (enableVoice)
+        {
+            audioClipPath = "Audio/model_" + Random3.ToString();
+            CheckAudioCount++;
+            if (!CheckAudio && CheckAudioCount % 50 == 0 && CheckAudioCount > 200)
+            {
+                FrameCount = -1;
+                Debug.Log("Check Audio Failed " + CheckAudioCount);
+                modelClip = Resources.Load<AudioClip>(audioClipPath);
+                if (modelClip != null)
+                {
+                    // 一旦加载成功，设置音频片段并开始播放
+                    audioSource.clip = modelClip;
+                    audioSource.Play();
+                    CheckAudio = true;
+                }
+            }
+        }
+
         GlobalFrameCount++;
         // RunAnimation(GlobalFrameCount);
         hand.SetActive(true);
@@ -555,6 +678,11 @@ public class ShowPlants : MonoBehaviour
             float x = (handCount - handCountCycle - handCountCycle / 2) * 2.0f / handCountCycle;
             Vector3 offset = new Vector3(-x * handCycleScale, x * x * handCycleScaleY, 0);
             hand.transform.localPosition = handb + offset;
+        }
+
+        if (GlobalFrameCount > 200)
+        {
+            SceneManager.LoadScene("BlockBench");
         }
 
     }
