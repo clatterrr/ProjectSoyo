@@ -200,7 +200,6 @@ public class Structure
             {
                 if(this.active == false)
                 {
-                    Debug.Log("set false");
                     actor.SetActive(false);
                     return true;
                 }

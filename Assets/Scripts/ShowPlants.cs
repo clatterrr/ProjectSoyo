@@ -476,6 +476,7 @@ public class ShowPlants : MonoBehaviour
         string writeto = "";
         foreach (string sub in subtitles)
         {
+            Debug.Log("comment = " + sub);
             writeto += sub + "\n";
         }
         Random3 = Random.Range(1000, 9999);
@@ -553,7 +554,7 @@ public class ShowPlants : MonoBehaviour
         TraverseChildren(generatedPlant.transform);
         //cameraSettings.Add(addCameraMove(0, 100, new Vector3(-10, 1, 10), new Vector3(10, 1, 10), generatedPlant));
 
-       
+
 
 
 
@@ -563,11 +564,12 @@ public class ShowPlants : MonoBehaviour
         // 3 附近放大，自拍，有人无手
         // 4 看，有手
         // 5 人绕着走，自拍，有人无手
+        generateStory = false;
 
         if (!generateStory)
         {
 
-            int[] numbers = ReadNumbersFromFile("D:/example.txt");
+            int[] numbers = GenerateComments();
             CameraMode[] cameraMode = { CameraMode.FarToClose, 
                 CameraMode.CloseWithoutAnything, 
                 CameraMode.CloseWithPlayer,
@@ -575,10 +577,6 @@ public class ShowPlants : MonoBehaviour
                 CameraMode.CloseWithPlayerWalk,
                 CameraMode.CloseWithoutAnything, 
                 CameraMode.CloseWithPlayer };
-            for(int i = 0; i < numbers.Length;i++)
-            {
-                numbers[i] /= 20;
-            }
             int startFrame = 0;
             int endFrame = 0;
             
@@ -641,10 +639,14 @@ public class ShowPlants : MonoBehaviour
                     audioSource.Play();
                     CheckAudio = true;
                 }
+                
+            }
+            if (!CheckAudio)
+            {
+                return;
             }
         }
 
-        GlobalFrameCount++;
         // RunAnimation(GlobalFrameCount);
         hand.SetActive(true);
         player.SetActive(true);
@@ -680,9 +682,10 @@ public class ShowPlants : MonoBehaviour
             hand.transform.localPosition = handb + offset;
         }
 
+        GlobalFrameCount++;
         if (GlobalFrameCount > 200)
         {
-            SceneManager.LoadScene("BlockBench");
+            //SceneManager.LoadScene("BlockBench");
         }
 
     }

@@ -476,9 +476,9 @@ public class Apply2 : MonoBehaviour
 
         FrameCount++;
 
-        if(FrameCount > 200)
+        if(FrameCount > 1)
         {
-           // SceneManager.LoadScene("ShowTime");
+           SceneManager.LoadScene("ShowTime");
         }
     }
 
