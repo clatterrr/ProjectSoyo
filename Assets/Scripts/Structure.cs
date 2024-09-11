@@ -533,6 +533,19 @@ public class Structure
             SetChildLocalScale(child, targetName, scale);
         }
     }
+
+    public static void SetChildLocalPos(Transform parent, string targetName, Vector3 pos)
+    {
+        if (parent.name == targetName)
+        {
+            parent.localPosition = pos;
+            return;
+        }
+        foreach (Transform child in parent)
+        {
+            SetChildLocalPos(child, targetName, pos);
+        }
+    }
     public static void SetChildActive(Transform parent, string targetName)
     {
         if (parent.name == targetName)

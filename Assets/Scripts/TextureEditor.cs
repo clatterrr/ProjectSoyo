@@ -102,7 +102,7 @@ public class TextureEditor
         {
             for(int j = 0; j < size1.y; j++)
             {
-                texture1.SetPixel((int)(start1.x + i), (int)(start1.y + j), colors[j, i]);
+                texture1.SetPixel((int)(start1.x + i), (int)(start1.y + j), colors[i, j]);
             }
         }
         texture1.Apply();
@@ -174,7 +174,7 @@ public class TextureEditor
         start1 = new Uint2(0, 0);
         size0 = new Uint2(sourceSize.z, sourceSize.y);
         size1 = new Uint2(size.z, size.y);
-      ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
+     ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
 
         //back
         start0 = sourceStart + new Uint2(sourceSize.z + sourceSize.x, 0);
@@ -297,78 +297,24 @@ public class TextureEditor
                         CopyX = j - (featureWidth - featureXStart);
                     }
                 }
-                targetColors[i, j] = SourceTexture.GetPixel(sourceStartX + CopyX, sourceStartY + CopyY);
-             //  Debug.Log(" i = " + i + " j = " + j);
-            //   Debug.Log("CopyX = " + CopyX + " CopY" + CopyY);
-            //  Debug.Log("Final " + (sourceStartX + CopyX) + " Y = " + (sourceStartY + CopyY));
-           //   Debug.Log("RGBA = " + SourceTexture.GetPixel(sourceStartX + CopyX, sourceStartY + CopyY));
-                modifiedTexture.SetPixel(j, i, SourceTexture.GetPixel(sourceStartX + CopyX, sourceStartY + CopyY));
+                // targetColors[j, i] = SourceTexture.GetPixel(sourceStartY + CopyY, sourceStartX + CopyX);
+                //  Debug.Log(" i = " + i + " j = " + j);
+                //   Debug.Log("CopyX = " + CopyX + " CopY" + CopyY);
+                //  Debug.Log("Final " + (sourceStartX + CopyX) + " Y = " + (sourceStartY + CopyY));
+                //   Debug.Log("RGBA = " + SourceTexture.GetPixel(sourceStartX + CopyX, sourceStartY + CopyY));
+                Color c = SourceTexture.GetPixel(sourceStartY + CopyY, sourceStartX + CopyX);
+                Color c2 = SourceTexture.GetPixel(sourceStartX + CopyX, sourceStartY + CopyY);
+                targetColors[j, i] = c2;
+                modifiedTexture.SetPixel(j, i, c2);
             }
         }
 
      
         modifiedTexture.Apply();
         // 将修改后的纹理保存为 PNG 文件
-       // SaveTextureAsPNG(modifiedTexture, outputFilePath);
+        //SaveTextureAsPNG(modifiedTexture, outputFilePath);
 
         return targetColors;
-    }
-
-    void StartS()
-    {
-        // 0.25 就是4
-        // Body 就是 8， 12， 4，也就是 0.5, 0.75, 0.25 
-        //Debug.Log(part.GetComponent<MeshRenderer>().bounds.size.ToString("f6"));
-        // 创建纹理的副本，避免修改原始纹理
-
-        //OutputTargetTexture(10, 6, 8, 64 - 16, 8, 8, 1, 1, 1, 1);
-        /*
-        // 遍历纹理的每个像素
-        for (int y = texture.height - 9; y >= texture.height - 16; y--)
-        {
-            // 获取该行的第一个像素作为基准
-            Color baseColor = texture.GetPixel(8, y);
-            Debug.Log($"第 {y} 行的基准颜色: {baseColor}");
-
-            int featureStart = 0;
-            int featureEnd = 0;
-            bool featured = false;
-            // 遍历该行的其他像素
-            for (int x = 9; x < 16; x++)
-            {
-                // 获取当前像素颜色
-                Color currentColor = texture.GetPixel(x, y);
-
-                // 计算当前像素颜色和基准颜色的 RGBA 比例
-                Vector4 baseRGBA = new Vector4(baseColor.r, baseColor.g, baseColor.b, baseColor.a);
-                Vector4 currentRGBA = new Vector4(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-
-                Vector4 ratio;
-                // 避免除以零，使用容差
-                float epsilon = 0.0001f;
-                ratio.x = (Mathf.Abs(baseRGBA.x) > epsilon) ? currentRGBA.x / baseRGBA.x : 0;
-                ratio.y = (Mathf.Abs(baseRGBA.y) > epsilon) ? currentRGBA.y / baseRGBA.y : 0;
-                ratio.z = (Mathf.Abs(baseRGBA.z) > epsilon) ? currentRGBA.z / baseRGBA.z : 0;
-                ratio.w = (Mathf.Abs(baseRGBA.w) > epsilon) ? currentRGBA.w / baseRGBA.w : 0;
-
-                float score = Mathf.Abs(ratio.x) + Mathf.Abs(ratio.y) + Mathf.Abs(ratio.z);
-
-                if(featured == false && score > 1)
-                {
-                    featured = true;
-                    featureStart = x;
-
-                }else if(featured == true && score < 1)
-                {
-                    featureEnd = x;
-                    break;
-                }
-
-                // 输出该像素的坐标及与基准颜色的差异倍数
-                Debug.Log($"坐标: ({x}, {y}), 颜色: {currentColor}, 相对于基准颜色的倍数: {ratio}");
-            }
-        }
-        */
     }
 
     public static void SaveTextureAsPNG(Texture2D texture, string filePath)

@@ -8,4 +8,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Animations/Scenes/GoMine.unity
     guid: 65e2568535ea0464398ad11d26d432ca
+  - enabled: 1
+    path: Assets/Animations/Scenes/BlockBench.unity
+    guid: a9a4e375587b52447b360bdef3179544
+  - enabled: 1
+    path: Assets/Animations/Scenes/ShowTime.unity
+    guid: c6a86d9f8a622b947bcecbb4e69c1d61
   m_configObjects: {}

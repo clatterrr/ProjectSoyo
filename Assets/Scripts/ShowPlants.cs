@@ -402,7 +402,8 @@ public class ShowPlants : MonoBehaviour
         float distance = Random.Range(2, 5f);
         Vector3 pos = generatedPlant.transform.position + new Vector3(Mathf.Cos(degree) * distance, 0, Mathf.Sin(degree) * distance);
 
-        actorSettings.Add(addActorMove(startFrame, endFrame, player, MinecraftAnimation.Animation.Wait, pos, pos, Quaternion.identity, Quaternion.identity));
+        Vector3 playerPos = new Vector3(pos.x, 0.5f, pos.z);
+        actorSettings.Add(addActorMove(startFrame, endFrame, player, MinecraftAnimation.Animation.Wait, playerPos, playerPos, Quaternion.identity, Quaternion.identity));
         actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
         CameraCloseLookMovement(startFrame, endFrame, player);
     }
@@ -440,10 +441,10 @@ public class ShowPlants : MonoBehaviour
     {
         if (current.name.Contains("cube"))
         {
-            string parent = current.parent.name;
-            string materialPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + parent + ".mat";
-            string texturePath = "Assets/Temp/" + DataTransfer.prefabName + "_" + parent + ".png";
-            string meshPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + parent + ".mesh";
+            string indexStr = current.name.Replace("cube_", "");
+            string materialPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".mat";
+            string texturePath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".png";
+            string meshPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".mesh";
             Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
             Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
             Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
@@ -540,21 +541,20 @@ public class ShowPlants : MonoBehaviour
     }
     void Start()
     {
+        audioSource = gameObject.AddComponent<AudioSource>();
         handb = hand.transform.localPosition;
         start_time = Time.time;
         string prefab_name = "SplitPea";
         string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
         Debug.Log("data transfrer " + DataTransfer.messageToPass);
         GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DataTransfer.messageToPass);
-        generatedPlant = Instantiate(selectedPrefab, new Vector3(0, 0.5f, 0) + DataTransfer.modelOffset, Quaternion.Euler(0, 0, 0));
+        generatedPlant = Instantiate(selectedPrefab, new Vector3(0, 0.5f, 0) + DataTransfer.modelOffset, Quaternion.Euler(0, 190, 0));
         // 加一个SimpleAnimation
         AssignMaterial(generatedPlant.transform);
         //LoadAnimation("D:\\GameDe\\GLTFmodl\\split_pea.animation.json");
 
         TraverseChildren(generatedPlant.transform);
         //cameraSettings.Add(addCameraMove(0, 100, new Vector3(-10, 1, 10), new Vector3(10, 1, 10), generatedPlant));
-
-
 
 
 
@@ -577,8 +577,8 @@ public class ShowPlants : MonoBehaviour
                 CameraMode.CloseWithPlayerWalk,
                 CameraMode.CloseWithoutAnything, 
                 CameraMode.CloseWithPlayer };
-            int startFrame = 0;
-            int endFrame = 0;
+            int startFrame = 100;
+            int endFrame = 100;
             
             for (int i = 0; i < numbers.Length; i++)
             {
@@ -625,20 +625,26 @@ public class ShowPlants : MonoBehaviour
     {
         if (enableVoice)
         {
-            audioClipPath = "Audio/model_" + Random3.ToString();
+            audioClipPath = "Audio/model_3275";// + Random3.ToString();
             CheckAudioCount++;
             if (!CheckAudio && CheckAudioCount % 50 == 0 && CheckAudioCount > 200)
             {
+                AssetDatabase.Refresh();
                 FrameCount = -1;
                 Debug.Log("Check Audio Failed " + CheckAudioCount);
-                modelClip = Resources.Load<AudioClip>(audioClipPath);
-                if (modelClip != null)
-                {
-                    // 一旦加载成功，设置音频片段并开始播放
-                    audioSource.clip = modelClip;
-                    audioSource.Play();
-                    CheckAudio = true;
+                if (File.Exists("Assets/Resources/" + audioClipPath + ".wav")){
+                    Debug.Log("file exists");
+                    modelClip = Resources.Load<AudioClip>(audioClipPath);
+                    if (modelClip != null)
+                    {
+
+                        Debug.Log("clip exists");
+                        audioSource.clip = modelClip;
+                        audioSource.Play();
+                        CheckAudio = true;
+                    }
                 }
+                
                 
             }
             if (!CheckAudio)

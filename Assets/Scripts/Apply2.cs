@@ -18,6 +18,8 @@ using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 using static HumanoidGenerator;
 using UnityEngine.SceneManagement;
+using UnityEngine.XR;
+
 public class Apply2 : MonoBehaviour
 {
     private List<GameObject> parts;
@@ -34,19 +36,23 @@ public class Apply2 : MonoBehaviour
         public int activeStartFrame;
         public int buildFrame;
         public Vector3 size;
+        public Vector3 pos;
         public Transform transform;
         public Material material;
         public bool modelMode;
+        public int strechMode;//0 center 1 edge
 
         public ActivePart(string parentName, GameObject child, int activeStartFrame, int buildFrame, Vector3 size, int index)
         {
             this.name  = child.name;
+            
             this.activeStartFrame = activeStartFrame;
             this.parentName = parentName;
             this.index = index;
             this.buildFrame = buildFrame;
             this.size = size;
-            this.transform =child.transform;
+            pos = child.transform.localPosition;
+            this.transform = child.transform;
             if(child.GetComponent<MeshRenderer>() != null)
             {
                 material = child.GetComponent<MeshRenderer>().material;
@@ -56,6 +62,7 @@ public class Apply2 : MonoBehaviour
                 material = null;
             }
             this.modelMode = true;
+            strechMode = Random.Range(0, 2);
         }
 
         public ActivePart(GameObject pa, int activeStartFrame, int buildFrame)
@@ -66,6 +73,7 @@ public class Apply2 : MonoBehaviour
             this.index = 0;
             this.buildFrame = buildFrame;
             this.size = Vector3.zero;
+            pos = Vector3.zero;
             this.transform = pa.transform;
             if (pa.GetComponent<MeshRenderer>() != null)
             {
@@ -76,11 +84,12 @@ public class Apply2 : MonoBehaviour
                 material = null;
             }
             this.modelMode = false;
+            strechMode = 0;
         }
     }
 
     int activeCount = 0;
-    private List<ActivePart> ActiveParts;
+    private List<ActivePart> activeParts;
     private List<Vector4> vectorList = new List<Vector4>();
     private List<string> subtitles = new List<string>();
     private List<CameraSetting> cameras = new List<CameraSetting>();
@@ -160,7 +169,21 @@ public class Apply2 : MonoBehaviour
     }
 
     GameObject generatedAnimal;
+    public void AssignTexture(Transform current)
+    {
+        if (current.name.Contains("cube"))
+        {
+            string parent = current.parent.name;
+            
+            
 
+            return;
+        }
+        foreach (Transform child in current)
+        {
+            AssignTexture(child);
+        }
+    }
     int[] GenerateComments()
     {
         string prefab_name = "BlackGoldenGolem";
@@ -175,6 +198,7 @@ public class Apply2 : MonoBehaviour
             DataTransfer.modelOffset = new Vector3(0, FindModelOffset(generatedAnimal.transform), 0);
             PrefabUtility.SaveAsPrefabAsset(generatedAnimal, DataTransfer.messageToPass);
             TraverseChildren(generatedAnimal.transform);
+            
         }
         else
         {
@@ -195,7 +219,7 @@ public class Apply2 : MonoBehaviour
         subtitles.Add(AddModelSub(comment_all_start.ToArray(), placer));
         Debug.Log(" first comment " + subtitles[subtitles.Count - 1]);
 
-
+        List<string> added_part = new List<string>();
 
         for (int j = 0; j < parts.Count; j++)
         {
@@ -229,8 +253,33 @@ public class Apply2 : MonoBehaviour
 
                         if (first_cube)
                         {
+                            int du = 0;
+                            for(int idx = 0; idx < added_part.Count; idx++)
+                            {
+                                string added = added_part[idx];
+                                added = added.Replace("Left", "").Replace("Right", "").Replace("Right", "").Replace("left", "");
+                                string nowed = part.name.Replace("Left", "").Replace("Right", "").Replace("Right", "").Replace("left", "");
+                                if(nowed == added)
+                                {
+                                    Debug.Log("added = " + added + " nowed " + nowed);
+                                    du = 4;
+                                    break;
+                                }
+                            }
+
+                            int r = Random.Range(0, 6 + du);
                             placer.name = part.transform.name;
-                            subtitles.Add(AddModelSub(comment_base.ToArray(), placer));
+                            if (r < 6)
+                            {
+                                subtitles.Add(AddModelSub(comment_base.ToArray(), placer));
+                            }
+                            else
+                            {
+
+                                subtitles.Add(AddModelSub(comment_duplicate.ToArray(), placer));
+                            }
+
+
                             first_cube = false;
                         }
                         else if (i == count - 1)
@@ -255,6 +304,8 @@ public class Apply2 : MonoBehaviour
                 placer.color = GetBaseColor(mainColor.r, mainColor.g, mainColor.b);
                 subtitles.Add(AddModelSub(comment_color.ToArray(), placer)); 
                 Debug.Log(" parent name =" + part.transform.name + " color special comment === " + subtitles[subtitles.Count - 1]);
+
+                added_part.Add(part.name);
             }
         }
 
@@ -335,19 +386,21 @@ public class Apply2 : MonoBehaviour
     private int Random3;
     void Start()
     {
+        audioClipPath = "Audio/model_3275";
+
         Random3 = Random.Range(1000, 9999);
         Debug.Log("r 3 = " +  Random3);
 
         parts = new List<GameObject>();
-        ActiveParts = new List<ActivePart>();
+        activeParts = new List<ActivePart>();
         int[] build_times = GenerateComments();
         int build_times_index = 0;
         int build_time = 0;
 
         start_time = Time.time;
         LoadAnimation("D:\\GameDe\\GLTFmodl\\magnet_shroom.animation.json");
-        mushMaterial = AddMaterial("Assets/Characters/Plants/split_pea.png");
-
+        //mushMaterial = AddMaterial("Assets/Characters/Plants/split_pea.png");
+        mushMaterial = AddMaterial("Assets/Animations/Materials/uv1.png");
         audioSource = gameObject.AddComponent<AudioSource>();
 
 
@@ -376,23 +429,81 @@ public class Apply2 : MonoBehaviour
                     }
 
                     Vector3 size = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
-                    ActiveParts.Add(new ActivePart(part.transform.name,
+                    activeParts.Add(new ActivePart(part.transform.name,
                     part.transform.GetChild(i).gameObject, activeCount - build_time, build_time, size, j));
                     GameObject emptyObject = new GameObject("MyEmptyObject");
                     Vector3 bound = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.center;
                     Vector3 ssize = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
                     emptyObject.transform.position = bound;
-                    float mag = ssize.magnitude * 10;
-                    float bx = bound.x * Random.Range(1.5f, 2.5f) + mag * Random.Range(-0.2f, 0.2f);
-                    float by = bound.y * Random.Range(0.8f, 1.2f) + mag * Random.Range(-0.2f, 0.2f);
-                    float bz = bound.z * Random.Range(1.5f, 2.5f) + mag * Random.Range(-0.2f, 0.2f);
-                    Vector3 bound2 = new Vector3(bx, by, bz);
+
+                    // 根据bound.x和bound.z判断象限
+                    float baseAngle = 0f;
+
+                    if (bound.x > 0 && bound.z > 0)
+                    {
+                        baseAngle = 45f;  // 第一象限
+                    }
+                    else if (bound.x < 0 && bound.z > 0)
+                    {
+                        baseAngle = 135f;  // 第二象限
+                    }
+                    else if (bound.x < 0 && bound.z < 0)
+                    {
+                        baseAngle = 225f;  // 第三象限
+                    }
+                    else if (bound.x > 0 && bound.z < 0)
+                    {
+                        baseAngle = 315f;  // 第四象限
+                    }
+                    else if (Mathf.Abs(bound.x) < 0.1f)
+                    {
+                        if (bound.z > 0)
+                        {
+                            baseAngle = Random.Range(0, 2) == 0 ? 45f : 135f;  // 第一或第二象限
+                        }
+                        else
+                        {
+                            baseAngle = Random.Range(0, 2) == 0 ? 225f : 315f; // 第三或第四象限
+                        }
+
+                    }
+                    else if (Mathf.Abs(bound.z) < 0.1f)
+                    {
+                        if (bound.x > 0)
+                        {
+                            baseAngle = Random.Range(0, 2) == 0 ? 45f : 315f;  // 第一或第四象限
+                        }
+                        else
+                        {
+                            baseAngle = Random.Range(0, 2) == 0 ? 135f : 225f; // 第二或第三象限
+                        }
+
+
+                    
+                    }
+
+                    float randomAngle = baseAngle + Random.Range(-10f, 10f);  // 在±10度范围内偏移
+
+
+
+                    // 随机生成距离（10到12之间）
+                    float randomDistance = ssize.magnitude * Random.Range(2f, 4f);
+
+                    // 计算x和z轴上的坐标（y轴保持为0）
+                    float rx = bound.x + randomDistance * Mathf.Cos(randomAngle * Mathf.Deg2Rad);
+                    float ry = Mathf.Abs(bound.y) + ssize.magnitude * Random.Range(1f, 3f);
+                    if (bound.y < 0) ry = -ry;
+                    float rz = bound.z + randomDistance * Mathf.Sin(randomAngle * Mathf.Deg2Rad);
+                    Vector3 bound2 = new Vector3(rx, ry, rz);
                     cameras.Add(addCameraMove(activeCount - build_time, activeCount, bound2, bound2, emptyObject, new Vector3(0, 0, 0)));
                 }
 
                 build_time = build_times[build_times_index++];
                 activeCount += build_time;
-                ActiveParts.Add(new ActivePart(part.transform.GetChild(0).gameObject, activeCount - build_time, build_time));
+                for (int i = 0; i < count; i++)
+                {
+                    activeParts.Add(new ActivePart(part.transform.GetChild(i).gameObject, activeCount - build_time, build_time));
+                }
                 cameras[cameras.Count - 1].AddBuildTime(build_time);
             }
         }
@@ -403,7 +514,7 @@ public class Apply2 : MonoBehaviour
         cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-2, 1, -2), new Vector3(2, 1, -2), emptyObject2, new Vector3(0, 0, 0)));
     }
 
-
+    public bool checkScene = false;
     private int FrameCount = 0;
     private int CheckAudioCount = 0;
     private bool CheckAudio = false;
@@ -417,6 +528,7 @@ public class Apply2 : MonoBehaviour
             CheckAudioCount++;
             if (!CheckAudio && CheckAudioCount % 50 == 0 && CheckAudioCount > 200)
             {
+                AssetDatabase.Refresh();
                 FrameCount = -1;
                 Debug.Log("Check Audio Failed " + CheckAudioCount);
                 modelClip = Resources.Load<AudioClip>(audioClipPath);
@@ -432,36 +544,46 @@ public class Apply2 : MonoBehaviour
 
 
 
-        for (int i = 0; i < ActiveParts.Count; i++)
+        for (int i = 0; i < activeParts.Count; i++)
         {
-            int frame0 = ActiveParts[i].activeStartFrame;
-            int frame1 = ActiveParts[i].activeStartFrame + ActiveParts[i].buildFrame;
+            int frame0 = activeParts[i].activeStartFrame;
+            int frame1 = activeParts[i].activeStartFrame + activeParts[i].buildFrame;
             if (FrameCount == frame0)
             {
-                if (ActiveParts[i].modelMode)
+                if (activeParts[i].modelMode)
                 {
-                    SetChildActive(generatedAnimal.transform, ActiveParts[i].name);
-                    SetChildMaterial(generatedAnimal.transform, ActiveParts[i].name, mushMaterial);
+                    SetChildActive(generatedAnimal.transform, activeParts[i].name);
+                    SetChildMaterial(generatedAnimal.transform, activeParts[i].name, mushMaterial);
                 }
                 else
                 {
-                    SetChildMaterial(generatedAnimal.transform, ActiveParts[i].name, ActiveParts[i].material);
+                    SetChildMaterial(generatedAnimal.transform, activeParts[i].name, activeParts[i].material);
                 }
             }
             if (FrameCount >= frame0 && FrameCount < frame1)
             {
-                if (ActiveParts[i].modelMode)
+                if (activeParts[i].modelMode)
                 {
-                    float ratio = (FrameCount - frame0) * 1.2f / ActiveParts[i].buildFrame;
+                    float ratio = (FrameCount - frame0) * 1.2f / activeParts[i].buildFrame;
                     if (ratio > 1.0f) ratio = 1.0f;
-                    Vector3 size = ActiveParts[i].size;
-                    Vector3 scale = ActiveParts[i].transform.localScale;
+                    Vector3 size = activeParts[i].size;
+                    Vector3 scale = activeParts[i].transform.localScale;
                     float[] localScale = new float[] { size.x, size.y, size.z };
                     int maxIndex = 0;
                     if (size.y > size.x && size.y > size.z) maxIndex = 1;
                     if (size.z > size.y && size.z > size.x) maxIndex = 2;
                     localScale[maxIndex] = ratio * localScale[maxIndex];
-                    SetChildLocalScale(generatedAnimal.transform, ActiveParts[i].name, new Vector3(localScale[0], localScale[1], localScale[2]));
+                    SetChildLocalScale(generatedAnimal.transform, activeParts[i].name, new Vector3(localScale[0], localScale[1], localScale[2]));
+
+                    if (activeParts[i].strechMode == 1)
+                    {
+
+                        Vector3 lp = activeParts[i].pos;
+                        float[] localPos = new float[] { lp.x, lp.y, lp.z };
+                        localPos[maxIndex] = localPos[maxIndex] - 0.5f * (1.0f - ratio) * localPos[maxIndex];
+                        SetChildLocalPos(generatedAnimal.transform, activeParts[i].name, new Vector3(localPos[0], localPos[1], localPos[2]));
+                    }
+
                 }
             }
         }
@@ -476,9 +598,9 @@ public class Apply2 : MonoBehaviour
 
         FrameCount++;
 
-        if(FrameCount > 1)
+        if(FrameCount > 1 && checkScene)
         {
-           SceneManager.LoadScene("ShowTime");
+            SceneManager.LoadScene("ShowTime");
         }
     }
 
@@ -493,27 +615,35 @@ public class Apply2 : MonoBehaviour
 
 
 
-    string[] comment_all_start = { "all right I'm already here to start making our _part mob" };
+    string[] comment_all_start = { "all right I'm already here to start making our _part mob",
+                                    "the first thing I'm going to do to make our _part is to create a standard base"};
 
     // 由于是第一，所以必须说明_part
     // 每组中的第一个正方体  
     string[] comment_base = { "i am going to create a base for his _part， i`ll make a _part like this",
-                                " then i`ll add a base to start making his _part",
-                                "now i`m going to add _part",
-                                "to make the _part I think it has to be another color",
+                                "we'll start by adding a cube here and stretching it to form the _part",
                                 "he has a somewhat _desc _part, so I would have to make it like this",
+                                "so I will create here and pull a cube down to make the _part",
+                                "i`ll put a _part to be able to make a very cool animation",
+                                "to make the _part I think it has to be another color",
+                                "i`ll made his _part and then added all the details",
+                                " then i`ll add a base to start making his _part",
+                                "I'll start by making this _desc piece of _part",
                                 "these _part will be _desc ones like these",
                                 "I adjusted _part to make it more pointed",
-                                //"so I created with scarier _part much _desc_adj for _name looks like _desc_noun",
-                                "i`ll put a _part to be able to make a very cool animation",
-                                "i`ll made his _part and then added all the details",
                                 "then i went to the part of the _part",
                                 "and on _dir of it, the _part part",
-                                "so I will create here and pull a cube down to make the _part",
                                 "this part here is the _part",
-                                "I'll start by making this _desc piece of _part"};
+                                "now i`m going to add _part",
+                            };
+    // 必须是 first cube
+    string[] comment_duplicate = { "I duplicated the _part to the other side",
+                                    "select _part and duplicate to the other side",
+                                    "then I'll duplicate here down"};
+
 
     string[] comment = { " we need a large _part",
+                        "more or less like this",
                         " and _dir next a slightly a _desc _part",
                         "he has very _desc _part by the way",
                         "something like this, see ?",
@@ -544,8 +674,7 @@ public class Apply2 : MonoBehaviour
                                 "I will also start texturing her _part", 
                                 "I use a very good style to make _color texture",
                                 };
-    string[] comment_duplicate = { "I duplicated the _part to the other side",
-    "select and duplicate to the other side"};
+
 
     string[] details = { "I just thought of adding a little extra detail" };
     string[] comment_legs = { "create some legs for our friends to walk on" };

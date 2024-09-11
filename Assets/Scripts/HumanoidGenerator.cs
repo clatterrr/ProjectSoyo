@@ -26,6 +26,9 @@ public class HumanoidGenerator : MonoBehaviour
         LeftEye,
         RightEye,
         Mouth,   
+        Tail,
+        LeftEar,
+        RightEar,
     }
 
     public struct BodyPart
@@ -76,24 +79,7 @@ public class HumanoidGenerator : MonoBehaviour
             return new Vector3(x, y, z);
         }
 
-        public Vector3 TopCenterConnector()
-        {
-            float x = actor.transform.position.x;
-            float y = actor.transform.position.y + actor.transform.localScale.y / 2;
-            float z = actor.transform.position.z;
 
-            return new Vector3(x, y, z);
-        }
-
-        public Vector3 BottomCenterConnector()
-        {
-
-            float x = actor.transform.position.x;
-            float y = actor.transform.position.y - actor.transform.localScale.y / 2;
-            float z = actor.transform.position.z;
-
-            return new Vector3(x, y, z);
-        }
 
         public Vector3 FrontLeftConntector()
         {
@@ -132,9 +118,47 @@ public class HumanoidGenerator : MonoBehaviour
             float z = actor.transform.position.z - actor.transform.localScale.z / 2;
             return new Vector3(x, y, z);
         }
+
+        public Vector3 TopCenterConnector()
+        {
+            float x = actor.transform.position.x;
+            float y = actor.transform.position.y + actor.transform.localScale.y / 2;
+            float z = actor.transform.position.z;
+
+            return new Vector3(x, y, z);
+        }
+
+        public Vector3 BottomCenterConnector()
+        {
+
+            float x = actor.transform.position.x;
+            float y = actor.transform.position.y - actor.transform.localScale.y / 2;
+            float z = actor.transform.position.z;
+
+            return new Vector3(x, y, z);
+        }
+
+        public Vector3 FrontCenterConntector()
+        {
+
+            float x = actor.transform.position.x;
+            float y = actor.transform.position.y ;
+            float z = actor.transform.position.z + actor.transform.localScale.z / 2;
+
+            return new Vector3(x, y, z);
+        }
     }
 
-
+    public enum FrameWork
+    {
+        TopCenter,
+        BottomCenter,
+        BottomeLeft,
+        BottomeRight,
+        BodyTailPos,
+        HeadLeftEarPos,
+        HeadRightEarPos,
+    }
     public static BodyPart FindBodyPart(List<BodyPart> parts,BodyPartName name)
     {
         for (int i = 0; i < parts.Count; i++)
@@ -147,7 +171,56 @@ public class HumanoidGenerator : MonoBehaviour
         return parts[0];
     }
 
+    public static Vector3 FindFrameWork(List<BodyPart> parts, BodyPartName name, FrameWork work)
+    {
+        List<BodyPart> matchingParts = new List<BodyPart>();
+        foreach (var part in parts)
+        {
+            if (part.name == name) matchingParts.Add(part);
+        }
 
+        if (matchingParts.Count == 0) return Vector3.zero;
+
+        // Step 2: Calculate the combined bounding box for all matching parts
+        Vector3 minBounds = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+        Vector3 maxBounds = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+
+        foreach (var part in matchingParts)
+        {
+            Vector3 partMin = part.actor.transform.position - part.actor.transform.localScale / 2;
+            Vector3 partMax = part.actor.transform.position + part.actor.transform.localScale / 2;
+            minBounds = Vector3.Min(minBounds, partMin);
+            maxBounds = Vector3.Max(maxBounds, partMax);
+        }
+
+        Vector3 combinedCenter = (minBounds + maxBounds) / 2;
+        Vector3 fullScale = maxBounds - minBounds;
+
+        switch (work)
+        {
+            case FrameWork.TopCenter: return new Vector3(combinedCenter.x, maxBounds.y, combinedCenter.z);
+            case FrameWork.BottomCenter: return new Vector3(combinedCenter.x, minBounds.y, combinedCenter.z);
+            case FrameWork.BottomeLeft: return new Vector3(combinedCenter.x - fullScale.x / 4, minBounds.y, combinedCenter.z);
+            case FrameWork.BottomeRight: return new Vector3(combinedCenter.x + fullScale.x / 4, minBounds.y, combinedCenter.z);
+            case FrameWork.HeadLeftEarPos: return new Vector3(minBounds.x, maxBounds.y, combinedCenter.z);
+            case FrameWork.HeadRightEarPos: return new Vector3(maxBounds.x, maxBounds.y, combinedCenter.z);
+            case FrameWork.BodyTailPos: return new Vector3(combinedCenter.x, minBounds.y, minBounds.z);
+            default:break;
+        }
+        return Vector3.zero;
+    }
+
+    struct ShapeDesc
+    {
+        int segment;
+        BaseDesc baseDesc;
+    }
+    enum BaseDesc
+    {
+        Same,
+        Enlarge,
+        Desent
+    }
     private void Start()
     {
         
@@ -165,6 +238,8 @@ public class HumanoidGenerator : MonoBehaviour
 
 
         string[] wooden = { "leaves", "branches" };
+
+
     }
 
     public static GameObject CreateHumaoid(string modelName, GameObject sourceModel, Texture2D sourceTexture)
@@ -182,7 +257,7 @@ public class HumanoidGenerator : MonoBehaviour
         height = Random.Range(4, 12) * scale;
         depth = Random.Range(4, 6) * scale;
         CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.Body, Vector3.zero, width, height, depth);
-        
+       
          width = Random.Range(2, 4) * scale;
          height = Random.Range(2, 6) * scale;
          depth = Random.Range(2, 4) * scale;
@@ -199,57 +274,75 @@ public class HumanoidGenerator : MonoBehaviour
          CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.LeftLeg, Vector3.zero, width, height, depth);
          CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.RightLeg, Vector3.zero, width, height, depth);
         /*
-         CreatePart(parts, BodyPartName.HatBottom, Vector3.zero, 0.1f, 0.1f, 0.1f);
-         CreatePart(parts, BodyPartName.HatTop, Vector3.zero, 0.05f, 0.05f, 0.05f);
+        CreatePart(parts, BodyPartName.HatBottom, Vector3.zero, 0.1f, 0.1f, 0.1f);
+        CreatePart(parts, BodyPartName.HatTop, Vector3.zero, 0.05f, 0.05f, 0.05f);
 
 
-         CreatePart(parts, BodyPartName.LeftEye, Vector3.zero, scale, scale, 0.1f * scale);
-         CreatePart(parts, BodyPartName.RightEye, Vector3.zero, scale, scale, 0.1f *  scale);
-       */
+        CreatePart(parts, BodyPartName.LeftEye, Vector3.zero, scale, scale, 0.1f * scale);
+        CreatePart(parts, BodyPartName.RightEye, Vector3.zero, scale, scale, 0.1f *  scale);
+      */
 
         // 创建一个新的空的 GameObject 作为父物体
         GameObject parentObject = new GameObject("PartsParent");
 
         // 遍历所有 part，将它们的父级设置为新创建的父物体
         int cube_index = 0;
+
         foreach (var part in parts)
         {
-            GameObject second = new GameObject("SPartsParent");
+            GameObject parentObjectForPart;
+            string parentName = "Parent";
 
-            string parent_name = "parent";
+            // Determine parent name based on part name
             switch (part.name)
             {
                 case BodyPartName.Head:
-                    parent_name = "Head";
+                    parentName = "Head";
                     break;
                 case BodyPartName.Body:
-                    parent_name = "Body";
+                    parentName = "Body";
                     break;
                 case BodyPartName.LeftArm:
-                    parent_name = "LeftArm";
+                    parentName = "LeftArm";
                     break;
                 case BodyPartName.RightArm:
-                    parent_name = "RightArm";
+                    parentName = "RightArm";
                     break;
                 case BodyPartName.LeftLeg:
-                    parent_name = "LeftLeg";
+                    parentName = "LeftLeg";
                     break;
                 case BodyPartName.RightLeg:
-                    parent_name = "RightLeg";
+                    parentName = "RightLeg";
                     break;
                 case BodyPartName.HatBottom:
-                    parent_name = "HatBottom";
+                    parentName = "HatBottom";
                     break;
                 case BodyPartName.HatTop:
-                    parent_name = "HatTop";
+                    parentName = "HatTop";
                     break;
             }
-            second.name = parent_name;
+
+            // Check if a parent with the same name already exists under the main parentObject
+            Transform existingParent = parentObject.transform.Find(parentName);
+
+            if (existingParent != null)
+            {
+                // If found, assign existing parent
+                parentObjectForPart = existingParent.gameObject;
+            }
+            else
+            {
+                // If not found, create a new parent object
+                parentObjectForPart = new GameObject(parentName);
+                parentObjectForPart.transform.SetParent(parentObject.transform);
+            }
+
+            // Name and assign the part's cube to its parent
             part.actor.name = "cube_" + cube_index.ToString();
-            cube_index ++;
-            part.actor.transform.SetParent(second.transform);
-            second.transform.SetParent(parentObject.transform);
+            cube_index++;
+            part.actor.transform.SetParent(parentObjectForPart.transform);
         }
+
 
         // 返回这个新的父物体
         return parentObject;
@@ -492,7 +585,7 @@ public class HumanoidGenerator : MonoBehaviour
     }
 
     private static void SavePart(GameObject actor, Texture2D sourceTexture, GameObject sourceModel,
-        HumanoidGenerator.BodyPartName bodyPartName, Uint3 size, string modelName)
+        HumanoidGenerator.BodyPartName bodyPartName, Uint3 size, string modelName, int index)
     {
         string part_name = "";
         switch (bodyPartName)
@@ -506,104 +599,177 @@ public class HumanoidGenerator : MonoBehaviour
             default: break;
         }
         Material tempM = ExpectMaterial(sourceTexture, sourceModel, bodyPartName, size);
-        SaveTextureToPNG((Texture2D)tempM.mainTexture, "Assets/Temp/" + modelName + "_" + part_name + ".png");
-        AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName + "_" + part_name + ".mat");
-        AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName + "_" + part_name + ".mesh");
+        SaveTextureToPNG((Texture2D)tempM.mainTexture, "Assets/Temp/" + modelName   + "_" + index.ToString() + ".png");
+        AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName   + "_" + index.ToString() + ".mat");
+        AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName   + "_" + index.ToString() + ".mesh");
     }
     public static void CreatePart(string modelName, GameObject sourceModel, 
         Texture2D sourceTexture, List<BodyPart> parts, BodyPartName partName, Vector3 position, float width, float height, float depth)
     {
-        GameObject part ;
-        BodyPart thePart;
+        
 
         switch (partName)
         {
             case BodyPartName.Head:
                 {
+                    GameObject part;
+                    BodyPart thePart;
                     part = CreateCube();
                     part.transform.localPosition = position;
                     part.transform.localScale = new Vector3(width, height, depth);
-                    Uint3 size = new Uint3(8, 8, 8);
+                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
                     part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                     part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.Head, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.Head, size, modelName);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.Head, size, modelName, parts.Count);
 
                     thePart = new BodyPart(part, partName);
                     BodyPart body = FindBodyPart(parts, BodyPartName.Body);
                     Vector3 offset = body.TopCenterConnector() - thePart.BottomCenterConnector();
                     thePart.actor.transform.localPosition += offset;
+                    parts.Add(thePart);
                     break;
                 }
             case BodyPartName.LeftArm:
                 {
+                    GameObject part;
+                    BodyPart thePart;
                     part = CreateCube();
                     part.transform.localPosition = position;
                     part.transform.localScale = new Vector3(width, height, depth);
 
-                    Uint3 size = new Uint3(8, 8, 8);
+                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
                     part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                     part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.LeftArm, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.LeftArm, size, modelName);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.LeftArm, size, modelName, parts.Count);
 
                     thePart = new BodyPart(part, partName);
                     BodyPart body = FindBodyPart(parts, BodyPartName.Body);
                     Vector3 offset = body.RightHandConnector() - thePart.LeftHandConnector();
                     thePart.actor.transform.localPosition += offset;
+                    parts.Add(thePart);
                     break;
                 }
             case BodyPartName.RightArm:
                 {
+                    GameObject part;
+                    BodyPart thePart;
+
+
                     part = CreateCube();
                     part.transform.localPosition = position;
                     part.transform.localScale = new Vector3(width, height, depth);
 
-                    Uint3 size = new Uint3(8, 8, 8);
+                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
                     part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                     part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightArm, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightArm, size, modelName);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightArm, size, modelName, parts.Count);
 
                     thePart = new BodyPart(part, partName);
                     BodyPart body = FindBodyPart(parts, BodyPartName.Body);
                     Vector3 offset = body.LeftHandConnector() - thePart.RightHandConnector();
                     thePart.actor.transform.localPosition += offset;
+                    parts.Add(thePart);
                     break;
                 }
             case BodyPartName.LeftLeg:
                 {
+                    GameObject part;
+                    BodyPart thePart;
                     part = CreateCube();
                     part.transform.localPosition = position;
                     part.transform.localScale = new Vector3(width, height, depth);
 
-                    Uint3 size = new Uint3(8, 8, 8);
+                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
                     part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                     part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.LeftLeg, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.LeftLeg, size, modelName);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.LeftLeg, size, modelName, parts.Count);
 
                     thePart = new BodyPart(part, partName);
-                    BodyPart body = FindBodyPart(parts, BodyPartName.Body);
-                    Vector3 offset = body.BottomLeftConnector() - thePart.TopCenterConnector();
+                    Vector3 offset = FindFrameWork(parts, BodyPartName.Body, FrameWork.BottomeLeft) - thePart.TopCenterConnector();
                     thePart.actor.transform.localPosition += offset;
+                    parts.Add(thePart);
                     break;
                 }
             case BodyPartName.RightLeg:
                 {
+                    GameObject part;
+                    BodyPart thePart;
                     part = CreateCube();
                     part.transform.localPosition = position;
                     part.transform.localScale = new Vector3(width, height, depth);
 
-                    Uint3 size = new Uint3(8, 8, 8);
+                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
                     part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                     part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightLeg, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightLeg, size, modelName);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightLeg, size, modelName, parts.Count);
 
                     thePart = new BodyPart(part, partName);
-                    BodyPart body = FindBodyPart(parts, BodyPartName.Body);
-                    Vector3 offset = body.BottomRightConnector() - thePart.TopCenterConnector();
+                    Vector3 offset = FindFrameWork(parts, BodyPartName.Body, FrameWork.BottomeRight) - thePart.TopCenterConnector();
                     thePart.actor.transform.localPosition += offset;
+                    parts.Add(thePart);
+                    break;
+                }
+            case BodyPartName.Tail:
+                {
+                    GameObject part;
+                    BodyPart thePart;
+                    part = CreateCube();
+                    part.transform.localPosition = position;
+                    part.transform.localScale = new Vector3(width, height, depth);
+
+                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
+                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
+                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightLeg, size);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightLeg, size, modelName, parts.Count);
+
+                    thePart = new BodyPart(part, partName);
+                    Vector3 offset = FindFrameWork(parts, BodyPartName.Body, FrameWork.BodyTailPos) - thePart.FrontCenterConntector();
+                    thePart.actor.transform.localPosition += offset;
+                    parts.Add(thePart);
+                    break;
+                }
+            case BodyPartName.LeftEar:
+                {
+                    GameObject part;
+                    BodyPart thePart;
+                    part = CreateCube();
+                    part.transform.localPosition = position;
+                    part.transform.localScale = new Vector3(width, height, depth);
+
+                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
+                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
+                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightLeg, size);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightLeg, size, modelName, parts.Count);
+
+                    thePart = new BodyPart(part, partName);
+                    Vector3 offset = FindFrameWork(parts, BodyPartName.Head, FrameWork.HeadLeftEarPos) - thePart.BottomCenterConnector();
+                    thePart.actor.transform.localPosition += offset;
+                    parts.Add(thePart);
+                    break;
+                }
+            case BodyPartName.RightEar:
+                {
+                    GameObject part;
+                    BodyPart thePart;
+                    part = CreateCube();
+                    part.transform.localPosition = position;
+                    part.transform.localScale = new Vector3(width, height, depth);
+
+                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
+                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
+                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightLeg, size);
+                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightLeg, size, modelName, parts.Count);
+
+                    thePart = new BodyPart(part, partName);
+                    Vector3 offset = FindFrameWork(parts, BodyPartName.Head, FrameWork.HeadRightEarPos) - thePart.BottomCenterConnector();
+                    thePart.actor.transform.localPosition += offset;
+                    parts.Add(thePart);
                     break;
                 }
             case BodyPartName.HatBottom:
                 {
+                    GameObject part;
+                    BodyPart thePart;
                     part = GenerateCircle(4,0,1);
                     part.transform.localPosition = position;
                     Vector3 ls = part.transform.localScale;
@@ -611,14 +777,14 @@ public class HumanoidGenerator : MonoBehaviour
                     thePart = new BodyPart(part, partName);
                     Vector3 offset = FindBodyPart(parts, BodyPartName.Head).TopCenterConnector() - thePart.BottomCenterConnector();
                     thePart.actor.transform.localPosition += offset;
-                    Debug.Log(" bot = " + thePart.BottomCenterConnector());
-                    Debug.Log(" top = " + FindBodyPart(parts, BodyPartName.Head).TopCenterConnector());
-                    Debug.Log(" local = " + thePart.actor.transform.localPosition);
+                    parts.Add(thePart);
 
                     break;
                 }
             case BodyPartName.HatTop:
                 {
+                    GameObject part;
+                    BodyPart thePart;
                     part = GenerateCircle(4, 0, 1);
                     part.transform.localPosition = position;
                     Vector3 ls = part.transform.localScale;
@@ -626,10 +792,13 @@ public class HumanoidGenerator : MonoBehaviour
                     thePart = new BodyPart(part, partName);
                     Vector3 offset = FindBodyPart(parts, BodyPartName.HatBottom).TopCenterConnector() - thePart.BottomCenterConnector();
                     thePart.actor.transform.localPosition += offset;
+                    parts.Add(thePart);
                     break;
                 }
             case BodyPartName.LeftEye:
                 {
+                    GameObject part;
+                    BodyPart thePart;
                     part = CreateCube();
                     part.transform.localPosition = position;
                     part.transform.localScale = new Vector3(width, height, depth);
@@ -637,10 +806,13 @@ public class HumanoidGenerator : MonoBehaviour
                     thePart = new BodyPart(part, partName);
                     Vector3 offset = FindBodyPart(parts, BodyPartName.Head).FrontLeftConntector() - thePart.BackCenterConntector();
                     thePart.actor.transform.localPosition += offset;
+                    parts.Add(thePart);
                     break;
                 }
             case BodyPartName.RightEye:
                 {
+                    GameObject part;
+                    BodyPart thePart;
                     part = CreateCube();
                     part.transform.localPosition = position;
                     part.transform.localScale = new Vector3(width, height, depth);
@@ -651,33 +823,48 @@ public class HumanoidGenerator : MonoBehaviour
                     thePart = new BodyPart(part, partName);
                     Vector3 offset = FindBodyPart(parts, BodyPartName.Head).FrontRightEyeConntector() - thePart.BackCenterConntector();
                     thePart.actor.transform.localPosition += offset;
+                    parts.Add(thePart);
                     break;
                 }
             case BodyPartName.Body:
                 {
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-                    Uint3 size = new Uint3(8,8,8);
-                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
-                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.Body, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.Body, size, modelName);
-                    thePart = new BodyPart(part, partName);
+                    
+                    for(int i = 0; i < 3; i++)
+                    {
+                        GameObject part;
+                        BodyPart thePart;
+                        part = CreateCube();
+                        part.transform.localPosition = position;
+                        part.transform.localScale = new Vector3(width, height, depth);
+                        Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
+                        part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
+                        part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.Body, size);
+                        SavePart(part, sourceTexture, sourceModel, BodyPartName.Body, size, modelName, parts.Count);
+                        thePart = new BodyPart(part, partName);
+                        if(parts.Count > 0)
+                        {
+                            Vector3 offset = FindFrameWork(parts, BodyPartName.Body, FrameWork.BottomCenter) - thePart.TopCenterConnector();
+                            thePart.actor.transform.localPosition += offset;
+
+                        }
+                        parts.Add(thePart);
+                    }
                     break;
                 }
             default:
                 {
-
+                    GameObject part;
+                    BodyPart thePart;
                     part = CreateCube();
                     part.transform.localPosition = position;
                     part.transform.localScale = new Vector3(width, height, depth);
                     thePart = new BodyPart(part, partName);
+                    parts.Add(thePart);
                     break;
                 };
         }
         
 
-        parts.Add(thePart);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
     }
