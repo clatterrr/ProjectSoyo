@@ -634,4 +634,124 @@ public class Structure
         boxCollider.size = combinedBounds.size;
         boxCollider.isTrigger = true;
     }
+
+    public static GameObject CreateCube()
+    {
+
+        // 创建一个空的 GameObject
+        GameObject part = new GameObject("CustomCube");
+
+        // 给它添加 MeshFilter 和 MeshRenderer 组件
+        MeshFilter meshFilter = part.AddComponent<MeshFilter>();
+        MeshRenderer renderer = part.AddComponent<MeshRenderer>();
+        //renderer.material = GeneratePoissonNoise();
+
+
+        // 创建新的 Mesh
+        Mesh mesh = new Mesh();
+        meshFilter.mesh = mesh;
+
+        // 定义24个顶点（每个面有4个顶点）
+        Vector3[] vertices = new Vector3[24]
+        {
+            // Back face
+            new Vector3(-1, -1, -1), new Vector3(1, -1, -1), new Vector3(1, 1, -1), new Vector3(-1, 1, -1), 
+            // Front face
+            new Vector3(-1, -1, 1), new Vector3(1, -1, 1), new Vector3(1, 1, 1), new Vector3(-1, 1, 1),
+            // Left face
+            new Vector3(-1, -1, -1), new Vector3(-1, 1, -1), new Vector3(-1, 1, 1), new Vector3(-1, -1, 1),
+            // Right face
+            new Vector3(1, -1, -1), new Vector3(1, 1, -1), new Vector3(1, 1, 1), new Vector3(1, -1, 1),
+            // Top face
+            new Vector3(-1, 1, -1), new Vector3(1, 1, -1), new Vector3(1, 1, 1), new Vector3(-1, 1, 1),
+            // Bottom face
+            new Vector3(-1, -1, -1), new Vector3(1, -1, -1), new Vector3(1, -1, 1), new Vector3(-1, -1, 1)
+        };
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            vertices[i] *= 0.5f;
+        }
+
+        // 定义三角形索引（每个面两个三角形）
+        int[] triangles = new int[36]
+        {
+            // Back face
+            0, 2, 1, 0, 3, 2,
+            // Front face
+            4, 5, 6, 4, 6, 7,
+            // Left face
+            8, 10, 9, 8, 11, 10,
+            // Right face
+            12, 13, 14, 12, 14, 15,
+            // Top face
+            16, 18, 17, 16, 19, 18,
+            // Bottom face
+            20, 21, 22, 20, 22, 23
+        };
+
+        // 定义 UV 坐标（每个面4个UV）
+        Vector2[] uvs = new Vector2[24]
+        {
+            // Back face
+            new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1),
+            // Front face
+            new Vector2(1f, 0f), new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1),
+            // Left face
+            new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1), new Vector2(0, 0),
+            // Right face
+            new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0),
+            // Top face
+            new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1),
+            // Bottom face
+            new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0)
+        };
+
+        // 设置 Mesh 的顶点、三角形和 UV
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.uv = uvs;
+
+        // 重新计算法线以保证光照效果
+        mesh.RecalculateNormals();
+
+        return part;
+    }
+
+
+    public static void RecomputeUV2(List<Vector2> uvs, int[] index, Uint2 start, Uint2 size, Uint2 textureSize)
+    {
+        /*
+         3 --- 2
+               
+         0 --- 1
+         */
+        float invx = 1.0f / textureSize.x;
+        float invy = 1.0f / textureSize.y;
+        Vector2 uv0 = new Vector2(start.x * invx, start.y * invy);
+        Vector2 uv1 = new Vector2((start.x + size.x) * invx, start.y * invy);
+        Vector2 uv2 = new Vector2((start.x + size.x) * invx, (start.y + size.y) * invy);
+        Vector2 uv3 = new Vector2(start.x * invx, (start.y + size.y) * invy);
+        uvs[index[0]] = uv0;
+        uvs[index[1]] = uv1;
+        uvs[index[2]] = uv2;
+        uvs[index[3]] = uv3;
+
+    }
+
+    public static List<Vector2> ComputeUVs(Uint3 size)
+    {
+        Uint2 tSize = new Uint2((size.x + size.z) * 2, size.y + size.z);
+        List<Vector2> uvs = new List<Vector2>();
+        for (int i = 0; i < 24; i++)
+        {
+            uvs.Add(new Vector2(0, 0));
+        }
+        RecomputeUV2(uvs, new int[] { 0, 1, 2, 3 }, new Uint2(size.z, 0), new Uint2(size.x, size.y), tSize);
+        RecomputeUV2(uvs, new int[] { 4, 5, 6, 7 }, new Uint2(size.z + size.z + size.x, 0), new Uint2(size.x, size.y), tSize);
+        RecomputeUV2(uvs, new int[] { 11, 8, 9, 10 }, new Uint2(0, 0), new Uint2(size.z, size.y), tSize);
+        RecomputeUV2(uvs, new int[] { 12, 15, 14, 13 }, new Uint2(size.x + size.z, 0), new Uint2(size.z, size.y), tSize);
+        RecomputeUV2(uvs, new int[] { 16, 17, 18, 19 }, new Uint2(size.z, size.y), new Uint2(size.z, size.x), tSize);
+        RecomputeUV2(uvs, new int[] { 20, 21, 22, 23 }, new Uint2(size.x + size.z, size.y), new Uint2(size.z, size.x), tSize);
+        return uvs;
+    }
 }

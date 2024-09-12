@@ -108,11 +108,32 @@ public class TextureEditor
         texture1.Apply();
     }
 
+    public static Material SpecialEyeMat(Uint3 size)
+    {
+        Material material = new Material(Shader.Find("Standard"));
+        Texture2D texture = new Texture2D((int)(size.x * 2 + size.z * 2), (int)(size.y + size.z));
+        for(int i = 0;i < texture.width; i++)
+        {
+            for(int j = 0;j < texture.height; j++)
+            {
 
+                texture.SetPixel(i, j, Color.black); 
+            }
+        }
+
+        texture.SetPixel((int)(size.x + size.z - 1), (int)(size.y - 1), Color.white); // срио╫г
+
+        texture.Apply();
+        texture.filterMode = FilterMode.Point;
+        material.mainTexture = texture;
+        return material;
+    }
 
     public static Material ExpectMaterial(Texture2D sourceTexture, GameObject sourceModel, 
-        HumanoidGenerator.BodyPartName bodyPartName, Uint3 size)
+        HumanoidGenerator.ShapeName bodyPartName, Uint3 size)
     {
+
+
         Material material = new Material(Shader.Find("Standard"));
         Texture2D texture = new Texture2D((int)(size.x * 2 + size.z * 2), (int)(size.y + size.z));
         Uint2 textureSize = new Uint2(texture.width, texture.height);
@@ -121,13 +142,15 @@ public class TextureEditor
         string bodyPartNameString = "";
         switch (bodyPartName)
         {
-            case HumanoidGenerator.BodyPartName.Body: bodyPartNameString = "body"; break;
-            case HumanoidGenerator.BodyPartName.Head: bodyPartNameString = "head"; break;
-            case HumanoidGenerator.BodyPartName.LeftArm: bodyPartNameString = "left_arm"; break;
-            case HumanoidGenerator.BodyPartName.RightArm: bodyPartNameString = "right_arm"; break;
-            case HumanoidGenerator.BodyPartName.LeftLeg: bodyPartNameString = "left_leg"; break;
-            case HumanoidGenerator.BodyPartName.RightLeg: bodyPartNameString = "right_leg"; break;
-            default: break;
+            case HumanoidGenerator.ShapeName.Body: bodyPartNameString = "body"; break;
+            case HumanoidGenerator.ShapeName.Head: bodyPartNameString = "head"; break;
+            case HumanoidGenerator.ShapeName.LeftArm: bodyPartNameString = "left_arm"; break;
+            case HumanoidGenerator.ShapeName.RightArm: bodyPartNameString = "right_arm"; break;
+            case HumanoidGenerator.ShapeName.LeftLeg: bodyPartNameString = "left_leg"; break;
+            case HumanoidGenerator.ShapeName.RightLeg: bodyPartNameString = "right_leg"; break;
+            case HumanoidGenerator.ShapeName.LeftEye:
+            case HumanoidGenerator.ShapeName.RightEye: return SpecialEyeMat(size); break;
+            default: bodyPartNameString = "body"; break;
         }
 
         Vector2 sourceStartFloat = FindChildUVStart(sourceModel, bodyPartNameString);

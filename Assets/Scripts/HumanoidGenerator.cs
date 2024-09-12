@@ -1,19 +1,25 @@
+using JetBrains.Annotations;
 using Palmmedia.ReportGenerator.Core;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using TMPro;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UIElements;
 using static HumanoidGenerator;
 using static Structure;
 using static TextureEditor;
+using static UnityEngine.GraphicsBuffer;
 using Color = UnityEngine.Color;
+using Random = UnityEngine.Random;
 
 public class HumanoidGenerator : MonoBehaviour
 {
-    public enum BodyPartName
+    public enum ShapeName
     {
         Head,
         Body,
@@ -25,322 +31,634 @@ public class HumanoidGenerator : MonoBehaviour
         HatTop,
         LeftEye,
         RightEye,
-        Mouth,   
+        Mouth,
         Tail,
         LeftEar,
         RightEar,
-    }
-
-    public struct BodyPart
-    {
-        public GameObject actor;
-        public BodyPartName name;
-
-        public BodyPart(GameObject actor, BodyPartName name)
-        {
-            this.actor = actor;
-            this.name = name;
-        }
-
-        public float Top()
-        {
-            return actor.transform.position.y + actor.transform.localScale.y / 2;
-        }
-
-        public Vector3 LeftHandConnector()
-        {
-            float x = actor.transform.position.x - actor.transform.localScale.x / 2;
-            float y = actor.transform.position.y + actor.transform.localScale.y / 2 / 4 * 3;
-            float z = actor.transform.position.z;
-            return new Vector3(x, y, z);
-        }
-
-        public Vector3 RightHandConnector()
-        {
-            float x = actor.transform.position.x + actor.transform.localScale.x / 2;
-            float y = actor.transform.position.y + actor.transform.localScale.y / 2 / 4 * 3;
-            float z = actor.transform.position.z;
-            return new Vector3(x, y, z);
-        }
-
-        public Vector3 BottomLeftConnector()
-        {
-            float x = actor.transform.position.x - actor.transform.localScale.x / 4;
-            float y = actor.transform.position.y - actor.transform.localScale.y / 2;
-            float z = actor.transform.position.z;
-            return new Vector3(x, y, z);
-        }
-
-        public Vector3 BottomRightConnector()
-        {
-            float x = actor.transform.position.x + actor.transform.localScale.x / 4;
-            float y = actor.transform.position.y - actor.transform.localScale.y / 2;
-            float z = actor.transform.position.z;
-            return new Vector3(x, y, z);
-        }
-
-
-
-        public Vector3 FrontLeftConntector()
-        {
-
-            float x = actor.transform.position.x + actor.transform.localScale.y / 4;
-            float y = actor.transform.position.y + actor.transform.localScale.y / 4;
-            float z = actor.transform.position.z + actor.transform.localScale.z / 2;
-
-            return new Vector3(x, y, z);
-        }
-
-        public Vector3 HeadMouthConntector()
-        {
-
-            float x = actor.transform.position.x;
-            float y = actor.transform.position.y - actor.transform.localScale.y / 4;
-            float z = actor.transform.position.z + actor.transform.localScale.z / 2;
-
-            return new Vector3(x, y, z);
-        }
-
-        public Vector3 FrontRightEyeConntector()
-        {
-
-            float x = actor.transform.position.x - actor.transform.localScale.y / 4;
-            float y = actor.transform.position.y + actor.transform.localScale.y / 4;
-            float z = actor.transform.position.z + actor.transform.localScale.z / 2;
-            return new Vector3(x, y, z);
-        }
-
-        public Vector3 BackCenterConntector()
-        {
-
-            float x = actor.transform.position.x;
-            float y = actor.transform.position.y;
-            float z = actor.transform.position.z - actor.transform.localScale.z / 2;
-            return new Vector3(x, y, z);
-        }
-
-        public Vector3 TopCenterConnector()
-        {
-            float x = actor.transform.position.x;
-            float y = actor.transform.position.y + actor.transform.localScale.y / 2;
-            float z = actor.transform.position.z;
-
-            return new Vector3(x, y, z);
-        }
-
-        public Vector3 BottomCenterConnector()
-        {
-
-            float x = actor.transform.position.x;
-            float y = actor.transform.position.y - actor.transform.localScale.y / 2;
-            float z = actor.transform.position.z;
-
-            return new Vector3(x, y, z);
-        }
-
-        public Vector3 FrontCenterConntector()
-        {
-
-            float x = actor.transform.position.x;
-            float y = actor.transform.position.y ;
-            float z = actor.transform.position.z + actor.transform.localScale.z / 2;
-
-            return new Vector3(x, y, z);
-        }
+        LeftShoulder,
+        RightShoulder,
+        LeftHand,
+        RightHand,
+        LeftToe,
+        RightToe,
     }
 
     public enum FrameWork
     {
+        Zero,
         TopCenter,
         BottomCenter,
         BottomeLeft,
         BottomeRight,
         BodyTailPos,
+        Right75,
+        Left75,
         HeadLeftEarPos,
         HeadRightEarPos,
+        HeadLeftEyePos,
+        HeadRightEyePos,
+        HeadMouthPos,
+        BackCenter,
+        FrontCenter,
+
+        LeftHand0,
+        LeftHand1,
+        LeftHand2,
+        LeftHand3,
+        LeftHand4,
+        LeftHand5,
+
+
+        RightHand0,
+        RightHand1,
+        RightHand2,
+        RightHand3,
+        RightHand4,
+        RightHand5,
+
+        Toe0,
+        Toe1,
+        Toe2,
+        Toe3,
+        Toe4,
     }
-    public static BodyPart FindBodyPart(List<BodyPart> parts,BodyPartName name)
+
+    public static string GetShapeName(ShapeName name)
     {
-        for (int i = 0; i < parts.Count; i++)
+        string parentName = "";
+        switch (name)
         {
-            if (parts[i].name == name)
+            case ShapeName.Head:
+                parentName = "Head";
+                break;
+            case ShapeName.Body:
+                parentName = "Body";
+                break;
+            case ShapeName.LeftArm:
+                parentName = "LeftArm";
+                break;
+            case ShapeName.RightArm:
+                parentName = "RightArm";
+                break;
+            case ShapeName.LeftLeg:
+                parentName = "LeftLeg";
+                break;
+            case ShapeName.RightLeg:
+                parentName = "RightLeg";
+                break;
+            case ShapeName.HatBottom:
+                parentName = "HatBottom";
+                break;
+            case ShapeName.HatTop:
+                parentName = "HatTop";
+                break;
+            case ShapeName.LeftEar:
+                parentName = "LeftEar";
+                break;
+            case ShapeName.RightEar:
+                parentName = "RightEar";
+                break;
+            case ShapeName.Mouth:
+                parentName = "Mouth";
+                break;
+            case ShapeName.LeftEye:
+                parentName = "LeftEye";
+                break;
+            case ShapeName.RightEye:
+                parentName = "RightEye";
+                break;
+            case ShapeName.LeftShoulder:
+                parentName = "LeftShoulder";
+                break;
+            case ShapeName.RightShoulder:
+                parentName = "RightShoulder";
+                break;
+            case ShapeName.LeftHand:
+                parentName = "LeftHand";
+                break;
+            case ShapeName.RightHand:
+                parentName = "RightHand";
+                break;
+            case ShapeName.LeftToe:
+                parentName = "LeftToe";
+                break;
+            case ShapeName.RightToe:
+                parentName = "RightToe";
+                break;
+            case ShapeName.Tail:
+                parentName = "Tail";
+                break;
+            default: break;
+        }
+        return parentName;
+    }
+    public static string GenerateDesc(ShapeName name)
+    {
+        string[] shape_desc_str = new string[] { "default", "ear_top", "ear_side" };
+        string real_name = "ear";
+        List<string> possible_name = new List<string>();
+        for (int i = 0; i < shape_desc_str.Length; i++)
+        {
+            if (shape_desc_str[i].Contains(real_name))
             {
-                return parts[i];
+                possible_name.Add(shape_desc_str[i]);
             }
         }
-        return parts[0];
+        int r = Random.Range(0, possible_name.Count);
+        string final_str = possible_name[r];
+        return final_str;
     }
 
-    public static Vector3 FindFrameWork(List<BodyPart> parts, BodyPartName name, FrameWork work)
+    public static Vector3 FindFrameWork(ShapeDesc shape, FrameWork work)
     {
-        List<BodyPart> matchingParts = new List<BodyPart>();
-        foreach (var part in parts)
-        {
-            if (part.name == name) matchingParts.Add(part);
-        }
-
-        if (matchingParts.Count == 0) return Vector3.zero;
-
-        // Step 2: Calculate the combined bounding box for all matching parts
-        Vector3 minBounds = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-        Vector3 maxBounds = new Vector3(float.MinValue, float.MinValue, float.MinValue);
-
-        foreach (var part in matchingParts)
-        {
-            Vector3 partMin = part.actor.transform.position - part.actor.transform.localScale / 2;
-            Vector3 partMax = part.actor.transform.position + part.actor.transform.localScale / 2;
-            minBounds = Vector3.Min(minBounds, partMin);
-            maxBounds = Vector3.Max(maxBounds, partMax);
-        }
-
-        Vector3 combinedCenter = (minBounds + maxBounds) / 2;
-        Vector3 fullScale = maxBounds - minBounds;
+        Vector3 result = Vector3.zero; // Temporary variable to store the result
 
         switch (work)
         {
-            case FrameWork.TopCenter: return new Vector3(combinedCenter.x, maxBounds.y, combinedCenter.z);
-            case FrameWork.BottomCenter: return new Vector3(combinedCenter.x, minBounds.y, combinedCenter.z);
-            case FrameWork.BottomeLeft: return new Vector3(combinedCenter.x - fullScale.x / 4, minBounds.y, combinedCenter.z);
-            case FrameWork.BottomeRight: return new Vector3(combinedCenter.x + fullScale.x / 4, minBounds.y, combinedCenter.z);
-            case FrameWork.HeadLeftEarPos: return new Vector3(minBounds.x, maxBounds.y, combinedCenter.z);
-            case FrameWork.HeadRightEarPos: return new Vector3(maxBounds.x, maxBounds.y, combinedCenter.z);
-            case FrameWork.BodyTailPos: return new Vector3(combinedCenter.x, minBounds.y, minBounds.z);
-            default:break;
+            case FrameWork.TopCenter:
+                result = new Vector3(shape.center.x, shape.center.y + shape.size.y / 2, shape.center.z);
+                break;
+            case FrameWork.BottomCenter:
+                result = new Vector3(shape.center.x, shape.center.y - shape.size.y / 2, shape.center.z);
+                break;
+            case FrameWork.BottomeLeft:
+                result = new Vector3(shape.center.x - shape.size.x / 4, shape.center.y - shape.size.y / 2, shape.center.z);
+                break;
+            case FrameWork.BottomeRight:
+                result = new Vector3(shape.center.x + shape.size.x / 4, shape.center.y - shape.size.y / 2, shape.center.z);
+                break;
+
+            case FrameWork.HeadLeftEarPos:
+                result = new Vector3(shape.center.x - shape.size.x / 2, shape.center.y, shape.center.z);
+                break;
+            case FrameWork.HeadRightEarPos:
+                result = new Vector3(shape.center.x + shape.size.x / 2, shape.center.y, shape.center.z);
+                break;
+            case FrameWork.HeadLeftEyePos:
+                result = new Vector3(shape.center.x - shape.size.x / 4, shape.center.y + shape.size.y / 4, shape.center.z + shape.size.z / 2);
+                break;
+            case FrameWork.HeadRightEyePos:
+                result = new Vector3(shape.center.x + shape.size.x / 4, shape.center.y + shape.size.y / 4, shape.center.z + shape.size.z / 2);
+                break;
+
+            case FrameWork.BodyTailPos:
+                result = new Vector3(shape.center.x, shape.center.y - shape.size.y / 2, shape.center.z - shape.size.z / 2);
+                break;
+            case FrameWork.Left75:
+                result = new Vector3(shape.center.x - shape.size.x / 2, shape.center.y + shape.size.y / 4, shape.center.z);
+                break;
+            case FrameWork.Right75:
+                result = new Vector3(shape.center.x + shape.size.x / 2, shape.center.y + shape.size.y / 4, shape.center.z);
+                break;
+            case FrameWork.HeadMouthPos:
+                result = new Vector3(shape.center.x, shape.center.y - shape.size.y / 4, shape.center.z + shape.size.z / 2);
+                break;
+            case FrameWork.BackCenter:
+                result = new Vector3(shape.center.x, shape.center.y, shape.center.z - shape.size.z / 2);
+                break;
+            case FrameWork.FrontCenter:
+                result = new Vector3(shape.center.x, shape.center.y, shape.center.z + shape.size.z / 2);
+                break;
+
+            case FrameWork.LeftHand0:
+                result = new Vector3(shape.center.x , shape.center.y - shape.size.y / 2, shape.center.z + shape.size.z / 2);
+                break;
+            case FrameWork.LeftHand1:
+                result = new Vector3(shape.center.x - shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z - shape.size.z / 2);
+                break;
+            case FrameWork.LeftHand2:
+                result = new Vector3(shape.center.x - shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z - shape.size.z / 4);
+                break;
+            case FrameWork.LeftHand3:
+                result = new Vector3(shape.center.x - shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z );
+                break;
+            case FrameWork.LeftHand4:
+                result = new Vector3(shape.center.x - shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z + shape.size.z / 4);
+                break;
+            case FrameWork.LeftHand5:
+                result = new Vector3(shape.center.x - shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z + shape.size.z / 2);
+                break;
+
+            case FrameWork.RightHand0:
+                result = new Vector3(shape.center.x, shape.center.y - shape.size.y / 2, shape.center.z + shape.size.z / 2);
+                break;
+            case FrameWork.RightHand1:
+                result = new Vector3(shape.center.x + shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z - shape.size.z / 2);
+                break;
+            case FrameWork.RightHand2:
+                result = new Vector3(shape.center.x + shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z - shape.size.z / 4);
+                break;
+            case FrameWork.RightHand3:
+                result = new Vector3(shape.center.x + shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z);
+                break;
+            case FrameWork.RightHand4:
+                result = new Vector3(shape.center.x + shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z + shape.size.z / 4);
+                break;
+            case FrameWork.RightHand5:
+                result = new Vector3(shape.center.x + shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z + shape.size.z / 2);
+                break;
+
+            case FrameWork.Toe0:
+                result = new Vector3(shape.center.x - shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z + shape.size.z / 2);
+                break;
+            case FrameWork.Toe1:
+                result = new Vector3(shape.center.x - shape.size.x / 4, shape.center.y - shape.size.y / 2, shape.center.z + shape.size.z / 2);
+                break;
+            case FrameWork.Toe2:
+                result = new Vector3(shape.center.x , shape.center.y - shape.size.y / 2, shape.center.z + shape.size.z / 2);
+                break;
+            case FrameWork.Toe3:
+                result = new Vector3(shape.center.x + shape.size.x / 4, shape.center.y - shape.size.y / 2, shape.center.z + shape.size.z / 2);
+                break;
+            case FrameWork.Toe4:
+                result = new Vector3(shape.center.x + shape.size.x / 2, shape.center.y - shape.size.y / 2, shape.center.z + shape.size.z / 2);
+                break;
+
+            default:
+                break;
         }
-        return Vector3.zero;
+        result = new Vector3(result.x, result.y, -result.z);
+        return result; // Return the result at the end of the method
     }
 
-    struct ShapeDesc
+    public struct ShapeDesc
     {
-        int segment;
-        BaseDesc baseDesc;
+        public List<GameObject> actors;
+        public Vector3 localPos;
+        public Vector3 center; // group total size
+        public Vector3 size;
+        public ShapeName name;
+        public int segment;
+        public string desc_str;
+        public ShapeName appendName;
+        public FrameWork appendWork;
+        public FrameWork myWork;
+
+        public ShapeDesc(ShapeName shapeName, Vector3 size, ShapeName appendName, FrameWork appendWork, FrameWork myWork)
+        {
+            this.name = shapeName;
+            this.localPos = Vector3.zero;
+            this.center = Vector3.zero;
+            this.size = size * 0.1f;
+            this.desc_str = GenerateDesc(shapeName);
+            this.actors = new List<GameObject>();
+            segment = 1;
+            if(shapeName == ShapeName.Body)
+            {
+                segment = Random.Range(1, 4);
+                int plus = Random.Range(0, 2);
+                if (plus == 0) plus = -1;
+                segment *= plus;
+            }
+            this.appendName = appendName;
+            this.appendWork = appendWork;
+            this.myWork = myWork;
+        }
+
+        public void SetActors(List<GameObject> actors)
+        {
+            foreach (GameObject actor in actors)
+            {
+                this.actors.Add(actor);
+            }
+        }
+
+        public void SetLocalPos(Vector3 lp)
+        {
+            localPos = lp;
+        }
     }
-    enum BaseDesc
+
+    public static Vector3 RandomSize(int x0, int x1, int y0, int y1, int z0, int z1)
     {
-        Same,
-        Enlarge,
-        Desent
+        return new Vector3(Random.Range(x0, x1) , Random.Range(y0, y1), Random.Range(z0, z1));
     }
-    private void Start()
+
+    // 使用Linq打乱List
+    // 使用 Fisher-Yates 洗牌算法打乱 List
+    public static void ShuffleList<T>(List<T> list)
     {
-        
-       
-        //CreateHumaoid();
+        System.Random rand = new System.Random(); // 每次调用时创建新的 Random 实例
 
-        // 形状： 立方体，圆形，链条状，立方体半中空，立方体全中空，后端尖，后端扁平
-        // 额外附件：有显示屏，有按钮，有天线，有藤蔓，有火焰
-
-        // 眼睛：深凹陷，突出，两侧，无
-
-        // 衣服：元素 肌肉
-        // 翅膀
-        // 角， 长短
-
-
-        string[] wooden = { "leaves", "branches" };
-
-
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int j = rand.Next(0, i + 1); // 随机选择索引
+            // 交换元素
+            T temp = list[i];
+            list[i] = list[j];
+            list[j] = temp;
+        }
     }
 
+    public static List<ShapeName> ForceFixed(List<ShapeName> names, ShapeName fore, ShapeName post)
+    {
+        int index0 = names.IndexOf(fore);
+        int index1 = names.IndexOf(post);
+        if (index0 != -1 && index1 != -1 && index1 < index0)
+        {
+            names[index0] = fore;
+            names[index1] = post;
+        }
+        return names;
+    }
     public static GameObject CreateHumaoid(string modelName, GameObject sourceModel, Texture2D sourceTexture)
     {
-        List<BodyPart> parts = new List<BodyPart>();
+        //https://news.4399.com/seer/zzph/
+        string[] elements = new string[]
+        {
+            "fire", "water", "grass", "dragon", "fly", "elect", "stone",
+            "machine", "ghost","god","ice","desert", "cow","crawl", "insect", "scary",
+        };
+
+        string[] shape_desc_str = new string[] { "default",
+            "ear_none", "ear_top", "ear_side",
+            "leg_none", "leg_short", "leg_tall",
+            "arm_none", "arm_short", "arm_tall", "arm_strong", "arm_weak",
+            "hat_none", "hat_short", "hat_tall",
+            "ear_none", "ear_top", "ear_side",
+            
+        };
+
+        List<ShapeDesc> parts = new List<ShapeDesc>();
+        Vector3 partSize;
+        Vector3 bodySize = Vector3.zero; ;
+        List<ShapeName> headEnum = new List<ShapeName> {ShapeName.LeftEar, ShapeName.LeftEye, ShapeName.HatBottom, ShapeName.Mouth};
+        List<ShapeName> bodyEnum = new List<ShapeName> { ShapeName.Tail, ShapeName.LeftArm, ShapeName.LeftLeg, ShapeName.LeftShoulder };
+        ShuffleList(headEnum);
+        ShuffleList(bodyEnum);
+
+        int leftShoulderIndex = bodyEnum.IndexOf(ShapeName.LeftShoulder);
+        int leftArmIndex = bodyEnum.IndexOf(ShapeName.LeftArm);
+
+        if (leftShoulderIndex != -1 && leftArmIndex != -1 && leftShoulderIndex < leftArmIndex)
+        {
+            // 交换元素
+            bodyEnum[leftShoulderIndex] = ShapeName.LeftArm;
+            bodyEnum[leftArmIndex] = ShapeName.LeftShoulder;
+        }
+        int leftLegIndex = bodyEnum.IndexOf(ShapeName.LeftLeg);
+
+        // 如果找到了 LeftLeg，并且它不是最后一个元素
+        if (leftLegIndex != -1)
+        {
+            bodyEnum.Insert(leftLegIndex + 1, ShapeName.LeftToe);
+        }
+        else
+        {
+            bodyEnum.Add(ShapeName.LeftToe);
+        }
+
+
+
+        List<ShapeName> names = new List<ShapeName>() { ShapeName.Body, ShapeName.Head };
+        int r = Random.Range(0, 2);
+        if (r == 0)
+        {
+            for(int i = 0; i <  headEnum.Count; i++) names.Add(headEnum[i]);
+            for(int i = 0; i < bodyEnum.Count; i++) names.Add(bodyEnum[i]);
+        }
+        else
+        {
+            for (int i = 0; i < bodyEnum.Count; i++) names.Add(bodyEnum[i]);
+            for (int i = 0; i < headEnum.Count; i++) names.Add(headEnum[i]);
+        }
+
+        for(int i =0; i< names.Count; i++)
+        {
+            switch(names[i])
+            {
+                case ShapeName.Body:
+                    {
+                        partSize = RandomSize(6, 12, 6, 24, 6, 12);
+                        bodySize = partSize;
+                        parts.Add(new ShapeDesc(ShapeName.Body, partSize, ShapeName.Body, FrameWork.Zero, FrameWork.Zero));
+                        break;
+                    }
+                case ShapeName.Head:
+                    {
+                        partSize = RandomSize(6, 8, 6, 8, 6, 8);
+                        parts.Add(new ShapeDesc(ShapeName.Head, partSize, ShapeName.Body, FrameWork.TopCenter, FrameWork.BottomCenter));
+                        break;
+                    }
+                case ShapeName.LeftEar:
+                    {
+                        partSize = RandomSize(2, 4, 4, 6, 2, 4);
+                        parts.Add(new ShapeDesc(ShapeName.LeftEar, partSize, ShapeName.Head, FrameWork.HeadLeftEarPos, FrameWork.BottomCenter));
+                        parts.Add(new ShapeDesc(ShapeName.RightEar, partSize, ShapeName.Head, FrameWork.HeadRightEarPos, FrameWork.BottomCenter));
+                        break;
+                    }
+                case ShapeName.LeftArm:
+                    {
+                        partSize = RandomSize(4, 6, 12, 18, 4, 6);
+                        parts.Add(new ShapeDesc(ShapeName.LeftArm, partSize, ShapeName.Body, FrameWork.Right75, FrameWork.Left75));
+                        parts.Add(new ShapeDesc(ShapeName.RightArm, partSize, ShapeName.Body, FrameWork.Left75, FrameWork.Right75));
+                        break;
+                    }
+                case ShapeName.LeftHand:
+                    {
+                        // todo ? 
+                        partSize = RandomSize(1, 1, 2, 4, 1, 1);
+                        int figureCount = Random.Range(2, 6);
+                        ShapeDesc desc = new ShapeDesc(ShapeName.LeftHand, partSize, ShapeName.LeftArm, FrameWork.BottomCenter, FrameWork.TopCenter);
+                        desc.segment = figureCount;
+                        ShapeDesc desc1 = new ShapeDesc(ShapeName.RightHand, partSize, ShapeName.RightArm, FrameWork.BottomCenter, FrameWork.TopCenter);
+                        parts.Add(desc);
+                        desc.segment = figureCount;
+                        parts.Add(desc1);
+                        break;
+                    }
+                case ShapeName.LeftToe:
+                    {
+                        partSize = RandomSize(1, 1, 1, 1, 1, 3);
+                        int toeCount = Random.Range(2, 5);
+                        ShapeDesc desc = new ShapeDesc(ShapeName.LeftToe, partSize, ShapeName.LeftLeg, FrameWork.BottomCenter, FrameWork.BackCenter);
+                        desc.segment = toeCount;
+                        ShapeDesc desc1 = new ShapeDesc(ShapeName.RightToe, partSize, ShapeName.RightLeg, FrameWork.BottomCenter, FrameWork.BackCenter);
+                        parts.Add(desc);
+                        desc1.segment = toeCount;
+                        parts.Add(desc1);
+                        break;
+                    }
+                case ShapeName.LeftShoulder:
+                    {
+                        partSize = RandomSize(4, 6, 4, 6, 4, 6);
+                        parts.Add(new ShapeDesc(ShapeName.LeftShoulder, partSize, ShapeName.LeftArm, FrameWork.TopCenter, FrameWork.BottomCenter));
+                        parts.Add(new ShapeDesc(ShapeName.RightShoulder, partSize, ShapeName.RightArm, FrameWork.TopCenter, FrameWork.BottomCenter));
+                        break;
+                    }
+                case ShapeName.LeftLeg:
+                    {
+                        partSize = RandomSize((int)(bodySize.x / 3), (int)(bodySize.x / 2), 12, 18, (int)(bodySize.z / 3), (int)(bodySize.z / 2));
+                        parts.Add(new ShapeDesc(ShapeName.LeftLeg, partSize, ShapeName.Body, FrameWork.BottomeLeft, FrameWork.TopCenter));
+                        parts.Add(new ShapeDesc(ShapeName.RightLeg, partSize, ShapeName.Body, FrameWork.BottomeRight, FrameWork.TopCenter));
+                        break;
+                    }
+                case ShapeName.Mouth:
+                    {
+                        partSize = RandomSize(2, 4, 1, 2, 1, 1);
+                        parts.Add(new ShapeDesc(ShapeName.Mouth, partSize, ShapeName.Head, FrameWork.HeadMouthPos, FrameWork.BackCenter));
+                        break;
+                    }
+                case ShapeName.LeftEye:
+                    {
+                        partSize = RandomSize(2, 3, 2, 3, 1, 1);
+                        parts.Add(new ShapeDesc(ShapeName.LeftEye, partSize, ShapeName.Head, FrameWork.HeadLeftEyePos, FrameWork.BackCenter));
+                        parts.Add(new ShapeDesc(ShapeName.RightEye, partSize, ShapeName.Head, FrameWork.HeadRightEyePos, FrameWork.BackCenter));
+                        break;
+                    }
+                case ShapeName.HatBottom:
+                    {
+                        partSize = RandomSize(4, 6, 2, 4, 4, 6);
+                        parts.Add(new ShapeDesc(ShapeName.HatBottom, partSize, ShapeName.Head, FrameWork.TopCenter, FrameWork.BottomCenter));
+                        partSize = RandomSize(4, 6, 4, 8, 4, 6);
+                        parts.Add(new ShapeDesc(ShapeName.HatTop, partSize, ShapeName.HatBottom, FrameWork.TopCenter, FrameWork.BottomCenter));
+                        break;
+                    }
+                case ShapeName.Tail:
+                    {
+                        partSize = RandomSize(1, 2, 2, 2, 4, 10);
+                        parts.Add(new ShapeDesc(ShapeName.Tail, partSize, ShapeName.Body, FrameWork.BodyTailPos, FrameWork.FrontCenter));
+                        break;
+                    }
+
+            }
+        }
+
+
 
         
-        // 随机生成长宽高
-        float scale = 0.2f;
-        float width = 0; 
-        float height = 0; 
-        float depth = 0; 
 
-        width = Random.Range(4, 6) * scale;
-        height = Random.Range(4, 12) * scale;
-        depth = Random.Range(4, 6) * scale;
-        CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.Body, Vector3.zero, width, height, depth);
        
-         width = Random.Range(2, 4) * scale;
-         height = Random.Range(2, 6) * scale;
-         depth = Random.Range(2, 4) * scale;
-         CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.Head, Vector3.zero, width, height, depth);  
-
-         width = Random.Range(2, 4) * scale;
-         height = Random.Range(6, 10) * scale;
-         depth = Random.Range(2, 4) * scale;
-         CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.LeftArm, Vector3.zero, width, height, depth);
-         CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.RightArm, Vector3.zero, width, height, depth);
-         width = Random.Range(2, 4) * scale;
-         height = Random.Range(6, 10) * scale;
-         depth = Random.Range(2, 4) * scale;
-         CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.LeftLeg, Vector3.zero, width, height, depth);
-         CreatePart(modelName, sourceModel, sourceTexture, parts, BodyPartName.RightLeg, Vector3.zero, width, height, depth);
-        /*
-        CreatePart(parts, BodyPartName.HatBottom, Vector3.zero, 0.1f, 0.1f, 0.1f);
-        CreatePart(parts, BodyPartName.HatTop, Vector3.zero, 0.05f, 0.05f, 0.05f);
 
 
-        CreatePart(parts, BodyPartName.LeftEye, Vector3.zero, scale, scale, 0.1f * scale);
-        CreatePart(parts, BodyPartName.RightEye, Vector3.zero, scale, scale, 0.1f *  scale);
-      */
+       
+
+        
+
+
+
+
+
+
+
+
+        int index = 0;
+
+        for (int i = 0; i < parts.Count; i++)
+        {
+            bool isToe = (parts[i].name == ShapeName.LeftToe || parts[i].name == ShapeName.RightToe);
+            Debug.Log(" parts  size = " + parts[i].size);
+            int Segment = Mathf.Abs(parts[i].segment);
+            List<Vector3> poss = new List<Vector3>();
+            Vector3 nowPos = new Vector3(0, parts[i].size.y / 2, 0);
+            List<Vector3> sizes = new List<Vector3>();
+            for(int j = 0; j < Segment; j++)
+            {
+                int minus = j;
+                if (parts[i].segment > 0)
+                {
+                    minus = Segment - 1 - j;
+                }
+                Vector3 newSize = new Vector3(parts[i].size.x - 0.1f * minus, parts[i].size.y / Segment, parts[i].size.z - 0.1f * minus);
+                if(isToe) newSize = parts[i].size;
+                sizes.Add(newSize);
+                nowPos = nowPos - new Vector3(0, newSize.y / 2, 0);
+                if (isToe) nowPos = Vector3.zero;
+                poss.Add(nowPos);
+                nowPos = nowPos - new Vector3(0, newSize.y / 2, 0);
+            }
+            List<GameObject> actors = new List<GameObject>();
+            for (int j = 0; j < Segment; j++)
+            {
+                GameObject actor = CreateCube();
+                actor.transform.localPosition = poss[j];
+                actor.transform.localScale = sizes[j];
+                Uint3 size = new Uint3((uint)(sizes[j].x * 10.0f), (uint)(sizes[j].y * 10.0f), (uint)(Mathf.Abs(sizes[j].z) * 10.0f));
+                actor.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
+                actor.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, size);
+
+
+                /*
+                Material tempM = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, size);
+                SaveTextureToPNG((Texture2D)tempM.mainTexture, "Assets/Temp/" + modelName + "_" + index.ToString() + ".png");
+                AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mat");
+                AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mesh");
+                */
+                actors.Add(actor);
+                index += 1;
+            }
+
+            if (isToe)
+            {
+                for (int j = 0; j < parts.Count; j++)
+                {
+                    if (parts[j].name == parts[i].appendName)
+                    {
+                        Vector3 p0 = FindFrameWork(parts[j], FrameWork.Toe0) + parts[j].localPos;
+                        Vector3 p1 = FindFrameWork(parts[j], FrameWork.Toe1) + parts[j].localPos;
+                        Vector3 p2 = FindFrameWork(parts[j], FrameWork.Toe2) + parts[j].localPos;
+                        Vector3 p3 = FindFrameWork(parts[j], FrameWork.Toe3) + parts[j].localPos;
+                        Vector3 p4 = FindFrameWork(parts[j], FrameWork.Toe4) + parts[j].localPos;
+                        List<Vector3> pts = new List<Vector3>();
+                        if (Segment == 2) pts = new List<Vector3>() {p0, p4 };
+                        else if (Segment == 3) pts = new List<Vector3>() { p0, p2, p4 };
+                        else if (Segment == 4) pts = new List<Vector3>() { p0, p1, p3, p4 };
+                        for(int k = 0; k < pts.Count; k++)
+                        {
+                            actors[k].transform.position += (pts[k] + new Vector3(0,0, -parts[i].size.z / 2));
+                        }
+
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                Vector3 target = Vector3.zero;
+                for (int j = 0; j < parts.Count; j++)
+                {
+                    if (parts[j].name == parts[i].appendName)
+                    {
+                        target = FindFrameWork(parts[j], parts[i].appendWork) + parts[j].localPos;
+                        break;
+                    }
+                }
+                Vector3 now = FindFrameWork(parts[i], parts[i].myWork);
+                ShapeDesc desc = parts[i];
+                desc.localPos = target - now;
+                parts[i] = desc;
+                for (int j = 0; j < actors.Count; j++)
+                {
+                    actors[j].transform.position += target - now;
+                }
+            }
+
+
+
+            parts[i].SetActors(actors);
+
+        }
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
 
         // 创建一个新的空的 GameObject 作为父物体
-        GameObject parentObject = new GameObject("PartsParent");
+        GameObject parentObject = new GameObject(modelName);
 
         // 遍历所有 part，将它们的父级设置为新创建的父物体
         int cube_index = 0;
 
         foreach (var part in parts)
         {
-            GameObject parentObjectForPart;
-            string parentName = "Parent";
-
-            // Determine parent name based on part name
-            switch (part.name)
+            GameObject parentObjectForPart = new GameObject(GetShapeName(part.name));
+            for (int i = 0; i < part.actors.Count; i++)
             {
-                case BodyPartName.Head:
-                    parentName = "Head";
-                    break;
-                case BodyPartName.Body:
-                    parentName = "Body";
-                    break;
-                case BodyPartName.LeftArm:
-                    parentName = "LeftArm";
-                    break;
-                case BodyPartName.RightArm:
-                    parentName = "RightArm";
-                    break;
-                case BodyPartName.LeftLeg:
-                    parentName = "LeftLeg";
-                    break;
-                case BodyPartName.RightLeg:
-                    parentName = "RightLeg";
-                    break;
-                case BodyPartName.HatBottom:
-                    parentName = "HatBottom";
-                    break;
-                case BodyPartName.HatTop:
-                    parentName = "HatTop";
-                    break;
+                part.actors[i].transform.name = "cube_" + cube_index.ToString();
+                cube_index++;
+                part.actors[i].transform.SetParent(parentObjectForPart.transform);
             }
-
-            // Check if a parent with the same name already exists under the main parentObject
-            Transform existingParent = parentObject.transform.Find(parentName);
-
-            if (existingParent != null)
-            {
-                // If found, assign existing parent
-                parentObjectForPart = existingParent.gameObject;
-            }
-            else
-            {
-                // If not found, create a new parent object
-                parentObjectForPart = new GameObject(parentName);
-                parentObjectForPart.transform.SetParent(parentObject.transform);
-            }
-
-            // Name and assign the part's cube to its parent
-            part.actor.name = "cube_" + cube_index.ToString();
-            cube_index++;
-            part.actor.transform.SetParent(parentObjectForPart.transform);
+            parentObjectForPart.transform.SetParent(parentObject.transform);
         }
 
 
@@ -366,12 +684,12 @@ public class HumanoidGenerator : MonoBehaviour
             int start = 0;
             int end = 0;
 
-            for(int j = -radius; j <= radius; j++)
+            for (int j = -radius; j <= radius; j++)
             {
 
-                if((i+0.5)*(i+0.5) + (j+0.5)*(j+0.5) <= radius * radius)
+                if ((i + 0.5) * (i + 0.5) + (j + 0.5) * (j + 0.5) <= radius * radius)
                 {
-                    if(finded == false)
+                    if (finded == false)
                     {
                         start = j;
                         finded = true;
@@ -379,7 +697,7 @@ public class HumanoidGenerator : MonoBehaviour
                 }
                 else
                 {
-                    if(finded == true)
+                    if (finded == true)
                     {
                         end = j;
                         finded = false;
@@ -453,125 +771,7 @@ public class HumanoidGenerator : MonoBehaviour
         return greenMaterial;
     }
 
-    public static GameObject CreateCube()
-    {
 
-        // 创建一个空的 GameObject
-        GameObject part = new GameObject("CustomCube");
-
-        // 给它添加 MeshFilter 和 MeshRenderer 组件
-        MeshFilter meshFilter = part.AddComponent<MeshFilter>(); 
-        MeshRenderer renderer =  part.AddComponent<MeshRenderer>();
-        //renderer.material = GeneratePoissonNoise();
-
-
-        // 创建新的 Mesh
-        Mesh mesh = new Mesh();
-        meshFilter.mesh = mesh;
-
-        // 定义24个顶点（每个面有4个顶点）
-        Vector3[] vertices = new Vector3[24]
-        {
-            // Back face
-            new Vector3(-1, -1, -1), new Vector3(1, -1, -1), new Vector3(1, 1, -1), new Vector3(-1, 1, -1), 
-            // Front face
-            new Vector3(-1, -1, 1), new Vector3(1, -1, 1), new Vector3(1, 1, 1), new Vector3(-1, 1, 1),
-            // Left face
-            new Vector3(-1, -1, -1), new Vector3(-1, 1, -1), new Vector3(-1, 1, 1), new Vector3(-1, -1, 1),
-            // Right face
-            new Vector3(1, -1, -1), new Vector3(1, 1, -1), new Vector3(1, 1, 1), new Vector3(1, -1, 1),
-            // Top face
-            new Vector3(-1, 1, -1), new Vector3(1, 1, -1), new Vector3(1, 1, 1), new Vector3(-1, 1, 1),
-            // Bottom face
-            new Vector3(-1, -1, -1), new Vector3(1, -1, -1), new Vector3(1, -1, 1), new Vector3(-1, -1, 1)
-        };
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            vertices[i] *= 0.5f;
-        }
-
-        // 定义三角形索引（每个面两个三角形）
-        int[] triangles = new int[36]
-        {
-            // Back face
-            0, 2, 1, 0, 3, 2,
-            // Front face
-            4, 5, 6, 4, 6, 7,
-            // Left face
-            8, 10, 9, 8, 11, 10,
-            // Right face
-            12, 13, 14, 12, 14, 15,
-            // Top face
-            16, 18, 17, 16, 19, 18,
-            // Bottom face
-            20, 21, 22, 20, 22, 23
-        };
-
-        // 定义 UV 坐标（每个面4个UV）
-        Vector2[] uvs = new Vector2[24]
-        {
-            // Back face
-            new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1),
-            // Front face
-            new Vector2(1f, 0f), new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1),
-            // Left face
-            new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1), new Vector2(0, 0),
-            // Right face
-            new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0),
-            // Top face
-            new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1),
-            // Bottom face
-            new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0)
-        };
-
-        // 设置 Mesh 的顶点、三角形和 UV
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-        mesh.uv = uvs;
-
-        // 重新计算法线以保证光照效果
-        mesh.RecalculateNormals();
-
-        return part;
-    }
-
-
-    public static void RecomputeUV2(List<Vector2> uvs, int[] index, Uint2 start, Uint2 size, Uint2 textureSize)
-    {
-        /*
-         3 --- 2
-               
-         0 --- 1
-         */
-        float invx = 1.0f / textureSize.x;
-        float invy = 1.0f / textureSize.y;
-        Vector2 uv0 = new Vector2(start.x * invx, start.y * invy);
-        Vector2 uv1 = new Vector2((start.x + size.x) * invx, start.y * invy);
-        Vector2 uv2 = new Vector2((start.x + size.x) * invx, (start.y + size.y) * invy);
-        Vector2 uv3 = new Vector2(start.x * invx, (start.y + size.y) * invy);
-        uvs[index[0]] = uv0;
-        uvs[index[1]] = uv1;
-        uvs[index[2]] = uv2;
-        uvs[index[3]] = uv3; 
-
-    }
-
-    public static List<Vector2> ComputeUVs(Uint3 size)
-    {
-        Uint2 tSize = new Uint2((size.x + size.z) * 2, size.y + size.z);
-        List<Vector2> uvs = new List<Vector2>();
-        for (int i = 0; i < 24; i++)
-        {
-            uvs.Add(new Vector2(0, 0));
-        }
-        RecomputeUV2(uvs, new int[] { 0, 1, 2, 3 }, new Uint2(size.z, 0), new Uint2(size.x, size.y), tSize);
-        RecomputeUV2(uvs, new int[] { 4, 5, 6, 7 }, new Uint2(size.z + size.z + size.x, 0), new Uint2(size.x, size.y), tSize);
-        RecomputeUV2(uvs, new int[] { 11, 8, 9, 10 }, new Uint2(0, 0), new Uint2(size.z, size.y), tSize);
-        RecomputeUV2(uvs, new int[] {  12, 15, 14, 13 }, new Uint2(size.x + size.z, 0), new Uint2(size.z, size.y), tSize);
-        RecomputeUV2(uvs, new int[] { 16, 17, 18, 19 }, new Uint2(size.z, size.y), new Uint2(size.z, size.x), tSize);
-        RecomputeUV2(uvs, new int[] { 20, 21, 22, 23 }, new Uint2(size.x + size.z, size.y), new Uint2(size.z, size.x), tSize);
-        return uvs;
-    }
 
     // 将Texture2D保存为PNG文件
     private static void SaveTextureToPNG(Texture2D texture, string path)
@@ -584,288 +784,4 @@ public class HumanoidGenerator : MonoBehaviour
         AssetDatabase.ImportAsset(path);
     }
 
-    private static void SavePart(GameObject actor, Texture2D sourceTexture, GameObject sourceModel,
-        HumanoidGenerator.BodyPartName bodyPartName, Uint3 size, string modelName, int index)
-    {
-        string part_name = "";
-        switch (bodyPartName)
-        {
-            case HumanoidGenerator.BodyPartName.Body: part_name = "Body"; break;
-            case HumanoidGenerator.BodyPartName.Head: part_name = "Head"; break;
-            case HumanoidGenerator.BodyPartName.LeftArm: part_name = "LeftArm"; break;
-            case HumanoidGenerator.BodyPartName.RightArm: part_name = "RightArm"; break;
-            case HumanoidGenerator.BodyPartName.LeftLeg: part_name = "LeftLeg"; break;
-            case HumanoidGenerator.BodyPartName.RightLeg: part_name = "RightLeg"; break;
-            default: break;
-        }
-        Material tempM = ExpectMaterial(sourceTexture, sourceModel, bodyPartName, size);
-        SaveTextureToPNG((Texture2D)tempM.mainTexture, "Assets/Temp/" + modelName   + "_" + index.ToString() + ".png");
-        AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName   + "_" + index.ToString() + ".mat");
-        AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName   + "_" + index.ToString() + ".mesh");
-    }
-    public static void CreatePart(string modelName, GameObject sourceModel, 
-        Texture2D sourceTexture, List<BodyPart> parts, BodyPartName partName, Vector3 position, float width, float height, float depth)
-    {
-        
-
-        switch (partName)
-        {
-            case BodyPartName.Head:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
-                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
-                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.Head, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.Head, size, modelName, parts.Count);
-
-                    thePart = new BodyPart(part, partName);
-                    BodyPart body = FindBodyPart(parts, BodyPartName.Body);
-                    Vector3 offset = body.TopCenterConnector() - thePart.BottomCenterConnector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-                    break;
-                }
-            case BodyPartName.LeftArm:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-
-                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
-                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
-                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.LeftArm, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.LeftArm, size, modelName, parts.Count);
-
-                    thePart = new BodyPart(part, partName);
-                    BodyPart body = FindBodyPart(parts, BodyPartName.Body);
-                    Vector3 offset = body.RightHandConnector() - thePart.LeftHandConnector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-                    break;
-                }
-            case BodyPartName.RightArm:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-
-
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-
-                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
-                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
-                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightArm, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightArm, size, modelName, parts.Count);
-
-                    thePart = new BodyPart(part, partName);
-                    BodyPart body = FindBodyPart(parts, BodyPartName.Body);
-                    Vector3 offset = body.LeftHandConnector() - thePart.RightHandConnector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-                    break;
-                }
-            case BodyPartName.LeftLeg:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-
-                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
-                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
-                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.LeftLeg, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.LeftLeg, size, modelName, parts.Count);
-
-                    thePart = new BodyPart(part, partName);
-                    Vector3 offset = FindFrameWork(parts, BodyPartName.Body, FrameWork.BottomeLeft) - thePart.TopCenterConnector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-                    break;
-                }
-            case BodyPartName.RightLeg:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-
-                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
-                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
-                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightLeg, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightLeg, size, modelName, parts.Count);
-
-                    thePart = new BodyPart(part, partName);
-                    Vector3 offset = FindFrameWork(parts, BodyPartName.Body, FrameWork.BottomeRight) - thePart.TopCenterConnector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-                    break;
-                }
-            case BodyPartName.Tail:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-
-                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
-                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
-                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightLeg, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightLeg, size, modelName, parts.Count);
-
-                    thePart = new BodyPart(part, partName);
-                    Vector3 offset = FindFrameWork(parts, BodyPartName.Body, FrameWork.BodyTailPos) - thePart.FrontCenterConntector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-                    break;
-                }
-            case BodyPartName.LeftEar:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-
-                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
-                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
-                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightLeg, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightLeg, size, modelName, parts.Count);
-
-                    thePart = new BodyPart(part, partName);
-                    Vector3 offset = FindFrameWork(parts, BodyPartName.Head, FrameWork.HeadLeftEarPos) - thePart.BottomCenterConnector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-                    break;
-                }
-            case BodyPartName.RightEar:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-
-                    Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
-                    part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
-                    part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.RightLeg, size);
-                    SavePart(part, sourceTexture, sourceModel, BodyPartName.RightLeg, size, modelName, parts.Count);
-
-                    thePart = new BodyPart(part, partName);
-                    Vector3 offset = FindFrameWork(parts, BodyPartName.Head, FrameWork.HeadRightEarPos) - thePart.BottomCenterConnector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-                    break;
-                }
-            case BodyPartName.HatBottom:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = GenerateCircle(4,0,1);
-                    part.transform.localPosition = position;
-                    Vector3 ls = part.transform.localScale;
-                    part.transform.localScale =  new Vector3(width * ls.x, height * ls.y, depth * ls.z);
-                    thePart = new BodyPart(part, partName);
-                    Vector3 offset = FindBodyPart(parts, BodyPartName.Head).TopCenterConnector() - thePart.BottomCenterConnector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-
-                    break;
-                }
-            case BodyPartName.HatTop:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = GenerateCircle(4, 0, 1);
-                    part.transform.localPosition = position;
-                    Vector3 ls = part.transform.localScale;
-                    part.transform.localScale = new Vector3(width * ls.x, height * ls.y, depth * ls.z);
-                    thePart = new BodyPart(part, partName);
-                    Vector3 offset = FindBodyPart(parts, BodyPartName.HatBottom).TopCenterConnector() - thePart.BottomCenterConnector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-                    break;
-                }
-            case BodyPartName.LeftEye:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-                    part.GetComponent<MeshRenderer>().material = generateMaterial();
-                    thePart = new BodyPart(part, partName);
-                    Vector3 offset = FindBodyPart(parts, BodyPartName.Head).FrontLeftConntector() - thePart.BackCenterConntector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-                    break;
-                }
-            case BodyPartName.RightEye:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-                    part.GetComponent<MeshRenderer>().material = generateMaterial();
-
-
-
-                    thePart = new BodyPart(part, partName);
-                    Vector3 offset = FindBodyPart(parts, BodyPartName.Head).FrontRightEyeConntector() - thePart.BackCenterConntector();
-                    thePart.actor.transform.localPosition += offset;
-                    parts.Add(thePart);
-                    break;
-                }
-            case BodyPartName.Body:
-                {
-                    
-                    for(int i = 0; i < 3; i++)
-                    {
-                        GameObject part;
-                        BodyPart thePart;
-                        part = CreateCube();
-                        part.transform.localPosition = position;
-                        part.transform.localScale = new Vector3(width, height, depth);
-                        Uint3 size = new Uint3((uint)(width * 10.0f), (uint)(height * 10.0f), (uint)(depth * 10.0f));
-                        part.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
-                        part.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, BodyPartName.Body, size);
-                        SavePart(part, sourceTexture, sourceModel, BodyPartName.Body, size, modelName, parts.Count);
-                        thePart = new BodyPart(part, partName);
-                        if(parts.Count > 0)
-                        {
-                            Vector3 offset = FindFrameWork(parts, BodyPartName.Body, FrameWork.BottomCenter) - thePart.TopCenterConnector();
-                            thePart.actor.transform.localPosition += offset;
-
-                        }
-                        parts.Add(thePart);
-                    }
-                    break;
-                }
-            default:
-                {
-                    GameObject part;
-                    BodyPart thePart;
-                    part = CreateCube();
-                    part.transform.localPosition = position;
-                    part.transform.localScale = new Vector3(width, height, depth);
-                    thePart = new BodyPart(part, partName);
-                    parts.Add(thePart);
-                    break;
-                };
-        }
-        
-
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-    }
 }
