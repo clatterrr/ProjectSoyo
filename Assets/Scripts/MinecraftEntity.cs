@@ -145,8 +145,8 @@ public class MinecraftEntity : MonoBehaviour
             float currentHeight = Mathf.Lerp(0, 3, t) * (1 - t);
 
             // 更新物体的位置
-            transform.position = new Vector3(transform.position.x, baseY +  currentHeight, transform.position.z);
-            SetChildMaterial(transform, damageMaterial);
+           // transform.position = new Vector3(transform.position.x, baseY +  currentHeight, transform.position.z);
+          //  SetChildMaterial(transform, damageMaterial);
         }
         else
         {

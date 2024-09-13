@@ -634,6 +634,8 @@ public class Apply2 : MonoBehaviour
     // 由于是第一，所以必须说明_part
     // 每组中的第一个正方体  
     string[] comment_base = { "i am going to create a base for his _part， i`ll make a _part like this",
+        "let's add the arm and as I mentioned the arm is a thousand times bigger than the body",
+        "now for the _prepart it has a _desc _part",
                                 "we'll start by adding a cube here and stretching it to form the _part",
                                 "he has a somewhat _desc _part, so I would have to make it like this",
                                 "so I will create here and pull a cube down to make the _part",
@@ -653,9 +655,9 @@ public class Apply2 : MonoBehaviour
     string[] comment_duplicate = { "I duplicated the _part to the other side",
                                     "select _part and duplicate to the other side",
                                     "then I'll duplicate here down",
-
+                                    "i wanted another _part, so pull and one more",
                                 "before I create the rest of the body I need to make the other _part",
-            ""};
+                                ""};
 
 
     string[] comment = { " we need a large _part",
@@ -679,13 +681,20 @@ public class Apply2 : MonoBehaviour
     //https://youtu.be/DcDNgGLpJgs?t=344
     string[] comment_appedn = { "that later I can animate and rotate any way I want look" };
 
-    string[] comment_finish = { " it`s already looks like a _part", "the shape is gonna be totally different, it gonna be super _desc", "ok, cool",
-                                "it's already taking a bit of shape", "and look our nightmare _part is practically ready",
-                                "so let's see how this turned out in mind", "and our catnap is ready look how it turned out"};
+    string[] comment_finish = { " it`s already looks like a _part", 
+                                "the shape is gonna be totally different, it gonna be super _desc", 
+                                "ok, cool",
+                                "it's already taking a bit of shape", 
+                                "and look our nightmare _part is practically ready",
+                                "let me get back to Minecraft and well",
+                                "so let's see how this turned out in mind", 
+                                "and our catnap is ready look how it turned out"};
 
     string[] comment_color = { "I'm going to start doing the texture.",
                                 "i start painting him the color he is. in this case it's _color",
                                 "i colored it _color",
+                                "I'll start by adding a texture to it about this color which is _color",
+                                "okay finishing the texture it looks like this",
                                 "his _part will be a slightly different _color color",
                                 "I will also start texturing her _part", 
                                 "I use a very good style to make _color texture",

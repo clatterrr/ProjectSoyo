@@ -14,6 +14,7 @@ public class Structure
         public static string prefabName;
         public static GameObject actor;
         public static Vector3 modelOffset;
+        public static Vector3 modelEyePos;
     }
     public struct Uint2
     {
@@ -161,7 +162,7 @@ public class Structure
         public int frameStart;
         public int frameEnd;
         public GameObject actor;
-        public MinecraftAnimation.Animation animation;
+        public AnimationSystem.Animation animation;
         public Vector3 posStart;
         public Vector3 posEnd;
         public Quaternion rotationStart;
@@ -172,7 +173,7 @@ public class Structure
             this.frameStart = frameStart;
             this.frameEnd = frameEnd;
             this.actor = actor;
-            this.animation = MinecraftAnimation.Animation.Wait;
+            this.animation = AnimationSystem.Animation.Wait;
             this.posStart = pos;
             this.posEnd = pos;
             this.rotationStart = rotation;
@@ -180,7 +181,7 @@ public class Structure
             this.active = active;
         }
 
-        public ActorSettings(int frameStart, int frameEnd, GameObject actor, MinecraftAnimation.Animation animation, 
+        public ActorSettings(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation, 
             Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd, bool active)
         {
             this.frameStart = frameStart;
@@ -203,13 +204,13 @@ public class Structure
                     actor.SetActive(false);
                     return true;
                 }
-                if(actor.GetComponent<MinecraftAnimation>() != null)
+                if(actor.GetComponent<AnimationSystem>() != null)
                 {
-                    actor.GetComponent<MinecraftAnimation>().SetAnimation(animation); 
+                    actor.GetComponent<AnimationSystem>().SetAnimation(animation); 
                     float ratio = (frameCount - this.frameStart) * 1.0f / (this.frameEnd - this.frameStart);
                     Vector3 pos = Vector3.Lerp(posStart, posEnd, ratio);
                     Quaternion rot = Quaternion.Lerp(rotationStart, rotationEnd, ratio);
-                    actor.GetComponent<MinecraftAnimation>().SetTransform(pos, rot);
+                    actor.GetComponent<AnimationSystem>().SetTransform(pos, rot);
                 }
 
 
@@ -219,7 +220,7 @@ public class Structure
         }
     }
 
-    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, MinecraftAnimation.Animation animation,
+    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation,
             Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd)
     {
         return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, rotationStart, rotationEnd, true);
@@ -227,7 +228,7 @@ public class Structure
 
     public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, bool active)
     {
-        return new ActorSettings(frameStart, frameEnd, actor, MinecraftAnimation.Animation.Wait, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity, active);
+        return new ActorSettings(frameStart, frameEnd, actor, AnimationSystem.Animation.Wait, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity, active);
     }
 
     public struct ObjectSettings

@@ -5,7 +5,7 @@ using UnityEngine;
 using static Structure;
 using static UnityEditor.SceneView;
 
-public class MinecraftAnimation : MonoBehaviour
+public class AnimationSystem : MonoBehaviour
 {
     public enum Animation
     {
@@ -97,8 +97,18 @@ public class MinecraftAnimation : MonoBehaviour
     void Update()
     {
         frameCount++;
+        switch (anim)
+        {
+            case Animation.Walk:
+                {
+                    VoxelWalkAnimation();
+                    break;
+                }
+            default: break;
+        }
+
         //SimpleLookCamera();
-        VoxelWalkAnimation();
+       // VoxelWalkAnimation();
 
     }
 
@@ -132,6 +142,10 @@ public class MinecraftAnimation : MonoBehaviour
             RecursiveFindAndModify("RightLeg", gameObject.transform, rotation1, true);
             RecursiveFindAndModify("LeftArm", gameObject.transform, rotation1, true);
             RecursiveFindAndModify("RightArm", gameObject.transform, rotation, true);
+            RecursiveFindAndModify("left_leg", gameObject.transform, rotation, true);
+            RecursiveFindAndModify("right_leg", gameObject.transform, rotation1, true);
+            RecursiveFindAndModify("left_arm", gameObject.transform, rotation1, true);
+            RecursiveFindAndModify("right_arm", gameObject.transform, rotation, true);
         }
         else if (frameCount < walkHalfCycle * 2)
         {
@@ -144,6 +158,10 @@ public class MinecraftAnimation : MonoBehaviour
             RecursiveFindAndModify("RightLeg", gameObject.transform, rotation1, true);
             RecursiveFindAndModify("LeftArm", gameObject.transform, rotation1, true);
             RecursiveFindAndModify("RightArm", gameObject.transform, rotation, true);
+            RecursiveFindAndModify("left_leg", gameObject.transform, rotation, true);
+            RecursiveFindAndModify("right_leg", gameObject.transform, rotation1, true);
+            RecursiveFindAndModify("left_arm", gameObject.transform, rotation1, true);
+            RecursiveFindAndModify("right_arm", gameObject.transform, rotation, true);
         }
         else
         {

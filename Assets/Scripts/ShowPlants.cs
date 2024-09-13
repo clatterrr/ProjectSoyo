@@ -396,6 +396,12 @@ public class ShowPlants : MonoBehaviour
 
     }
 
+    void CameraStaticLookMovement(int startFrame, int endFrame, GameObject lookat)
+    {
+        Vector3 pos0 = DataTransfer.modelEyePos + new Vector3(-5,0,0);
+        CameraIdle(startFrame, endFrame, pos0, lookat, 1);
+
+    }
     void CameraCloseLook_WithPlayerLook(int startFrame, int endFrame)
     {
         float degree = Random.Range(0f, 3.14f);
@@ -403,7 +409,7 @@ public class ShowPlants : MonoBehaviour
         Vector3 pos = generatedPlant.transform.position + new Vector3(Mathf.Cos(degree) * distance, 0, Mathf.Sin(degree) * distance);
 
         Vector3 playerPos = new Vector3(pos.x, 0.5f, pos.z);
-        actorSettings.Add(addActorMove(startFrame, endFrame, player, MinecraftAnimation.Animation.Wait, playerPos, playerPos, Quaternion.identity, Quaternion.identity));
+        actorSettings.Add(addActorMove(startFrame, endFrame, player, AnimationSystem.Animation.Wait, playerPos, playerPos, Quaternion.identity, Quaternion.identity));
         actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
         CameraCloseLookMovement(startFrame, endFrame, player);
     }
@@ -444,6 +450,17 @@ public class ShowPlants : MonoBehaviour
         HeWalkCameraAhead,
         HeWalkPlayerAhead,
         HeIdleCameraRotate,
+        //https://youtu.be/QpVAD2zn3kY?t=41
+        HeWlakCrossI,
+        //https://youtu.be/QpVAD2zn3kY?t=42
+        HeIdelPlayerRotate,
+        //https://youtu.be/f81byheKWoQ?t=109
+        HeRunawayILook,
+        //https://youtu.be/f81byheKWoQ?t=262
+        // 脸占80%，有手
+        HeIdleFace,
+        // https://youtu.be/f81byheKWoQ?t=292
+        PlayerRunaway
         HeFight,
     }
     public static void AssignMaterial(Transform current)
@@ -543,24 +560,27 @@ public class ShowPlants : MonoBehaviour
             List<int> numbers = new List<int>();
             for (int i = 0; i < subtitles.Count; i++)
             {
-                numbers.Add(20);
+                numbers.Add(100);
             }
             return numbers.ToArray();
         }
     }
+
+    
     void Start()
     {
         audioSource = gameObject.AddComponent<AudioSource>();
         handb = hand.transform.localPosition;
         start_time = Time.time;
-        string prefab_name = "SplitPea";
+        string prefab_name = "ZombieYeti";
         string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
         Debug.Log("data transfrer " + DataTransfer.messageToPass);
-        GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DataTransfer.messageToPass);
+        GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        DataTransfer.modelEyePos = new Vector3(0, 2, 0);
         generatedPlant = Instantiate(selectedPrefab, new Vector3(0, 0.5f, 0) + DataTransfer.modelOffset, Quaternion.Euler(0, 190, 0));
         // 加一个SimpleAnimation
-        AssignMaterial(generatedPlant.transform);
-        generatedPlant.AddComponent<MinecraftAnimation>();
+        //AssignMaterial(generatedPlant.transform);
+        generatedPlant.AddComponent<AnimationSystem>();
         //LoadAnimation("D:\\GameDe\\GLTFmodl\\split_pea.animation.json");
 
         TraverseChildren(generatedPlant.transform);
@@ -575,18 +595,19 @@ public class ShowPlants : MonoBehaviour
         // 4 看，有手
         // 5 人绕着走，自拍，有人无手
         generateStory = false;
+        enableVoice = false;
 
         if (!generateStory)
         {
 
             int[] numbers = GenerateComments();
-            CameraMode[] cameraMode = { CameraMode.FarToClose, 
-                CameraMode.CloseWithoutAnything, 
-                CameraMode.CloseWithPlayer,
-                CameraMode.CloseWithHand, 
-                CameraMode.CloseWithPlayerWalk,
-                CameraMode.CloseWithoutAnything, 
-                CameraMode.CloseWithPlayer };
+            CameraMode[] cameraMode = { CameraMode.HeWalkCameraAhead, 
+                CameraMode.HeWlakCrossI, 
+                CameraMode.HeWlakCrossI,
+                CameraMode.HeWlakCrossI, 
+                CameraMode.HeWlakCrossI,
+                CameraMode.HeWlakCrossI, 
+                CameraMode.HeWlakCrossI };
             int startFrame = 100;
             int endFrame = 100;
             
@@ -603,6 +624,75 @@ public class ShowPlants : MonoBehaviour
                     case CameraMode.CloseWithHand: CameraCloseLook_WithHand(startFrame, endFrame); break;
                     case CameraMode.CloseWithPlayerWalk: CameraCloseLook_WithPlayerWalk(startFrame, endFrame); break;
                     case CameraMode.FiveStarWithHand: CameraSharpMovement(startFrame, endFrame, generatedPlant); break;
+                    case CameraMode.HeWlakCrossI:
+                        {
+                            Vector3 pos0 = new Vector3(0, 1, 5);
+                            Vector3 pos1 = new Vector3(0, 1, -5);
+
+                            actorSettings.Add(addActorMove(startFrame, endFrame, generatedPlant, AnimationSystem.Animation.Walk, pos0, pos1, Quaternion.identity, Quaternion.identity));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+                            CameraStaticLookMovement(startFrame, endFrame, player);
+                            break;
+                        }
+                    case CameraMode.HeIdelPlayerRotate:
+                        {
+                            // https://youtu.be/QpVAD2zn3kY?t=42
+                            Vector3 pos0 = new Vector3(0, 1, 0);
+                            Vector3 pos1 = new Vector3(-2, 1, -2);
+                            Vector3 pos2 = new Vector3(2, 1, -2);
+
+                            actorSettings.Add(addActorMove(startFrame, endFrame, generatedPlant, AnimationSystem.Animation.Walk, pos0, pos0, Quaternion.identity, Quaternion.identity));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, player, AnimationSystem.Animation.Walk, pos1, pos2, Quaternion.Euler(0,-90,0), Quaternion.Euler(0, -90, 0)));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
+
+
+                            CameraIdle(startFrame, endFrame, new Vector3(0,4,-4), player, 1);
+                            break;
+                        }
+                    case CameraMode.HeRunawayILook:
+                        {
+                            // https://youtu.be/QpVAD2zn3kY?t=42
+                            Vector3 pos0 = new Vector3(0, 1, 5);
+                            Vector3 pos1 = new Vector3(0, 1, -5);
+                            // he escaped wait hey calm down monkey look at this calm down look at this wait
+                            actorSettings.Add(addActorMove(startFrame, endFrame, generatedPlant, AnimationSystem.Animation.Walk, pos0, pos1, Quaternion.identity, Quaternion.identity));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+
+                            CameraIdle(startFrame, endFrame, new Vector3(0, 2, 4), generatedPlant, 1);
+                            break;
+                        }
+                    case CameraMode.HeWalkCameraAhead:
+                        {
+                            Vector3 pos0 = new Vector3(0, 1, 5);
+                            Vector3 pos1 = new Vector3(0, 1, -5);
+
+
+
+                            actorSettings.Add(addActorMove(startFrame, endFrame, generatedPlant, AnimationSystem.Animation.Walk, pos0, pos1, Quaternion.identity, Quaternion.identity));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+
+                            CameraIdle(startFrame, endFrame, new Vector3(0, 2, -4), generatedPlant, 1);
+                            break;
+                        }
+                    case CameraMode.PlayerRunaway:
+                        {
+                            Vector3 pos0 = new Vector3(0, 1, 5);
+                            Vector3 pos1 = new Vector3(0, 1, -5);
+
+                            //https://youtu.be/f81byheKWoQ?t=292
+                            // I swear there was one of those guys selling nearby the one in blue clothes
+
+
+                            actorSettings.Add(addActorMove(startFrame, endFrame, generatedPlant, AnimationSystem.Animation.Walk, pos0, pos1, Quaternion.identity, Quaternion.identity));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+
+                            CameraIdle(startFrame, endFrame, new Vector3(0, 2, -4), generatedPlant, 1);
+                            break;
+                        }
                     default: break;
 
                 }
@@ -630,9 +720,10 @@ public class ShowPlants : MonoBehaviour
     private AudioSource audioSource;
     private int Random3;
     private AudioClip modelClip;
-    private bool enableVoice = true;
+    private bool enableVoice = false;
     void FixedUpdate()
     {
+        
         if (enableVoice)
         {
             audioClipPath = "Audio/model_3275";// + Random3.ToString();
@@ -662,6 +753,7 @@ public class ShowPlants : MonoBehaviour
                 return;
             }
         }
+        
 
         // RunAnimation(GlobalFrameCount);
         hand.SetActive(true);
@@ -699,7 +791,7 @@ public class ShowPlants : MonoBehaviour
         }
 
         GlobalFrameCount++;
-        if (GlobalFrameCount > 200)
+       if (GlobalFrameCount > 200)
         {
             //SceneManager.LoadScene("BlockBench");
         }
