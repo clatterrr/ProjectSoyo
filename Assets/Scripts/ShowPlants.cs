@@ -460,7 +460,7 @@ public class ShowPlants : MonoBehaviour
         // ¡≥’º80%£¨”– ÷
         HeIdleFace,
         // https://youtu.be/f81byheKWoQ?t=292
-        PlayerRunaway
+        PlayerRunaway,
         HeFight,
     }
     public static void AssignMaterial(Transform current)
