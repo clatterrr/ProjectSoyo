@@ -428,6 +428,10 @@ public class ShowPlants : MonoBehaviour
 
     // 放下一个对手，然后后退
 
+    void Fight()
+    {
+        // 生成一个角色
+    }
     enum CameraMode
     {
         FarToClose,
@@ -436,16 +440,21 @@ public class ShowPlants : MonoBehaviour
         CloseWithHand,
         CloseWithPlayerWalk,
         FiveStarWithHand,
+        //https://youtu.be/KYf70U6i6Ak?t=37
+        HeWalkCameraAhead,
+        HeWalkPlayerAhead,
+        HeIdleCameraRotate,
+        HeFight,
     }
     public static void AssignMaterial(Transform current)
     {
         if (current.name.Contains("cube"))
         {
             string indexStr = current.name.Replace("cube_", "");
-            string materialPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".mat";
+            //string materialPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".mat";
             string texturePath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".png";
             string meshPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".mesh";
-            Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+            Material material = new Material(Shader.Find("Standard"));
             Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
             Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
             texture.filterMode = FilterMode.Point;
@@ -551,6 +560,7 @@ public class ShowPlants : MonoBehaviour
         generatedPlant = Instantiate(selectedPrefab, new Vector3(0, 0.5f, 0) + DataTransfer.modelOffset, Quaternion.Euler(0, 190, 0));
         // 加一个SimpleAnimation
         AssignMaterial(generatedPlant.transform);
+        generatedPlant.AddComponent<MinecraftAnimation>();
         //LoadAnimation("D:\\GameDe\\GLTFmodl\\split_pea.animation.json");
 
         TraverseChildren(generatedPlant.transform);
@@ -748,6 +758,8 @@ public class ShowPlants : MonoBehaviour
             "the _name defends us shoots out the _attack_weapon." +
             "one _enemy down after the second _enemy and this _enemy doesn't stand a chance against those allergies",
             "the _enemy came out ! he's trying to tackle the _enemy ! he got the _enemy knocked down",
+            //https://youtu.be/KYf70U6i6Ak?t=16
+            "oh, wait, he`s attacking _enemy",
             //https://youtu.be/Se0oM5liI-4?t=646
             "around the edge we can see a few _enemy coming in and now _name is preparing defenses as soon as a _enemy threatens us",
             "if any _enemy tries to come nearby, our _name is going to defend us hopefully ",

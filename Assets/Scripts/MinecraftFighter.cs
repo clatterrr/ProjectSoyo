@@ -179,7 +179,7 @@ public class MinecraftFighter : MonoBehaviour
             }
             else
             {
-                SimpleDeadAnimation();
+               // SimpleDeadAnimation();
             }
             
             return;
@@ -305,18 +305,7 @@ public class MinecraftFighter : MonoBehaviour
             frameCount = 0;
         }
     }
-    private int DeadCount = 0;
-    void SimpleDeadAnimation()
-    {
-        float deadHalfCycle = 60;
-        if (DeadCount < deadHalfCycle)
-        {
-            float ratio = DeadCount / deadHalfCycle;
-            float r = - 89 * ratio + 1;
-            gameObject.transform.localRotation = Quaternion.Euler(r, 90, 0);
-        }
-        DeadCount++;
-    }
+
 
     bool GenerateEyes = false;
 

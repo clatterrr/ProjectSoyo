@@ -370,7 +370,7 @@ public class Apply2 : MonoBehaviour
             List<int> numbers = new List<int>();
             for (int i = 0; i < subtitles.Count; i++)
             {
-                numbers.Add(20);
+                numbers.Add(60);
             }
             return numbers.ToArray();
         }
@@ -420,6 +420,8 @@ public class Apply2 : MonoBehaviour
             int count = CountDirectChildCubes(part.transform);
             if (count > 0)
             {
+                Vector3 remianPos0 = Vector3.zero; ;
+                Vector3 remainPos2 = Vector3.zero;
                 for (int i = 0; i < count; i++)
                 {
                     if (i < 4)
@@ -496,6 +498,9 @@ public class Apply2 : MonoBehaviour
                     float rz = bound.z + randomDistance * Mathf.Sin(randomAngle * Mathf.Deg2Rad);
                     Vector3 bound2 = new Vector3(rx, ry, rz);
                     cameras.Add(addCameraMove(activeCount - build_time, activeCount, bound2, bound2, emptyObject, new Vector3(0, 0, 0)));
+
+                    remianPos0 = bound;
+                    remainPos2 = bound2;
                 }
 
                 build_time = build_times[build_times_index++];
@@ -504,7 +509,13 @@ public class Apply2 : MonoBehaviour
                 {
                     activeParts.Add(new ActivePart(part.transform.GetChild(i).gameObject, activeCount - build_time, build_time));
                 }
-                cameras[cameras.Count - 1].AddBuildTime(build_time);
+
+                GameObject emptyObject3 = new GameObject("MyEmptyObject");
+                emptyObject3.transform.position = remianPos0;
+                Quaternion rotation = Quaternion.AngleAxis(Random.Range(-60f,60f), Vector3.up);
+                Vector3 newCameraPosition = remianPos0 + rotation * (remainPos2 - remianPos0);
+                cameras.Add(addCameraMove(activeCount - build_time, activeCount, remainPos2, newCameraPosition, emptyObject3, new Vector3(0, 0, 0)));
+                //cameras[cameras.Count - 1].AddBuildTime(build_time);
             }
         }
 
@@ -616,7 +627,9 @@ public class Apply2 : MonoBehaviour
 
 
     string[] comment_all_start = { "all right I'm already here to start making our _part mob",
-                                    "the first thing I'm going to do to make our _part is to create a standard base"};
+                                    "the first thing I'm going to do to make our _part is to create a standard base",
+                                    "and the _part is going to be quite funny",
+        };
 
     // 由于是第一，所以必须说明_part
     // 每组中的第一个正方体  
@@ -639,7 +652,10 @@ public class Apply2 : MonoBehaviour
     // 必须是 first cube
     string[] comment_duplicate = { "I duplicated the _part to the other side",
                                     "select _part and duplicate to the other side",
-                                    "then I'll duplicate here down"};
+                                    "then I'll duplicate here down",
+
+                                "before I create the rest of the body I need to make the other _part",
+            ""};
 
 
     string[] comment = { " we need a large _part",

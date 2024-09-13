@@ -367,13 +367,14 @@ public class HumanoidGenerator : MonoBehaviour
         string[] elements = new string[]
         {
             "fire", "water", "grass", "dragon", "fly", "elect", "stone",
-            "machine", "ghost","god","ice","desert", "cow","crawl", "insect", "scary",
+            "machine", "ghost","god","ice","desert", "cow","crawl", "insect", "scary", "mush",
         };
 
         string[] shape_desc_str = new string[] { "default",
+            "head_bodyfront", "head_boytop",
             "ear_none", "ear_top", "ear_side",
             "leg_none", "leg_short", "leg_tall",
-            "arm_none", "arm_short", "arm_tall", "arm_strong", "arm_weak",
+            "arm_none", "arm_short", "arm_tall", "arm_strong", "arm_weak", "arm_thin",
             "hat_none", "hat_short", "hat_tall",
             "ear_none", "ear_top", "ear_side",
             
@@ -578,12 +579,12 @@ public class HumanoidGenerator : MonoBehaviour
                 actor.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, size);
 
 
-                /*
+                
                 Material tempM = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, size);
                 SaveTextureToPNG((Texture2D)tempM.mainTexture, "Assets/Temp/" + modelName + "_" + index.ToString() + ".png");
-                AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mat");
+                //AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mat");
                 AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mesh");
-                */
+                
                 actors.Add(actor);
                 index += 1;
             }
