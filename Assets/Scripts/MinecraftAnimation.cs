@@ -9,6 +9,7 @@ public class AnimationSystem : MonoBehaviour
 {
     public enum Animation
     {
+        Idle,
         Walk,
         Superise,
         Wait,

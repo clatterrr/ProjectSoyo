@@ -226,6 +226,12 @@ public class Structure
         return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, rotationStart, rotationEnd, true);
     }
 
+    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation,
+        Vector3 posStart, Vector3 posEnd)
+    {
+        return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, Quaternion.identity, Quaternion.identity, true);
+    }
+
     public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, bool active)
     {
         return new ActorSettings(frameStart, frameEnd, actor, AnimationSystem.Animation.Wait, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity, active);
