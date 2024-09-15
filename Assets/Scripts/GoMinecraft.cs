@@ -142,10 +142,10 @@ public class GoMinecraft : MonoBehaviour
 
 
         Record(frameCount + 100);
-        actorSettings.Add(new ActorSettings(frameCount + 100, frameCount + 200, heros[realIndex], MinecraftFighter.Animation.Superise, heros[realIndex].transform.position, heros[realIndex].transform.rotation, true));
+        actorSettings.Add(new ActorSettings(frameCount + 100, frameCount + 200, heros[realIndex], MinecraftFighter.Animation.Superise, heros[realIndex].transform.position, heros[realIndex].transform.rotation, true, null));
         float r = Random.Range(-7, 10);
         Vector3 p = WalkPoint.transform.position + new Vector3(0, 0, r);
-        actorSettings.Add(new ActorSettings(frameCount + 200, frameCount + 20000, heros[realIndex], MinecraftFighter.Animation.Walk, p, Quaternion.Euler(0, 90, 0), true));
+        actorSettings.Add(new ActorSettings(frameCount + 200, frameCount + 20000, heros[realIndex], MinecraftFighter.Animation.Walk, p, Quaternion.Euler(0, 90, 0), true,null));
         cameraSettings.Add(new CameraSetting(frameCount + 200, frameCount + 20000, new Vector3(20, 10, 20), heros[realIndex], new Vector3(0, 0, 0), true));
     
     }

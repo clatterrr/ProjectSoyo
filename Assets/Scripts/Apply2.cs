@@ -195,7 +195,7 @@ public class Apply2 : MonoBehaviour
             generatedAnimal = HumanoidGenerator.CreateHumaoid(prefab_name, sourceModel, sourceTexture);
             DataTransfer.messageToPass = "Assets/guard.prefab";
             DataTransfer.prefabName = prefab_name;
-            DataTransfer.modelOffset = new Vector3(0, FindModelOffset(generatedAnimal.transform), 0);
+            DataTransfer.mobFootOffset = FindModelOffset(generatedAnimal.transform);
             PrefabUtility.SaveAsPrefabAsset(generatedAnimal, DataTransfer.messageToPass);
             TraverseChildren(generatedAnimal.transform);
             

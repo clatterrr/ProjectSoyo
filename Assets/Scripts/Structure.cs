@@ -13,8 +13,10 @@ public class Structure
         public static string messageToPass;
         public static string prefabName;
         public static GameObject actor;
-        public static Vector3 modelOffset;
-        public static Vector3 modelEyePos;
+        public static float mobFootOffset;
+        public static float mobEyeOffset;
+        public static float playerFootOffset;
+        public static float playerEyeOffset;
     }
     public struct Uint2
     {
@@ -167,8 +169,9 @@ public class Structure
         public Vector3 posEnd;
         public Quaternion rotationStart;
         public Quaternion rotationEnd;
+        public GameObject lookat;
         public bool active;
-        public ActorSettings(int frameStart, int frameEnd, GameObject actor, MinecraftFighter.Animation animation, Vector3 pos, Quaternion rotation, bool active)
+        public ActorSettings(int frameStart, int frameEnd, GameObject actor, MinecraftFighter.Animation animation, Vector3 pos, Quaternion rotation, bool active, GameObject lookat)
         {
             this.frameStart = frameStart;
             this.frameEnd = frameEnd;
@@ -179,10 +182,11 @@ public class Structure
             this.rotationStart = rotation;
             this.rotationEnd = rotation;
             this.active = active;
+            this.lookat = lookat;
         }
 
         public ActorSettings(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation, 
-            Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd, bool active)
+            Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd, bool active, GameObject lookat)
         {
             this.frameStart = frameStart;
             this.frameEnd = frameEnd;
@@ -193,15 +197,18 @@ public class Structure
             this.rotationStart = rotationStart;
             this.rotationEnd = rotationEnd;
             this.active = active;
+            this.lookat = lookat;
         }
 
         public bool Run(int frameCount)
         {
+            SetMeshRenderer(actor.transform, true);
             if (frameCount >= this.frameStart && frameCount < this.frameEnd)
             {
                 if(this.active == false)
                 {
-                    actor.SetActive(false);
+
+                    SetMeshRenderer(actor.transform, false);
                     return true;
                 }
                 if(actor.GetComponent<AnimationSystem>() != null)
@@ -210,6 +217,7 @@ public class Structure
                     float ratio = (frameCount - this.frameStart) * 1.0f / (this.frameEnd - this.frameStart);
                     Vector3 pos = Vector3.Lerp(posStart, posEnd, ratio);
                     Quaternion rot = Quaternion.Lerp(rotationStart, rotationEnd, ratio);
+                    
                     actor.GetComponent<AnimationSystem>().SetTransform(pos, rot);
                 }
 
@@ -223,18 +231,24 @@ public class Structure
     public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation,
             Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd)
     {
-        return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, rotationStart, rotationEnd, true);
+        return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, rotationStart, rotationEnd, true, null);
     }
 
     public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation,
         Vector3 posStart, Vector3 posEnd)
     {
-        return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, Quaternion.identity, Quaternion.identity, true);
+        return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, Quaternion.identity, Quaternion.identity, true, null);
+    }
+
+    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation,
+    Vector3 posStart, Vector3 posEnd, GameObject lookat)
+    {
+        return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, Quaternion.identity, Quaternion.identity, true, lookat);
     }
 
     public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, bool active)
     {
-        return new ActorSettings(frameStart, frameEnd, actor, AnimationSystem.Animation.Wait, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity, active);
+        return new ActorSettings(frameStart, frameEnd, actor, AnimationSystem.Animation.Wait, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity, active, null);
     }
 
     public struct ObjectSettings
@@ -607,6 +621,18 @@ public class Structure
         foreach (Transform child in parent)
         {
             SetChildMaterial(child, targetName, material);
+        }
+    }
+
+    public static void SetMeshRenderer(Transform parent,  bool active)
+    {
+        if (parent.GetComponent<MeshRenderer>() != null)
+        {
+            parent.GetComponent<MeshRenderer>().enabled = active;
+        }
+        foreach (Transform child in parent)
+        {
+            SetMeshRenderer(child, active);
         }
     }
     public static void AddBoxCollider(GameObject obj)

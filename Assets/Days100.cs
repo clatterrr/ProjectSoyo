@@ -103,7 +103,7 @@ public static class Days100
         List<GameObject> actors = new List<GameObject>();
         int enemy_index = 0;
         Sentence i_came_out_0 = new Sentence("enemy came out from nowhere");
-        ActorSettings actor = new ActorSettings(0, 0, actors[enemy_index], MinecraftFighter.Animation.Wait, scene0.find("came_out_pos1"), Quaternion.identity, true);
+        ActorSettings actor = new ActorSettings(0, 0, actors[enemy_index], MinecraftFighter.Animation.Wait, scene0.find("came_out_pos1"), Quaternion.identity, true, null);
         i_came_out_0.addActor(actor);
 
         Sentence i_came_out_1 = new Sentence("enemy came out and charge to me");
