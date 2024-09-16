@@ -82,76 +82,6 @@ public class HumanoidGenerator : MonoBehaviour
         Toe3,
         Toe4,
     }
-
-    public static string GetShapeName(ShapeName name)
-    {
-        string parentName = "";
-        switch (name)
-        {
-            case ShapeName.Head:
-                parentName = "Head";
-                break;
-            case ShapeName.Body:
-                parentName = "Body";
-                break;
-            case ShapeName.LeftArm:
-                parentName = "LeftArm";
-                break;
-            case ShapeName.RightArm:
-                parentName = "RightArm";
-                break;
-            case ShapeName.LeftLeg:
-                parentName = "LeftLeg";
-                break;
-            case ShapeName.RightLeg:
-                parentName = "RightLeg";
-                break;
-            case ShapeName.HatBottom:
-                parentName = "HatBottom";
-                break;
-            case ShapeName.HatTop:
-                parentName = "HatTop";
-                break;
-            case ShapeName.LeftEar:
-                parentName = "LeftEar";
-                break;
-            case ShapeName.RightEar:
-                parentName = "RightEar";
-                break;
-            case ShapeName.Mouth:
-                parentName = "Mouth";
-                break;
-            case ShapeName.LeftEye:
-                parentName = "LeftEye";
-                break;
-            case ShapeName.RightEye:
-                parentName = "RightEye";
-                break;
-            case ShapeName.LeftShoulder:
-                parentName = "LeftShoulder";
-                break;
-            case ShapeName.RightShoulder:
-                parentName = "RightShoulder";
-                break;
-            case ShapeName.LeftHand:
-                parentName = "LeftHand";
-                break;
-            case ShapeName.RightHand:
-                parentName = "RightHand";
-                break;
-            case ShapeName.LeftToe:
-                parentName = "LeftToe";
-                break;
-            case ShapeName.RightToe:
-                parentName = "RightToe";
-                break;
-            case ShapeName.Tail:
-                parentName = "Tail";
-                break;
-            default: break;
-        }
-        return parentName;
-    }
     public static string GenerateDesc(ShapeName name)
     {
         string[] shape_desc_str = new string[] { "default", "ear_top", "ear_side" };
@@ -361,9 +291,39 @@ public class HumanoidGenerator : MonoBehaviour
         }
         return names;
     }
-    public static GameObject CreateHumaoid(string modelName, GameObject sourceModel, Texture2D sourceTexture)
+
+    struct Pros
+    {
+        public string name;
+        public List<string> poss;
+        public List<float> values;
+        public Pros(string name, string p0, float v0){
+            this.name = name;
+            this.poss = new List<string>() { p0 };
+            this.values = new List<float>() { v0 };
+        }
+
+        public string RandomString()
+        {
+            float tvalue = 0;
+            for(int i = 0; i < values.Count; i++)
+            {
+                tvalue += values[i];
+                values[i] = tvalue;
+            }
+            tvalue = Random.Range(0, tvalue);
+            int select = 0;
+            for (int i = 0; i < values.Count; i++) if (tvalue > values[i] - values[0]) { select = i; break; }
+            return poss[select];
+        }
+    }
+    public static GameObject CreateHumaoid(string modelName, GameObject sourceModel, Texture2D sourceTexture, bool checkScene)
     {
         //https://news.4399.com/seer/zzph/
+
+        Dictionary<Tuple<string, string>, float> myDictionary = new Dictionary<Tuple<string, string>, float>();
+
+
         string[] elements = new string[]
         {
             "fire", "water", "grass", "dragon", "fly", "elect", "stone",
@@ -372,18 +332,77 @@ public class HumanoidGenerator : MonoBehaviour
 
         string[] shape_desc_str = new string[] { "default",
             "head_bodyfront", "head_boytop",
-            "ear_none", "ear_top", "ear_side",
-            "leg_none", "leg_short", "leg_tall",
-            "arm_none", "arm_short", "arm_tall", "arm_strong", "arm_weak", "arm_thin",
-            "hat_none", "hat_short", "hat_tall",
-            "ear_none", "ear_top", "ear_side",
+           "ear_top", "ear_side",
+            "leg_short", "leg_tall",
+            "arm_height_short", "arm_height_tall", "arm_width_strong", "arm_width_weak", 
+           "hat_short", "hat_tall",
+           "ear_top", "ear_side",
             
         };
+
+        List<string> properties = new List<string>();
+        properties.Add("fire");
+        myDictionary.Add(Tuple.Create("fire", "hat_none"), 100);
+        myDictionary.Add(Tuple.Create("fire", "ear_top"), 100);
+
+        Dictionary<string, float> myExists = new Dictionary<string, float>();
+        List<Pros> pros = new List<Pros>();
+        foreach (string str in shape_desc_str)
+        {
+            string[] trimmedStrs = str.Split('_');
+            string tStrs = "";
+            for(int i = 0; i < trimmedStrs.Length - 1; i++)
+            {
+                if (i > 0) tStrs += "_";
+                tStrs += trimmedStrs[i];
+            }
+            string partStr = trimmedStrs[0];
+            bool part_exist = true;
+            for (int i = 0; i < properties.Count; i++)
+            {
+                if(myDictionary.ContainsKey(Tuple.Create(properties[i], partStr + "_none")))
+                {
+                    part_exist = false;
+                }
+            }
+           // Debug.Log(" str = " + str + " part = " + partStr + " tsr = " + tStrs + " ex = " + part_exist);
+            if (part_exist)
+            {
+                float value = 1.0f;
+                for (int i = 0; i < properties.Count; i++)
+                {
+                    if (myDictionary.TryGetValue(Tuple.Create(properties[i], tStrs), out float addedValue))
+                    {
+                        value += addedValue;
+                    }
+                }
+                bool update = true;
+                for(int i = 0; i < pros.Count; i++)
+                    if(pros[i].name == tStrs)
+                    {
+                        pros[i].poss.Add(str);
+                        pros[i].values.Add(value);
+                       // Debug.Log(" tStrs + " + tStrs + " str = " + str + " value = " + value);
+                        update = false;
+                        break;
+                    }
+                if (update == true) pros.Add(new Pros(tStrs, str, value));
+
+            }
+        }
+
+        // 这尼玛不就是Descriptor 吗？传过去吧
+        List<string> theProperty = new List<string>();
+        for (int i = 0; i < pros.Count; i++) theProperty.Add(pros[i].RandomString());
+        for (int i = 0; i < pros.Count; i++) Debug.Log(theProperty[i]);
+
 
         List<ShapeDesc> parts = new List<ShapeDesc>();
         Vector3 partSize;
         Vector3 bodySize = Vector3.zero; ;
-        List<ShapeName> headEnum = new List<ShapeName> {ShapeName.LeftEar, ShapeName.LeftEye, ShapeName.HatBottom, ShapeName.Mouth};
+        // List<ShapeName> headEnum = new List<ShapeName> {ShapeName.LeftEar, ShapeName.LeftEye, ShapeName.HatBottom, ShapeName.Mouth};
+        // List<ShapeName> bodyEnum = new List<ShapeName> { ShapeName.Tail, ShapeName.LeftArm, ShapeName.LeftLeg, ShapeName.LeftShoulder };
+        List<ShapeName> headEnum = new List<ShapeName> {ShapeName.LeftEar, ShapeName.LeftEye};
         List<ShapeName> bodyEnum = new List<ShapeName> { ShapeName.Tail, ShapeName.LeftArm, ShapeName.LeftLeg, ShapeName.LeftShoulder };
         ShuffleList(headEnum);
         ShuffleList(bodyEnum);
@@ -423,14 +442,13 @@ public class HumanoidGenerator : MonoBehaviour
             for (int i = 0; i < bodyEnum.Count; i++) names.Add(bodyEnum[i]);
             for (int i = 0; i < headEnum.Count; i++) names.Add(headEnum[i]);
         }
-
-        for(int i =0; i< names.Count; i++)
+        for (int i =0; i< names.Count; i++)
         {
             switch(names[i])
             {
                 case ShapeName.Body:
                     {
-                        partSize = RandomSize(6, 12, 6, 24, 6, 12);
+                        partSize = RandomSize(6, 10, 6, 16, 6, 10);
                         bodySize = partSize;
                         parts.Add(new ShapeDesc(ShapeName.Body, partSize, ShapeName.Body, FrameWork.Zero, FrameWork.Zero));
                         break;
@@ -450,7 +468,12 @@ public class HumanoidGenerator : MonoBehaviour
                     }
                 case ShapeName.LeftArm:
                     {
-                        partSize = RandomSize(4, 6, 12, 18, 4, 6);
+                        Uint2 arm_height = new Uint2(12, 18);
+                        if (theProperty.Contains("arm_height_short")) { arm_height = new Uint2(6, 10); }
+                        Uint2 arm_width = new Uint2(5, 8);
+                        if (theProperty.Contains("arm_width_strong")) { arm_width = new Uint2(3, 5); }
+
+                        partSize = RandomSize((int)arm_width.x, (int)arm_width.y, (int)arm_height.x, (int)arm_height.y, (int)arm_width.x, (int)arm_width.y);
                         parts.Add(new ShapeDesc(ShapeName.LeftArm, partSize, ShapeName.Body, FrameWork.Right75, FrameWork.Left75));
                         parts.Add(new ShapeDesc(ShapeName.RightArm, partSize, ShapeName.Body, FrameWork.Left75, FrameWork.Right75));
                         break;
@@ -489,7 +512,7 @@ public class HumanoidGenerator : MonoBehaviour
                     }
                 case ShapeName.LeftLeg:
                     {
-                        partSize = RandomSize((int)(bodySize.x / 3), (int)(bodySize.x / 2), 12, 18, (int)(bodySize.z / 3), (int)(bodySize.z / 2));
+                        partSize = RandomSize((int)(bodySize.x / 3), (int)(bodySize.x / 2), 6, 10, (int)(bodySize.z / 3), (int)(bodySize.z / 2));
                         parts.Add(new ShapeDesc(ShapeName.LeftLeg, partSize, ShapeName.Body, FrameWork.BottomeLeft, FrameWork.TopCenter));
                         parts.Add(new ShapeDesc(ShapeName.RightLeg, partSize, ShapeName.Body, FrameWork.BottomeRight, FrameWork.TopCenter));
                         break;
@@ -502,7 +525,7 @@ public class HumanoidGenerator : MonoBehaviour
                     }
                 case ShapeName.LeftEye:
                     {
-                        partSize = RandomSize(2, 3, 2, 3, 1, 1);
+                        partSize = RandomSize(2, 2, 2, 2, 1, 1);
                         parts.Add(new ShapeDesc(ShapeName.LeftEye, partSize, ShapeName.Head, FrameWork.HeadLeftEyePos, FrameWork.BackCenter));
                         parts.Add(new ShapeDesc(ShapeName.RightEye, partSize, ShapeName.Head, FrameWork.HeadRightEyePos, FrameWork.BackCenter));
                         break;
@@ -527,28 +550,11 @@ public class HumanoidGenerator : MonoBehaviour
 
 
 
-        
-
-       
-
-
-       
-
-        
-
-
-
-
-
-
-
-
         int index = 0;
 
         for (int i = 0; i < parts.Count; i++)
         {
             bool isToe = (parts[i].name == ShapeName.LeftToe || parts[i].name == ShapeName.RightToe);
-            Debug.Log(" parts  size = " + parts[i].size);
             int Segment = Mathf.Abs(parts[i].segment);
             List<Vector3> poss = new List<Vector3>();
             Vector3 nowPos = new Vector3(0, parts[i].size.y / 2, 0);
@@ -578,12 +584,15 @@ public class HumanoidGenerator : MonoBehaviour
                 actor.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                 actor.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, size);
 
+                if (checkScene)
+                {
 
+                    Material tempM = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, size);
+                    SaveTextureToPNG((Texture2D)tempM.mainTexture, "Assets/Temp/" + modelName + "_" + index.ToString() + ".png");
+                    //AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mat");
+                    AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mesh");
+                }
                 
-                Material tempM = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, size);
-                SaveTextureToPNG((Texture2D)tempM.mainTexture, "Assets/Temp/" + modelName + "_" + index.ToString() + ".png");
-                //AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mat");
-                AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mesh");
                 
                 actors.Add(actor);
                 index += 1;
@@ -646,26 +655,62 @@ public class HumanoidGenerator : MonoBehaviour
 
         // 创建一个新的空的 GameObject 作为父物体
         GameObject parentObject = new GameObject(modelName);
-
+        parentObject.transform.position = Vector3.zero;
+        GameObject allObject = new GameObject("All");
+        allObject.transform.position = new Vector3(0, 0,0);
+        allObject.transform.rotation = Quaternion.Euler(0, 180, 0);
+        allObject.transform.SetParent(parentObject.transform);
         // 遍历所有 part，将它们的父级设置为新创建的父物体
         int cube_index = 0;
 
         foreach (var part in parts)
         {
-            GameObject parentObjectForPart = new GameObject(GetShapeName(part.name));
+            
+
+            GameObject parentObjectForPart = new GameObject(part.name.ToString());
             for (int i = 0; i < part.actors.Count; i++)
             {
                 part.actors[i].transform.name = "cube_" + cube_index.ToString();
                 cube_index++;
                 part.actors[i].transform.SetParent(parentObjectForPart.transform);
             }
-            parentObjectForPart.transform.SetParent(parentObject.transform);
+            parentObjectForPart.transform.SetParent(allObject.transform);
         }
 
+        Bounds totalBounds = new Bounds(parentObject.transform.position, Vector3.zero);
 
+        // 递归计算总的包围框
+        CalculateBoundsRecursive(parentObject.transform, ref totalBounds);
+
+        allObject.transform.position = new Vector3(0, totalBounds.size.y / 2, 0);
         // 返回这个新的父物体
         return parentObject;
 
+    }
+
+    private static void CalculateBoundsRecursive(Transform current, ref Bounds totalBounds)
+    {
+        // 检查是否有 Renderer 组件，如果有，就用它的 bounds 进行包围框计算
+        Renderer renderer = current.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            // 如果 totalBounds 还是空的，直接赋值
+            if (totalBounds.size == Vector3.zero)
+            {
+                totalBounds = renderer.bounds;
+            }
+            else
+            {
+                // 合并当前子物体的包围框
+                totalBounds.Encapsulate(renderer.bounds);
+            }
+        }
+
+        // 遍历所有子物体，继续递归计算包围框
+        foreach (Transform child in current)
+        {
+            CalculateBoundsRecursive(child, ref totalBounds);
+        }
     }
 
     public static GameObject GenerateCircle(int radius, float heightOffset, float scale)

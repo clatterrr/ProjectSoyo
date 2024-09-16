@@ -186,13 +186,13 @@ public class Apply2 : MonoBehaviour
     }
     int[] GenerateComments()
     {
-        string prefab_name = "BlackGoldenGolem";
+        string prefab_name = "FurnaceGolem";
 
         GameObject sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/iron_golem.prefab");
-        Texture2D sourceTexture = LoadTexture("Assets/guard.png");
+        Texture2D sourceTexture = LoadTexture("Assets/Furnace.png");
         if (enableRandomModel)
         {
-            generatedAnimal = HumanoidGenerator.CreateHumaoid(prefab_name, sourceModel, sourceTexture);
+            generatedAnimal = HumanoidGenerator.CreateHumaoid(prefab_name, sourceModel, sourceTexture, true);
             DataTransfer.messageToPass = "Assets/guard.prefab";
             DataTransfer.prefabName = prefab_name;
             DataTransfer.mobFootOffset = FindModelOffset(generatedAnimal.transform);
@@ -261,7 +261,7 @@ public class Apply2 : MonoBehaviour
                                 string nowed = part.name.Replace("Left", "").Replace("Right", "").Replace("Right", "").Replace("left", "");
                                 if(nowed == added)
                                 {
-                                    Debug.Log("added = " + added + " nowed " + nowed);
+                                    //Debug.Log("added = " + added + " nowed " + nowed);
                                     du = 4;
                                     break;
                                 }
@@ -321,7 +321,7 @@ public class Apply2 : MonoBehaviour
         if (enableVoice)
         {
             // 设置Python脚本路径
-            string pythonScriptPath = "F:/DaisyDay/test.py";
+            string pythonScriptPath = "D:/pr2023/test.py";
 
             // 要传递给Python的字符串
             string stringArg1 = writeto;
@@ -386,7 +386,9 @@ public class Apply2 : MonoBehaviour
     private int Random3;
     void Start()
     {
-        audioClipPath = "Audio/model_3275";
+        // step 1: delete temp files
+        DirectoryInfo directory = new DirectoryInfo(Path.Combine(Application.dataPath, "Temp"));
+        foreach (FileInfo file in directory.GetFiles()) file.Delete(); 
 
         Random3 = Random.Range(1000, 9999);
         Debug.Log("r 3 = " +  Random3);
@@ -398,7 +400,7 @@ public class Apply2 : MonoBehaviour
         int build_time = 0;
 
         start_time = Time.time;
-        LoadAnimation("D:\\GameDe\\GLTFmodl\\magnet_shroom.animation.json");
+        //LoadAnimation("D:\\GameDe\\GLTFmodl\\magnet_shroom.animation.json");
         //mushMaterial = AddMaterial("Assets/Characters/Plants/split_pea.png");
         mushMaterial = AddMaterial("Assets/Animations/Materials/uv1.png");
         audioSource = gameObject.AddComponent<AudioSource>();
@@ -440,60 +442,25 @@ public class Apply2 : MonoBehaviour
 
                     // 根据bound.x和bound.z判断象限
                     float baseAngle = 0f;
-
-                    if (bound.x > 0 && bound.z > 0)
-                    {
-                        baseAngle = 45f;  // 第一象限
-                    }
-                    else if (bound.x < 0 && bound.z > 0)
-                    {
-                        baseAngle = 135f;  // 第二象限
-                    }
-                    else if (bound.x < 0 && bound.z < 0)
-                    {
-                        baseAngle = 225f;  // 第三象限
-                    }
-                    else if (bound.x > 0 && bound.z < 0)
-                    {
-                        baseAngle = 315f;  // 第四象限
-                    }
+                    if (bound.x > 0 && bound.z > 0) baseAngle = 45f;  // 第一象限
+                    else if (bound.x < 0 && bound.z > 0) baseAngle = 135f;  // 第二象限
+                    else if (bound.x < 0 && bound.z < 0) baseAngle = 225f;  // 第三象限
+                    else if (bound.x > 0 && bound.z < 0) baseAngle = 315f;  // 第四象限
                     else if (Mathf.Abs(bound.x) < 0.1f)
                     {
-                        if (bound.z > 0)
-                        {
-                            baseAngle = Random.Range(0, 2) == 0 ? 45f : 135f;  // 第一或第二象限
-                        }
-                        else
-                        {
-                            baseAngle = Random.Range(0, 2) == 0 ? 225f : 315f; // 第三或第四象限
-                        }
-
+                        if (bound.z > 0) baseAngle = Random.Range(0, 2) == 0 ? 45f : 135f;  // 第一或第二象限
+                        else baseAngle = Random.Range(0, 2) == 0 ? 225f : 315f; // 第三或第四象限
                     }
                     else if (Mathf.Abs(bound.z) < 0.1f)
                     {
-                        if (bound.x > 0)
-                        {
-                            baseAngle = Random.Range(0, 2) == 0 ? 45f : 315f;  // 第一或第四象限
-                        }
-                        else
-                        {
-                            baseAngle = Random.Range(0, 2) == 0 ? 135f : 225f; // 第二或第三象限
-                        }
-
-
-                    
+                        if (bound.x > 0) baseAngle = Random.Range(0, 2) == 0 ? 45f : 315f;  // 第一或第四象限
+                        else baseAngle = Random.Range(0, 2) == 0 ? 135f : 225f; // 第二或第三象限
                     }
 
                     float randomAngle = baseAngle + Random.Range(-10f, 10f);  // 在±10度范围内偏移
-
-
-
-                    // 随机生成距离（10到12之间）
-                    float randomDistance = ssize.magnitude * Random.Range(2f, 4f);
-
-                    // 计算x和z轴上的坐标（y轴保持为0）
+                    float randomDistance = ssize.magnitude * Random.Range(1.0f,2.4f);
                     float rx = bound.x + randomDistance * Mathf.Cos(randomAngle * Mathf.Deg2Rad);
-                    float ry = Mathf.Abs(bound.y) + ssize.magnitude * Random.Range(1f, 3f);
+                    float ry = bound.y * Random.Range(-0.2f, 0.2f) + ssize.magnitude * Random.Range(-0.2f, 0.2f);
                     if (bound.y < 0) ry = -ry;
                     float rz = bound.z + randomDistance * Mathf.Sin(randomAngle * Mathf.Deg2Rad);
                     Vector3 bound2 = new Vector3(rx, ry, rz);
@@ -510,19 +477,29 @@ public class Apply2 : MonoBehaviour
                     activeParts.Add(new ActivePart(part.transform.GetChild(i).gameObject, activeCount - build_time, build_time));
                 }
 
-                GameObject emptyObject3 = new GameObject("MyEmptyObject");
-                emptyObject3.transform.position = remianPos0;
-                Quaternion rotation = Quaternion.AngleAxis(Random.Range(-60f,60f), Vector3.up);
-                Vector3 newCameraPosition = remianPos0 + rotation * (remainPos2 - remianPos0);
-                cameras.Add(addCameraMove(activeCount - build_time, activeCount, remainPos2, newCameraPosition, emptyObject3, new Vector3(0, 0, 0)));
-                //cameras[cameras.Count - 1].AddBuildTime(build_time);
+                float colorr = Random.Range(0f,1.0f);
+                if(colorr < 0.5)
+                {
+                    cameras[cameras.Count - 1].AddBuildTime(build_time);
+                }
+                else
+                {
+
+                    GameObject emptyObject3 = new GameObject("MyEmptyObject");
+                    emptyObject3.transform.position = remianPos0;
+                    remainPos2 = remianPos0 + (remainPos2 - remianPos0) * Random.Range(0.8f, 1.2f);
+                    Quaternion rotation = Quaternion.AngleAxis(Random.Range(-60f, 60f), Vector3.up);
+                    Vector3 newCameraPosition = remianPos0 + rotation * (remainPos2 - remianPos0);
+                    cameras.Add(addCameraMove(activeCount - build_time, activeCount, remainPos2, newCameraPosition, emptyObject3, new Vector3(0, 0, 0)));
+                }
             }
         }
 
         generatedAnimal.SetActive(true);
 
         build_time = build_times[build_times_index++];
-        cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-2, 1, -2), new Vector3(2, 1, -2), emptyObject2, new Vector3(0, 0, 0)));
+        cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-3, 2, -3), new Vector3(3, 2, -3), emptyObject2, new Vector3(0, 0, 0)));
+        activeCount += build_time;
     }
 
     public bool checkScene = false;
@@ -533,6 +510,12 @@ public class Apply2 : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if(activeCount < 100)
+        {
+            Debug.LogError(" active count too small");
+            return;
+        }
+
         if (enableVoice)
         {
             audioClipPath = "Audio/model_" + Random3.ToString();
@@ -608,8 +591,7 @@ public class Apply2 : MonoBehaviour
         }
 
         FrameCount++;
-
-        if(FrameCount > 1 && checkScene)
+        if(FrameCount > activeCount + 5 && checkScene)
         {
             SceneManager.LoadScene("ShowTime");
         }

@@ -20,6 +20,7 @@ public class ShowPlants : MonoBehaviour
     // Start is called before the first frame update
     public GameObject player;
     public GameObject hand;
+    public GameObject emptyObject;
 
     private List<GeoAnim> animList = new List<GeoAnim>();
     Vector4 ParseLineToVector4(string line)
@@ -69,7 +70,7 @@ public class ShowPlants : MonoBehaviour
 
         public GeoAnimPart(string name)
         {
-            this.name=name;
+            this.name = name;
             this.pos_time = new List<uint>();
             this.rot_time = new List<uint>();
             this.pos = new List<Vector3>();
@@ -81,23 +82,24 @@ public class ShowPlants : MonoBehaviour
     {
         string animation_name = "animation.split_pea.idle";
         int animation_index = 0;
-        for(int i = 0; i < animList.Count; i++)
+        for (int i = 0; i < animList.Count; i++)
         {
             if (animList[i].name == animation_name)
             {
                 animation_index = i;
             }
         }
-        
-        for(int i = 0;i < animList[animation_index].animaPart.Count; i++) { 
+
+        for (int i = 0; i < animList[animation_index].animaPart.Count; i++)
+        {
             GeoAnimPart part = animList[animation_index].animaPart[i];
-            if(part.rot_time.Count > 0)
+            if (part.rot_time.Count > 0)
             {
                 int max_rot_time = (int)part.rot_time[part.rot_time.Count - 1];
                 int now_time = frameCount % max_rot_time;
                 for (int j = 0; j < part.rot_time.Count - 1; j++)
                 {
-                    if(now_time >= part.rot_time[j] && now_time < part.rot_time[j + 1])
+                    if (now_time >= part.rot_time[j] && now_time < part.rot_time[j + 1])
                     {
                         float r = (now_time - part.rot_time[j]) * 1.0f / (part.rot_time[j + 1] - part.rot_time[j]);
                         Quaternion rot = Quaternion.Lerp(part.rot[j], part.rot[j + 1], r);
@@ -116,7 +118,7 @@ public class ShowPlants : MonoBehaviour
                     {
                         float r = (now_time - part.pos_time[j]) * 1.0f / (part.pos_time[j + 1] - part.pos_time[j]);
                         Vector3 pos = Vector3.Lerp(part.pos[j], part.pos[j + 1], r);
-                        TranslateChild(theMob.transform, part.name, GetBasicPos(part.name) +  pos * 0.08f);
+                        TranslateChild(theMob.transform, part.name, GetBasicPos(part.name) + pos * 0.08f);
                         break;
                     }
                 }
@@ -142,27 +144,28 @@ public class ShowPlants : MonoBehaviour
                 brackets_add = true;
                 this_line_add = true;
             }
-            if(line.Contains("}"))
+            if (line.Contains("}"))
             {
                 brackets_count--;
                 brackets_add = false;
                 this_line_add = true;
             }
-            if(plog) Debug.Log("brackets num" + brackets_count + " line = " + line);
-            if(brackets_count == 3  && this_line_add) {
-                if(anim.length > 0)
+            if (plog) Debug.Log("brackets num" + brackets_count + " line = " + line);
+            if (brackets_count == 3 && this_line_add)
+            {
+                if (anim.length > 0)
                 {
                     if (plog) Debug.Log("anim list added = " + anim.name + " count " + anim.animaPart.Count);
                     animList.Add(anim);
                 }
-                string anim_name = line.Split(':')[0].Replace('"',' ');
+                string anim_name = line.Split(':')[0].Replace('"', ' ');
                 anim_name = anim_name.Trim();
                 if (plog) Debug.Log(" anim name = " + anim_name);
                 anim = new GeoAnim(anim_name, true, 1);
             }
-            if(brackets_count == 5 && brackets_add && this_line_add)
+            if (brackets_count == 5 && brackets_add && this_line_add)
             {
-                string anim_part = line.Split(':')[0].Replace('"',' ');
+                string anim_part = line.Split(':')[0].Replace('"', ' ');
                 anim_part = anim_part.Trim();
                 if (plog) Debug.Log("anim part = " + anim_part);
                 animPart = new GeoAnimPart(anim_part);
@@ -179,7 +182,7 @@ public class ShowPlants : MonoBehaviour
             }
             if (brackets_count == 7 && brackets_add && this_line_add)
             {
-                float t = float.Parse(line.Split(':')[0].Replace('"',' ').Replace(" ", ""));
+                float t = float.Parse(line.Split(':')[0].Replace('"', ' ').Replace(" ", ""));
                 uint tint = (uint)(t * 50);
                 if (plog) Debug.Log("mode pos t = " + t);
                 if (mode_pos)
@@ -190,7 +193,7 @@ public class ShowPlants : MonoBehaviour
                 {
                     animPart.rot_time.Add(tint);
                 }
-                
+
             }
 
             if (brackets_count == 7 && brackets_add && line.Contains("vector"))
@@ -217,16 +220,16 @@ public class ShowPlants : MonoBehaviour
                 }
             }
 
-            if(brackets_count == 4 && brackets_add == false && this_line_add)
+            if (brackets_count == 4 && brackets_add == false && this_line_add)
             {
                 if (plog) Debug.Log(" added anima part = name " + animPart.name + " count = " + animPart.pos_time.Count);
                 anim.animaPart.Add(animPart);
             }
         }
-        foreach(var animx in animList)
+        foreach (var animx in animList)
         {
             if (plog) Debug.Log("animx name" + animx.name);
-            foreach(var animy in animx.animaPart)
+            foreach (var animy in animx.animaPart)
             {
 
                 if (plog) Debug.Log("animy name" + animy.name);
@@ -257,9 +260,9 @@ public class ShowPlants : MonoBehaviour
 
     Vector3 GetBasicPos(string name)
     {
-        foreach(var info  in baseInfo)
+        foreach (var info in baseInfo)
         {
-            if(info.name == name)
+            if (info.name == name)
             {
                 return info.pos;
             }
@@ -284,6 +287,15 @@ public class ShowPlants : MonoBehaviour
         {
             TraverseChildren(child);
         }
+        if (parent.name != "All")
+        {
+            parent.transform.localRotation = Quaternion.identity;
+        }
+        else
+        {
+
+        }
+
         baseInfo.Add(new BasicInfo(parent.transform.name, parent.transform.localPosition, parent.transform.localRotation));
     }
 
@@ -302,19 +314,19 @@ public class ShowPlants : MonoBehaviour
         Vector3 v0 = new Vector3(0, 0, -len);
         Vector3 v1 = new Vector3(0, 0, len);
         Vector3 v2 = new Vector3(0, len / 2, 0);
-        Vector3 v3 = new Vector3(0, -len, - len / 2);
+        Vector3 v3 = new Vector3(0, -len, -len / 2);
         Vector3 v4 = new Vector3(0, -len, len / 2);
         int oneLoops = (endFrame - startFrame) / loops;
         int oneFive = oneLoops / 5;
 
-        for(int i = 0; i < loops; i++)
+        for (int i = 0; i < loops; i++)
         {
             int frame = startFrame + i * oneLoops;
-            cameraSettings.Add(addCameraMove(frame, frame + oneFive,                    offset + v0, offset + v1, lookat, headOffset));
-            cameraSettings.Add(addCameraMove(frame + oneFive , frame + oneFive * 2,     offset + v1, offset + v2, lookat, headOffset));
-            cameraSettings.Add(addCameraMove(frame + oneFive * 2, frame + oneFive * 3,  offset + v2, offset + v3, lookat, headOffset));
-            cameraSettings.Add(addCameraMove(frame + oneFive * 3, frame + oneFive * 4,  offset + v3, offset + v4, lookat, headOffset));
-            cameraSettings.Add(addCameraMove(frame + oneFive * 4, frame + oneFive * 5,  offset + v4, offset + v0, lookat, headOffset));
+            cameraSettings.Add(addCameraMove(frame, frame + oneFive, offset + v0, offset + v1, lookat, headOffset));
+            cameraSettings.Add(addCameraMove(frame + oneFive, frame + oneFive * 2, offset + v1, offset + v2, lookat, headOffset));
+            cameraSettings.Add(addCameraMove(frame + oneFive * 2, frame + oneFive * 3, offset + v2, offset + v3, lookat, headOffset));
+            cameraSettings.Add(addCameraMove(frame + oneFive * 3, frame + oneFive * 4, offset + v3, offset + v4, lookat, headOffset));
+            cameraSettings.Add(addCameraMove(frame + oneFive * 4, frame + oneFive * 5, offset + v4, offset + v0, lookat, headOffset));
         }
 
     }
@@ -344,10 +356,11 @@ public class ShowPlants : MonoBehaviour
     void RandomCamera(int startFrame, int endFrame)
     {
         int r = Random.Range(0, 4);
-        switch (r) {
-            case 0: CameraIdle(startFrame, endFrame, new Vector3(3, 3, 0), theMob, 2);break;
+        switch (r)
+        {
+            case 0: CameraIdle(startFrame, endFrame, new Vector3(3, 3, 0), theMob, 2); break;
             case 1: cameraSettings.Add(addCameraMove(startFrame, endFrame, new Vector3(5, 5, 0), new Vector3(5, 5, 0) * 0.3f, theMob, headOffset)); break;
-            case 2: CameraSharpMovement(startFrame, endFrame, theMob);break;
+            case 2: CameraSharpMovement(startFrame, endFrame, theMob); break;
             case 3: CameraSharpMovement(startFrame, endFrame, player); break;
             default: break;
         }
@@ -379,7 +392,7 @@ public class ShowPlants : MonoBehaviour
     // ����������
     void CameraCloseLookMovement(int startFrame, int endFrame, GameObject lookat)
     {
-        float degree0 = Random.Range(0f, 3.14f); 
+        float degree0 = Random.Range(0f, 3.14f);
 
         MeshRenderer[] meshRenderers = lookat.GetComponentsInChildren<MeshRenderer>();
         Bounds cb = meshRenderers[0].bounds;
@@ -413,42 +426,28 @@ public class ShowPlants : MonoBehaviour
         CameraCloseLookMovement(startFrame, endFrame, player);
     }
 
-    void CameraCloseLook_WithPlayerWalk(int startFrame, int endFrame)
-    {
-        CameraCloseLookMovement(startFrame, endFrame, player);
-    }
-
-    void CameraCloseLook_WithHand(int startFrame, int endFrame)
-    {
-        actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
-        CameraCloseLookMovement(startFrame, endFrame, theMob);
-    }
-
-    void CameraCloseLook_WithNothing(int startFrame, int endFrame)
-    {
-        actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
-        actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
-        CameraCloseLookMovement(startFrame, endFrame, theMob);
-    }
-
-    // ����һ�����֣�Ȼ�����
-
-    void Fight()
-    {
-        // ����һ����ɫ
-    }
-
     public static void AssignMaterial(Transform current)
     {
         if (current.name.Contains("cube"))
         {
             string indexStr = current.name.Replace("cube_", "");
-            //string materialPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".mat";
             string texturePath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".png";
             string meshPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".mesh";
-            Material material = new Material(Shader.Find("Standard"));
-            Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+            Material material = new(Shader.Find("Standard"));
             Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
+
+
+            TextureImporter textureImporter = AssetImporter.GetAtPath(texturePath) as TextureImporter;
+
+            if (textureImporter != null)
+            {
+                textureImporter.npotScale = TextureImporterNPOTScale.None;
+                textureImporter.textureFormat = TextureImporterFormat.RGBA32;
+                textureImporter.SaveAndReimport();  // 保存并重新导入纹理
+
+            }
+
+            Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
             texture.filterMode = FilterMode.Point;
             material.mainTexture = texture;
             current.GetComponent<MeshRenderer>().material = material;
@@ -464,55 +463,38 @@ public class ShowPlants : MonoBehaviour
 
 
 
+    private bool enableVoice = true;
     int[] GenerateComments(List<MPS> subtitles)
     {
         string writeto = "";
         foreach (MPS sub in subtitles)
         {
-            Debug.Log("comment = " + sub);
-            writeto += sub + "\n";
+            Debug.Log("comment = " + sub.content[0]);
+            writeto += sub.content[0] + "\n";
         }
         Random3 = Random.Range(1000, 9999);
         Debug.Log("show part random number = " + Random3);
+        
         if (enableVoice)
         {
-            // ����Python�ű�·��
-            string pythonScriptPath = "F:/DaisyDay/test.py";
+            string pythonScriptPath = "D:/pr2023/test.py";
 
-            // Ҫ���ݸ�Python���ַ���
             string stringArg1 = writeto;
             string stringArg2 = Random3.ToString();
-            Debug.Log(stringArg2);
-            // ����һ���µĽ���
             Process pythonProcess = new Process();
-
-            // ����Python������·��
             pythonProcess.StartInfo.FileName = "python";
-
-            // ���ݽű�·�����ַ�������
             pythonProcess.StartInfo.Arguments = $"{pythonScriptPath} \"{stringArg1}\" \"{stringArg2}\"";
-
-            // ������������������Ϣ
             pythonProcess.StartInfo.UseShellExecute = false;
             pythonProcess.StartInfo.RedirectStandardOutput = true;
             pythonProcess.StartInfo.RedirectStandardError = true;
             pythonProcess.StartInfo.CreateNoWindow = true;
-
-            // ����Python����
             pythonProcess.Start();
-
-            // �ȴ�Python�ű�ִ�����
             pythonProcess.WaitForExit();
-
-            // ��ȡPython���������У�
             string output = pythonProcess.StandardOutput.ReadToEnd();
             string error = pythonProcess.StandardError.ReadToEnd();
 
             Debug.Log("build time = " + output);
-            // ���ݿո��ֳ��ַ�������
             string[] line_part = output.Split(' ');
-
-            // ���ַ�������ת������������
             int[] numbers = new int[line_part.Length - 1];
             for (int i = 0; i < line_part.Length - 1; i++)
             {
@@ -532,15 +514,29 @@ public class ShowPlants : MonoBehaviour
         }
     }
 
+    MFA GetMFA(MCH ch, List<MFA> mfas)
+    {
+        for (int i = 0; i < mfas.Count; i++)
+        {
+            if (mfas[i].ch == ch)
+            {
+                return mfas[i];
+            }
+        }
+        Debug.LogError(" not find " + ch.ToString());
+        return new MFA(ch);
+    }
     Vector3 CirlcePos(float distance, float angle)
     {
         // 确保0是眼镜正前方，可能需要乘上 DataTransfer.MobBaseRotation
         return new Vector3(Mathf.Cos(angle) * distance, 0, Mathf.Sin(angle) * distance);
     }
-    
+
     void Start()
     {
-
+        emptyObject = new GameObject("MyEmptyObject");
+        emptyObject.transform.position = new Vector3(0, 0, 0);
+        emptyObject.AddComponent<AnimationSystem>();
         string[] envs = { "grass lands", "desert" };
         string env_string = RandomString(envs);
 
@@ -550,14 +546,14 @@ public class ShowPlants : MonoBehaviour
 
         List<MPS> possibleSubtitles = Prepare();
         List<MPS> subtitles = new List<MPS>();
-        for(int i = 0; i < subEnum.Count; i++)
+        for (int i = 0; i < subEnum.Count; i++)
         {
-            for(int j = 0; j < possibleSubtitles.Count; j++)
+            for (int j = 0; j < possibleSubtitles.Count; j++)
             {
-                if(possibleSubtitles[j].sc == subEnum[i])
+                if (possibleSubtitles[j].sc == subEnum[i])
                 {
                     MPS current = possibleSubtitles[j];
-                    current.SelectOne();
+                    current.SelectOne(replacer);
                     subtitles.Add(current);
                     break;
                 }
@@ -568,15 +564,27 @@ public class ShowPlants : MonoBehaviour
 
         audioSource = gameObject.AddComponent<AudioSource>();
         handb = hand.transform.localPosition;
-        start_time = Time.time;
-        string prefab_name = "ZombieYeti";
-        string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
-        Debug.Log("data transfrer " + DataTransfer.messageToPass);
-        GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-        DataTransfer.mobEyeOffset = 2;
-        theMob = Instantiate(selectedPrefab, new Vector3(0, 0.5f + DataTransfer.mobFootOffset, 0), Quaternion.Euler(0, 190, 0));
+
+        bool loadZombieYeti = false;
+        if (loadZombieYeti == true)
+        {
+            string prefab_name = "ZombieYeti";
+            string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
+            Debug.Log("data transfrer " + DataTransfer.messageToPass);
+            GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            DataTransfer.mobEyeOffset = 2;
+            theMob = Instantiate(selectedPrefab, new Vector3(0, 0.5f + DataTransfer.mobFootOffset, 0), Quaternion.Euler(0, 190, 0));
+        }
+        else
+        {
+            GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DataTransfer.messageToPass);
+            DataTransfer.mobEyeOffset = 2;
+            theMob = Instantiate(selectedPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+            AssignMaterial(theMob.transform);
+        }
+
         // ��һ��SimpleAnimation
-        //AssignMaterial(theMob.transform);
+        //
         theMob.AddComponent<AnimationSystem>();
         //LoadAnimation("D:\\GameDe\\GLTFmodl\\split_pea.animation.json");
 
@@ -584,240 +592,173 @@ public class ShowPlants : MonoBehaviour
         //cameraSettings.Add(addCameraMove(0, 100, new Vector3(-10, 1, 10), new Vector3(10, 1, 10), theMob));
 
 
-
-        // 0 ��Զ����Զ�ĵط���һֱ�ߵ����︽��������
-        // 1 �����ģʽ
-        // 2 �����Ŵ���������
-        // 3 �����Ŵ����ģ���������
-        // 4 ��������
-        // 5 �������ߣ����ģ���������
-        generateStory = false;
-        enableVoice = false;
-
-
-
-        if (!generateStory)
+        int startFrame = 1;
+        int endFrame = 1;
+        for (int i = 0; i < subtitles.Count; i++)
         {
-            int startFrame = 0;
-            int endFrame = 0;
-            for (int i = 0; i < subtitles.Count; i++)
+            MPS sub = subtitles[i];
+            int travel_time = build_times[i];
+            startFrame = endFrame;
+            endFrame += travel_time;
+
+            bool handIsPlayer = false;
+
+            switch (sub.ca)
             {
-                MPS sub = subtitles[i];
-                int travel_time = build_times[i];
-                startFrame = endFrame;
-                endFrame += travel_time;
-                Debug.Log("start frame = " + startFrame + " end frame = " + endFrame);
-                switch (sub.ca)
+                case MCA.NoHand:
+                    {
+                        actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
+                        break;
+                    };
+                case MCA.RotateAround:
+                    {
+                        int midFrame = (startFrame + endFrame) / 2;
+                        Vector3 startPos = CirlcePos(2, -30);
+                        Vector3 midPos = CirlcePos(2, 0);
+                        Vector3 endPos = CirlcePos(2, 30);
+                        cameraSettings.Add(addCameraMove(startFrame, midFrame, startPos, midPos, theMob, headOffset));
+                        cameraSettings.Add(addCameraMove(startFrame, midFrame, midPos, endPos, theMob, headOffset));
+                        break;
+                    }
+                case MCA.HandFollowPlayer:
+                    {
+                        handIsPlayer = true;
+                        MFA fa = GetMFA(MCH.I, sub.fa);
+                        Vector3 offset = (GetPos(fa.sp0) - GetPos(fa.sp1)).normalized * 2f + new Vector3(0, 2, 0);
+                        GameObject lookat = new GameObject("MyEmptyObject");
+                        lookat.transform.position = GetPos(fa.sp0) + (GetPos(fa.sp1) - GetPos(fa.sp0));
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, offset, offset, lookat, headOffset, emptyObject));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, emptyObject, true));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+                        break;
+                    }
+                case MCA.FollowEmptyPlayerLookMob:
+                    {
+                        handIsPlayer = true;
+                        MFA fa = GetMFA(MCH.I, sub.fa);
+                        Vector3 offset = (GetPos(fa.sp0) - GetPos(fa.sp1)).normalized * 2f + new Vector3(0, 2, 0);
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, offset, offset, theMob, headOffset, emptyObject));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, emptyObject, true));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+                        break;
+                    }
+                case MCA.FollowPlayerForward:
+                    {
+                        MFA fa = GetMFA(MCH.I, sub.fa);
+                        Vector3 offset = -(GetPos(fa.sp0) - GetPos(fa.sp1)).normalized * 4f + new Vector3(0, 3, 0);
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, offset, offset, player, headOffset));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, player, true));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
+                        break;
+                    }
+                case MCA.HandFollowMob:
+                    {
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, Vector3.zero, Vector3.zero, theMob, headOffset));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+                        break;
+                    }
+                case MCA.EmptyLookingTwo:
+                    {
+                        // player from -z to z
+                        MFA fa = GetMFA(MCH.I, sub.fa);
+                        Vector3 offset = (GetPos(fa.sp1) - GetPos(fa.sp0)).normalized * 4f + new Vector3(0, 3, 0);
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, Vector3.zero, Vector3.zero, player, headOffset));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
+
+                        break;
+                    }
+                case MCA.SelfLooking:
+                    {
+                        // player from -z to z
+                        float playerEyeHeight = 0f;
+                        Vector3 offset = new Vector3(0, playerEyeHeight, 0) * 1.2f;
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, Vector3.zero, Vector3.zero, theMob, headOffset));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+
+                        break;
+                    }
+                default: { Debug.LogError(sub.ca.ToString() + " not implement"); break; }
+            }
+
+            for (int k = 0; k < sub.fa.Count; k++)
+            {
+                MFA fa = sub.fa[k];
+                GameObject mainActor = fa.ch == MCH.I ? player : theMob;
+                GameObject subActor = fa.ch == MCH.I ? theMob : player;
+                DataTransfer.mobFootOffset = 0.5f;
+                DataTransfer.playerFootOffset = 0.5f;
+                Vector3 posOffset = new Vector3(0, fa.ch == MCH.I ? DataTransfer.playerFootOffset : DataTransfer.mobFootOffset, 0);
+                if (mainActor == player && handIsPlayer) mainActor = emptyObject;
+                switch (fa.ac)
                 {
-                    case MCA.NoHand:
+                    case MAC.Idle:
                         {
-                            actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Wait, GetPos(fa.sp0), GetPos(fa.sp1)));
                             break;
                         };
-                    case MCA.RotateAround:
+                    case MAC.LookingActor:
                         {
-                            int midFrame = (startFrame + endFrame) / 2;
-                            Vector3 startPos = CirlcePos(2, -30);
-                            Vector3 midPos = CirlcePos(2, 0);
-                            Vector3 endPos = CirlcePos(2, 30);
-                            cameraSettings.Add(addCameraMove(startFrame, midFrame, startPos, midPos, theMob, headOffset));
-                            cameraSettings.Add(addCameraMove(startFrame, midFrame, midPos, endPos, theMob, headOffset));
-                            break;
-                        }
-                    case MCA.HandFollowPlayer:
-                        {
-                            cameraSettings.Add(addCameraMove(startFrame, endFrame, Vector3.zero, Vector3.zero, player, headOffset));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
-                            break;
-                        }
-                    case MCA.HandFollowMob:
-                        {
-                             cameraSettings.Add(addCameraMove(startFrame, endFrame, Vector3.zero, Vector3.zero, theMob, headOffset));
-                             actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
-                             break;
-                        }
-                    case MCA.EmptyLookingTwo:
-                        {
-                            // player from -z to z
-                            float playerEyeHeight = 0f ;
-                            Vector3 offset = new Vector3(0, playerEyeHeight, 0) * 1.2f;
-                            cameraSettings.Add(addCameraMove(startFrame, endFrame, Vector3.zero, Vector3.zero, theMob, headOffset));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
 
                             break;
                         }
-                    case MCA.SelfLooking:
+                    case MAC.Walk:
                         {
-                            // player from -z to z
-                            float playerEyeHeight = 0f;
-                            Vector3 offset = new Vector3(0, playerEyeHeight, 0) * 1.2f;
-                            cameraSettings.Add(addCameraMove(startFrame, endFrame, Vector3.zero, Vector3.zero, theMob, headOffset));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
-
+                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Walk, GetPos(fa.sp0), GetPos(fa.sp1)));
                             break;
                         }
-                    default: { Debug.LogError(sub.ca.ToString() + " not implement"); break; }
+                    case MAC.WalkInvisible:
+                        {
+                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Walk, GetPos(fa.sp0), GetPos(fa.sp1)));
+                            break;
+                        }
+                    case MAC.WalkingToMob:
+                        {
+                            actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Walk, GetPos(fa.sp0), GetPos(fa.sp1)));
+                            break;
+                        }
+                    case MAC.WalkingAroundSub_r:
+                        {
+                            Vector3 pos0 = CirlcePos(5, -10) + subActor.transform.position;
+                            Vector3 pos1 = CirlcePos(5, 10) + subActor.transform.position;
+                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Walk, pos0, pos1));
+                            break;
+                        }
+                    default: { Debug.LogError(fa.ac.ToString() + " anim not implement"); break; }
                 }
-
-                for (int k = 0; k < sub.fa.Count; k++)
-                {
-                    MFA fa = sub.fa[k];
-                    GameObject mainActor = fa.ch == MCH.I ? player : theMob;
-                    GameObject subActor = fa.ch == MCH.I ? theMob : player;
-                    switch (fa.ac)
-                    {
-                        case MAC.Idle:
-                            {
-                                actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Wait, GetPos(fa.sp0), GetPos(fa.sp1)));
-                                break;
-                            };
-                        case MAC.LookingActor:
-                            {
-
-                                break;
-                            }
-                        case MAC.Walk:
-                            {
-                                actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Wait, GetPos(fa.sp0), GetPos(fa.sp1)));
-                                break;
-                            }
-                        case MAC.WalkingToMob:
-                            {
-                                actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Walk, GetPos(fa.sp0), GetPos(fa.sp1)));
-                                break;
-                            }
-                        case MAC.WalkingAroundSub_r:
-                            {
-                                Vector3 pos0 = CirlcePos(5, -10);
-                                Vector3 pos1 = CirlcePos(5, 10);
-                                actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Walk, pos0, pos1));
-                                break;
-                            }
-                        default: { Debug.LogError(fa.ac.ToString() + " anim not implement"); break; }
-                    }
-                }
-
             }
-            /*
-                switch (cameraMode[i])
-                {
-                    case CameraMode.FarToClose: CameraFarToCloseMovement(startFrame, endFrame, theMob); break;
-                    case CameraMode.CloseWithoutAnything: CameraCloseLook_WithNothing(startFrame, endFrame); break;
-                    case CameraMode.CloseWithPlayer: CameraCloseLook_WithPlayerLook(startFrame, endFrame); break;
-                    case CameraMode.CloseWithHand: CameraCloseLook_WithHand(startFrame, endFrame); break;
-                    case CameraMode.CloseWithPlayerWalk: CameraCloseLook_WithPlayerWalk(startFrame, endFrame); break;
-                    case CameraMode.FiveStarWithHand: CameraSharpMovement(startFrame, endFrame, theMob); break;
-                    case CameraMode.HeWlakCrossI:
-                        {
-                            Vector3 pos0 = new Vector3(0, 1, 5);
-                            Vector3 pos1 = new Vector3(0, 1, -5);
 
-                            actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Walk, pos0, pos1, Quaternion.identity, Quaternion.identity));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
-                            CameraStaticLookMovement(startFrame, endFrame, player);
-                            break;
-                        }
-                    case CameraMode.HeIdelPlayerRotate:
-                        {
-                            // Scary 2:49
-                            // Attack Ablity he deals a lot of damage and look it's quite similar  
-                            // https://youtu.be/QpVAD2zn3kY?t=42
-                            Vector3 pos0 = new Vector3(0, 1, 0);
-                            Vector3 pos1 = new Vector3(-2, 1, -2);
-                            Vector3 pos2 = new Vector3(2, 1, -2);
-
-                            actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Walk, pos0, pos0, Quaternion.identity, Quaternion.identity));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, player, AnimationSystem.Animation.Walk, pos1, pos2, Quaternion.Euler(0,-90,0), Quaternion.Euler(0, -90, 0)));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
-
-
-                            CameraIdle(startFrame, endFrame, new Vector3(0,4,-4), player, 1);
-                            break;
-                        }
-                    case CameraMode.HeRunawayILook:
-                        {
-                            
-
-                            // https://youtu.be/QpVAD2zn3kY?t=42
-                            Vector3 pos0 = new Vector3(0, 1, 5);
-                            Vector3 pos1 = new Vector3(0, 1, -5);
-                            // he escaped wait hey calm down monkey look at this calm down look at this wait
-                            actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Walk, pos0, pos1, Quaternion.identity, Quaternion.identity));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
-
-                            CameraIdle(startFrame, endFrame, new Vector3(0, 2, 4), theMob, 1);
-                            break;
-                        }
-                    case CameraMode.HeWalkCameraAhead:
-                        {
-                            Vector3 pos0 = new Vector3(0, 1, 5);
-                            Vector3 pos1 = new Vector3(0, 1, -5);
-
-
-
-                            actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Walk, pos0, pos1, Quaternion.identity, Quaternion.identity));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
-
-                            CameraIdle(startFrame, endFrame, new Vector3(0, 2, -4), theMob, 1);
-                            break;
-                        }
-                    case CameraMode.PlayerRunaway:
-                        {
-                            Vector3 pos0 = new Vector3(0, 1, 5);
-                            Vector3 pos1 = new Vector3(0, 1, -5);
-
-                            //https://youtu.be/f81byheKWoQ?t=292
-                            // I swear there was one of those guys selling nearby the one in blue clothes
-
-
-                            actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Walk, pos0, pos1, Quaternion.identity, Quaternion.identity));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
-                            actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
-
-                            CameraIdle(startFrame, endFrame, new Vector3(0, 2, -4), theMob, 1);
-                            break;
-                        }
-                    case CameraMode.CameraZoomIn:
-                    {
-                            // IntroDuce
-
-                            // in this case, the mob turned into _name
-
-                            //https://youtu.be/f81byheKWoQ?t=340
-                            // Wow, Looks Ugly�� �ִս�����ǰ
-                            break;
-                            break;
-                    }
-                    //case HeRotateILook{
-                        //https://youtu.be/XN6B7vK4Yrw?t=339
-                        //string str = "there you go I added the Beast here in Minecraft. but the thing is I didn't make it like heat Blaze violent";  
-                   // }
-                    default: break;
-                
-                }
-            
-            }
-            */
         }
-        else
-        {
-            
-            //File.WriteAllText("D://sub.txt", writeto);
+        /*
+            switch (cameraMode[i])
+            {
+                case CameraMode.FarToClose: CameraFarToCloseMovement(startFrame, endFrame, theMob); break;
+                case CameraMode.CloseWithoutAnything: CameraCloseLook_WithNothing(startFrame, endFrame); break;
+                case CameraMode.CloseWithPlayer: CameraCloseLook_WithPlayerLook(startFrame, endFrame); break;
+                case CameraMode.CloseWithHand: CameraCloseLook_WithHand(startFrame, endFrame); break;
+                case CameraMode.CloseWithPlayerWalk: CameraCloseLook_WithPlayerWalk(startFrame, endFrame); break;
+                case CameraMode.FiveStarWithHand: CameraSharpMovement(startFrame, endFrame, theMob); break;
         }
+        */
+
     }
 
     Vector3 GetPos(MSP spot)
     {
         switch (spot)
         {
-            case MSP.HabitatPlace: return new Vector3(10, 2, 10);
-            case MSP.HabitatPlaceClose: return new Vector3(8, 2, 8);
-            case MSP.HabitatPlaceFar: return new Vector3(2, 2, 2);
+            case MSP.HabitatPlace: return new Vector3(-10, 0, -10);
+            case MSP.HabitatPlaceClose: return new Vector3(-8, 0, -8);
+            case MSP.HabitatPlaceFar: return new Vector3(2, 0, 2);
+            case MSP.MobChaserStart: return new Vector3(2, 0, -10);
+            case MSP.MobChaserEnd: return new Vector3(2, 0, 0);
+            case MSP.PlayerChaseStart: return new Vector3(5, 0, -7);
+            case MSP.PlayerChaseEnd: return new Vector3(5, 0, 3);
+            case MSP.ShowLeft: return new Vector3(2, 0, -5);
+            case MSP.ShowRight: return new Vector3(2, 0, 5);
+            case MSP.WatchShow: return new Vector3(-2, 0, 0);
         }
         return Vector3.zero;
     }
@@ -839,20 +780,20 @@ public class ShowPlants : MonoBehaviour
     private AudioSource audioSource;
     private int Random3;
     private AudioClip modelClip;
-    private bool enableVoice = false;
     void FixedUpdate()
     {
-        
+
         if (enableVoice)
         {
-            audioClipPath = "Audio/model_3275";// + Random3.ToString();
+            audioClipPath = "Audio/model_" + Random3.ToString();
             CheckAudioCount++;
             if (!CheckAudio && CheckAudioCount % 50 == 0 && CheckAudioCount > 200)
             {
                 AssetDatabase.Refresh();
                 FrameCount = -1;
                 Debug.Log("Check Audio Failed " + CheckAudioCount);
-                if (File.Exists("Assets/Resources/" + audioClipPath + ".wav")){
+                if (File.Exists("Assets/Resources/" + audioClipPath + ".wav"))
+                {
                     Debug.Log("file exists");
                     modelClip = Resources.Load<AudioClip>(audioClipPath);
                     if (modelClip != null)
@@ -864,25 +805,20 @@ public class ShowPlants : MonoBehaviour
                         CheckAudio = true;
                     }
                 }
-                
-                
+
+
             }
             if (!CheckAudio)
             {
                 return;
             }
         }
-        
 
-        // RunAnimation(GlobalFrameCount);
-        hand.SetActive(true);
-        player.SetActive(true);
 
         for (int i = 0; i < cameraSettings.Count; i++)
         {
             if (cameraSettings[i].Run(GlobalFrameCount))
             {
-                Debug.Log("frame count = " + GlobalFrameCount + " i = " + i);
                 break;
             }
         }
@@ -890,7 +826,7 @@ public class ShowPlants : MonoBehaviour
         {
             if (actorSettings[i].Run(GlobalFrameCount))
             {
-                
+
             }
         }
 
@@ -898,7 +834,8 @@ public class ShowPlants : MonoBehaviour
         float handCycleScale = 0.01f;
         float handCycleScaleY = 0.005f;
         int handCount = GlobalFrameCount % (handCountCycle * 2);
-        if( handCount < handCountCycle ) {
+        if (handCount < handCountCycle)
+        {
             float x = (handCount - handCountCycle / 2) * 2.0f / handCountCycle;
             Vector3 offset = new Vector3(x * handCycleScale, x * x * handCycleScaleY, 0);
             hand.transform.localPosition = handb + offset;
@@ -911,7 +848,7 @@ public class ShowPlants : MonoBehaviour
         }
 
         GlobalFrameCount++;
-       if (GlobalFrameCount > 200)
+        if (GlobalFrameCount > 200)
         {
             //SceneManager.LoadScene("BlockBench");
         }
@@ -941,9 +878,10 @@ public class ShowPlants : MonoBehaviour
         HandAttack,
         EmptyLookingTwo,
         EmptyLookingAround,
+        FollowEmptyPlayerLookMob,
         AirLooking,
         SelfLooking,
-
+        FollowPlayerForward,
         FarToClose,
         CloseWithoutAnything,
         CloseWithPlayer,
@@ -982,6 +920,7 @@ public class ShowPlants : MonoBehaviour
         LookingActorFar,
         Idle,
         Walk,
+        WalkInvisible,
         WalkingRandomSearch,
         WalkingAroundSub_r,
         WalkingToPlayer,
@@ -996,7 +935,7 @@ public class ShowPlants : MonoBehaviour
         AttackEverything,
     }
 
-    public  enum MCH
+    public enum MCH
     {
         None,
         Mob,
@@ -1048,12 +987,17 @@ public class ShowPlants : MonoBehaviour
         HabitatPlace,
         HabitatPlaceFar,
         HabitatPlaceClose,
-        ChaserStart,
-        ChaserEnd,
+        MobChaserStart,
+        MobChaserEnd,
+        PlayerChaseStart,
+        PlayerChaseEnd,
         FarRunnerStart,
         FarRunnerEnd,
         CloseRunnerStart,
         CloseRunnerEnd,
+        ShowLeft,
+        ShowRight,
+        WatchShow,
     }
 
     struct MPS
@@ -1069,7 +1013,7 @@ public class ShowPlants : MonoBehaviour
             this.link = link;
             this.sc = sc;
             this.ca = ca;
-            this.fa = new List<MFA>() { fa }; 
+            this.fa = new List<MFA>() { fa };
             this.content = new List<string>() { content };
         }
 
@@ -1099,23 +1043,25 @@ public class ShowPlants : MonoBehaviour
             this.fa = new List<MFA>() { fa0, fa1, };
             this.content = content;
         }
-        public void SelectOne()
+        public void SelectOne(SubReplacer replacer)
         {
-            int r = Random.Range(0, this.content.Count);
-            this.content = new List<string>() { this.content[r] };
+            string sub = AddSub3(this.content, replacer);
+            this.content = new List<string>() { sub };
+
 
             string str = " Scene= " + sc.ToString() + " Camera= " + ca.ToString();
-            for(int i = 0; i < fa.Count; i++)
+            for (int i = 0; i < fa.Count; i++)
             {
                 str += " actor= " + fa[i].ch.ToString() + " anim= " + fa[i].ac.ToString() + " start= " + fa[i].sp0.ToString() + " end= " + fa[i].sp1.ToString();
             }
             Debug.Log(str);
             Debug.Log(" content = " + content[0].ToString());
+
         }
 
         public string Content()
         {
-            if(this.content.Count > 0)
+            if (this.content.Count > 0)
             {
                 return this.content[0];
             }
@@ -1125,7 +1071,7 @@ public class ShowPlants : MonoBehaviour
 
     }
 
-     static List<MPS> Prepare()
+    static List<MPS> Prepare()
     {
         List<MPS> pres = new List<MPS>();
 
@@ -1146,7 +1092,7 @@ public class ShowPlants : MonoBehaviour
             "you can see all the details properly. but it turned out like this, the model of him here in minecraft"));
 
         famob.set(MAC.RunAway, MSP.FarRunnerStart, MSP.FarRunnerEnd);
-        fame.set(MAC.ChasePlayer, MSP.ChaserStart, MSP.ChaserEnd);
+        fame.set(MAC.ChasePlayer, MSP.FarRunnerEnd, MSP.FarRunnerEnd);
         pres.Add(new MPS("https://youtu.be/XN6B7vK4Yrw?t=445", MSC.None, MCA.HandFollowPlayer, fame, famob,
             "only there's a small problem he is slightly fast huh"));
 
@@ -1203,7 +1149,7 @@ public class ShowPlants : MonoBehaviour
             */
 
         famob.set(MAC.Idle, MSP.HabitatPlace);
-        fame.set(MAC.Walk, MSP.HabitatPlaceFar, MSP.HabitatPlaceClose);
+        fame.set(MAC.WalkInvisible, MSP.HabitatPlaceFar, MSP.HabitatPlaceClose);
         pres.Add(new MPS("", MSC.ENV, MCA.HandFollowPlayer, fame, famob,
          new List<String>() { "anywhere in a _env we could find _name", "we've spotted some _env and that means we can find a _name",
              "if we sneak up to the _env we may be able to Feast Our Eyes Upon a wild baby _name",
@@ -1228,13 +1174,17 @@ public class ShowPlants : MonoBehaviour
                           "the _name just came out adorable all at all he's so cute",
                           "we've got _name looking super cute extra furry"}));
 
+        famob.set(MAC.Walk, MSP.MobChaserStart, MSP.MobChaserEnd);
+        fame.set(MAC.Walk, MSP.PlayerChaseStart, MSP.PlayerChaseEnd);
+        pres.Add(new MPS("", MSC.Character, MCA.FollowPlayerForward, fame, famob,
 
-        pres.Add(new MPS("", MSC.Character, MCA.HandFollowPlayer, fame, famob,
-         new List<String>() { "but there's a difference now yes he is aggressive", "in his baby form he'll run and hide",
+        new List<String>() { "but there's a difference now yes he is aggressive", "in his baby form he'll run and hide",
                                 "and this little guy looks happy all of the time"}));
 
+        famob.set(MAC.Walk, MSP.MobChaserStart, MSP.MobChaserEnd);
+        fame.set(MAC.WalkInvisible, MSP.PlayerChaseStart, MSP.PlayerChaseEnd);
+        pres.Add(new MPS("", MSC.Attack_Summary, MCA.FollowEmptyPlayerLookMob, fame, famob,
 
-           pres.Add(new MPS("", MSC.Attack_Summary, MCA.HandFollowPlayer, fame, famob,
             new List<String>() {"there's a small important detail I forgot to mention, he releases a _attack_weapon " +
             "               which is the Sleep _attack_weapon so that makes me want to sleep", "this is the power of _name he can make his enemies fall asleep",
                             "she's peaceful so she's not going to hit me unless I annoy her",
@@ -1244,7 +1194,9 @@ public class ShowPlants : MonoBehaviour
                             "growing little birch trees underneath the threat and launching it into the air",
                             "the _name spots anything threatening nearby by ready to take it down instantly right"}));
 
-        pres.Add(new MPS("", MSC.Attacking, MCA.HandFollowPlayer, fame, famob,
+        famob.set(MAC.Walk, MSP.ShowLeft, MSP.ShowRight);
+        fame.set(MAC.WalkInvisible, MSP.WatchShow);
+        pres.Add(new MPS("", MSC.Attacking, MCA.FollowEmptyPlayerLookMob, fame, famob,
          new List<String>() {"head towards a _enemy and send the adult _name on it." +
             "the adult _name is going to send out _attack_weapon completely surrounding the",
             "the _name who will send out a _attack_weapon, full of allergic reaction." +
@@ -1299,9 +1251,9 @@ public class ShowPlants : MonoBehaviour
     string[] desc_grade = { "and we'll go to the next character. but before I want you guys to comment a grade for _name, " +
                          "Below in my opinion definitely it's _score. out of 10 because he's very beautiful well",
                            "but as I made more just for the sake of making I'll give a grade eight out of _score"};
-    
 
-   
+
+
     // ����
     string[] desc_play = { "all we have to do is get into the _env and make friends with our baby _name" };
 
@@ -1327,9 +1279,9 @@ public class ShowPlants : MonoBehaviour
     string[] grab = { " obviously I will use the rabbits to transform into _name" };
 
     // Scary 9:55
-    string[] heAttackMeIFightBack = {"I really like this but okay my dear you can stop"};
+    string[] heAttackMeIFightBack = { "I really like this but okay my dear you can stop" };
 
 
     //Scary 11:55
-    string[] MultipleView = {"look at the size of this cat he got huge and seriously tell me if it wasn't the best mob in this video surely"};
+    string[] MultipleView = { "look at the size of this cat he got huge and seriously tell me if it wasn't the best mob in this video surely" };
 }

@@ -181,7 +181,7 @@ public class TextureEditor
         start1 = new Uint2(size.z, 0);
         size0 = new Uint2(sourceSize.x, sourceSize.y);
         size1 = new Uint2(size.x, size.y);
-     ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
+    ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
 
         
 
@@ -190,7 +190,7 @@ public class TextureEditor
         start1 = new Uint2(size.z * 2 + size.x, 0);
         size0 = new Uint2(sourceSize.x, sourceSize.y);
         size1 = new Uint2(size.x, size.y);
-     ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
+    ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
 
         //left
         start0 = sourceStart;
@@ -198,7 +198,7 @@ public class TextureEditor
         size0 = new Uint2(sourceSize.z, sourceSize.y);
         size1 = new Uint2(size.z, size.y);
      ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
-
+        
         //back
         start0 = sourceStart + new Uint2(sourceSize.z + sourceSize.x, 0);
         start1 = new Uint2(size.z + size.x, 0);
@@ -219,7 +219,7 @@ public class TextureEditor
         size0 = new Uint2(sourceSize.x, sourceSize.z);
         size1 = new Uint2(size.x, size.z);
       ComputeFeatureAndResize(sourceTexture, texture, start0, start1, size0, size1);
-
+        
       //  SaveTextureAsPNG(texture, "Assets/ModifiedTexture2.png");
         material.mainTexture = texture;
         
@@ -232,6 +232,9 @@ public class TextureEditor
         Color[,] targetColors  = new Color[targetWidth, targetHeight]; 
         string outputFilePath = "Assets/ModifiedTexture.png";
         Texture2D modifiedTexture = new Texture2D(targetWidth, targetHeight);
+
+      //  Debug.Log(" target w " + targetWidth + " h = " + targetHeight + " source w = " + sourceWidth + " h = " + sourceHeight);
+      //  Debug.Log(" sourceStartX " + sourceStartX + " sourceStartY = " + sourceStartY);
 
         int CopyY = 0;
         for(int i = 0; i < targetHeight; i++)
@@ -277,6 +280,7 @@ public class TextureEditor
                     CopyY = i - (featureHeight - featureYStart);
                 }
             }
+            Debug.Log(" i = " + i + " copy + " + CopyY);
 
             for (int j = 0; j < targetWidth; j++)
             {

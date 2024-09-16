@@ -10,6 +10,7 @@ public class Structure
 {
     public static class DataTransfer
     {
+        
         public static string messageToPass;
         public static string prefabName;
         public static GameObject actor;
@@ -105,6 +106,7 @@ public class Structure
         public int frameStart;
         public int frameEnd;
         public GameObject lookat;
+        public GameObject follow;
         public Vector3 lookatOffset;
         public Vector3 posOffsetStart;
         public Vector3 posOffsetEnd;
@@ -119,6 +121,7 @@ public class Structure
             this.posOffsetEnd = posOffset;
             this.lookat = lookat;
             this.detectDead = detectDead;
+            this.follow = null;
         }
 
         public CameraSetting(int frameStart, int frameEnd,  Vector3 posOffset, Vector3 posOffset2, GameObject lookat, Vector3 lookatOffset)
@@ -130,14 +133,35 @@ public class Structure
             this.posOffsetEnd = posOffset2;
             this.lookat = lookat;
             this.detectDead = false;
+            this.follow = null;
+        }
+
+        public CameraSetting(int frameStart, int frameEnd, Vector3 posOffset, Vector3 posOffset2, GameObject lookat, Vector3 lookatOffset, GameObject follow)
+        {
+            this.frameStart = frameStart;
+            this.frameEnd = frameEnd;
+            this.lookatOffset = lookatOffset;
+            this.posOffsetStart = posOffset;
+            this.posOffsetEnd = posOffset2;
+            this.lookat = lookat;
+            this.detectDead = false;
+            this.follow = follow;
         }
 
         public bool Run(int frameCount)
         {
-            if(frameCount >= frameStart && frameCount < frameEnd) { 
-                float ratio = (frameCount - frameStart) * 1.0f/ (frameEnd - frameStart);
+            if(frameCount >= frameStart && frameCount < frameEnd)
+            {
+                float ratio = (frameCount - frameStart) * 1.0f / (frameEnd - frameStart);
                 Vector3 realPosOffset = Vector3.Lerp(posOffsetStart, posOffsetEnd, ratio);
-                Camera.main.transform.position = lookat.transform.position + realPosOffset;
+                if (follow == null)
+                {
+                    Camera.main.transform.position = lookat.transform.position + realPosOffset;
+                }
+                else
+                {
+                    Camera.main.transform.position = follow.transform.position + realPosOffset;
+                }
                 Camera.main.transform.LookAt(lookat.transform.position + lookatOffset);
 
                 return true;
@@ -157,6 +181,12 @@ public class Structure
     {
 
         return new CameraSetting(frameStart, frameEnd, pos, pos2, lookat, lookatOffset);
+    }
+
+    public static CameraSetting addCameraMove(int frameStart, int frameEnd, Vector3 pos, Vector3 pos2, GameObject lookat, Vector3 lookatOffset, GameObject follow)
+    {
+
+        return new CameraSetting(frameStart, frameEnd, pos, pos2, lookat, lookatOffset, follow);
     }
 
     public struct ActorSettings
@@ -202,23 +232,32 @@ public class Structure
 
         public bool Run(int frameCount)
         {
-            SetMeshRenderer(actor.transform, true);
             if (frameCount >= this.frameStart && frameCount < this.frameEnd)
             {
                 if(this.active == false)
                 {
-
-                    SetMeshRenderer(actor.transform, false);
+                    this.actor.gameObject.SetActive(false);
                     return true;
+                }
+                else
+                {
+
+                    this.actor.gameObject.SetActive(true);
                 }
                 if(actor.GetComponent<AnimationSystem>() != null)
                 {
                     actor.GetComponent<AnimationSystem>().SetAnimation(animation); 
                     float ratio = (frameCount - this.frameStart) * 1.0f / (this.frameEnd - this.frameStart);
                     Vector3 pos = Vector3.Lerp(posStart, posEnd, ratio);
-                    Quaternion rot = Quaternion.Lerp(rotationStart, rotationEnd, ratio);
-                    
+
+                    // walk _customRoate
+
+                    Vector3 speed = posEnd - posStart;
+
+                    Quaternion rot = Quaternion.LookRotation(speed.normalized);
                     actor.GetComponent<AnimationSystem>().SetTransform(pos, rot);
+
+
                 }
 
 
@@ -232,6 +271,12 @@ public class Structure
             Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd)
     {
         return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, rotationStart, rotationEnd, true, null);
+    }
+
+    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation,
+        Vector3 posStart, Vector3 posEnd, bool active)
+    {
+        return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, Quaternion.identity, Quaternion.identity, active, null);
     }
 
     public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation,
@@ -451,7 +496,18 @@ public class Structure
             this.score = score;
         }
     }
-
+    public static string AddSub3(List<string> sentences, SubReplacer replacer)
+    {
+        int r = UnityEngine.Random.Range(0, sentences.Count);
+        string subtitle = sentences[r];
+        subtitle = subtitle.Replace("_env", replacer.env);
+        subtitle = subtitle.Replace("_name", replacer.name);
+        subtitle = subtitle.Replace("_enemy", replacer.enemy);
+        subtitle = subtitle.Replace("_attack_weapon", replacer.attack_weapon);
+        subtitle = subtitle.Replace("_score", replacer.score);
+        subtitle = System.Text.RegularExpressions.Regex.Replace(subtitle, @"\d", "");
+        return subtitle;
+    }
     public static string AddSub2(string[] sentences, SubReplacer replacer)
     {
         int r = UnityEngine.Random.Range(0, sentences.Length);
@@ -624,11 +680,24 @@ public class Structure
         }
     }
 
+    public static void SetAllRotate(Transform parent, Quaternion r)
+    {
+        if (parent.name == "All")
+        {
+           // parent.transform.rotation = r;
+            return;
+        }
+        foreach (Transform child in parent)
+        {
+            SetAllRotate(child, r);
+        }
+    }
+
     public static void SetMeshRenderer(Transform parent,  bool active)
     {
         if (parent.GetComponent<MeshRenderer>() != null)
         {
-            parent.GetComponent<MeshRenderer>().enabled = active;
+            //parent.GetComponent<MeshRenderer>().enabled = active;
         }
         foreach (Transform child in parent)
         {
