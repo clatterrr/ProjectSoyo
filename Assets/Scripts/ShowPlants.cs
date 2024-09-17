@@ -20,222 +20,9 @@ public class ShowPlants : MonoBehaviour
     // Start is called before the first frame update
     public GameObject player;
     public GameObject hand;
-    public GameObject emptyObject;
+    public GameObject theEnemy;
+    private GameObject emptyObject;
 
-    private List<GeoAnim> animList = new List<GeoAnim>();
-    Vector4 ParseLineToVector4(string line)
-    {
-        // ȥ������Ҫ���ַ���ֻ�������ֺͶ���
-        line = line.Replace("\"", "")   // ȥ��˫����
-                   .Replace(":", "")    // ȥ��ð��
-                   .Replace("[", "")    // ȥ��������
-                   .Replace("]", "")    // ȥ��������
-                   .Replace(",", " ");
-
-        // ���ո�ָ��ַ���������Ϊ������
-        string[] parts = line.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-        float firstValue = float.Parse(parts[0]);
-        float x = float.Parse(parts[1]);
-        float y = float.Parse(parts[2]);
-        float z = float.Parse(parts[3]);
-
-        // ����Vector4
-        return new Vector4(firstValue, x, y, z);
-    }
-
-    struct GeoAnim
-    {
-        public string name;
-        public bool loop;
-        public float length;
-        public List<GeoAnimPart> animaPart;
-
-        public GeoAnim(string name, bool loop, float length)
-        {
-            this.name = name;
-            this.loop = loop;
-            this.length = length;
-            this.animaPart = new List<GeoAnimPart>();
-        }
-    }
-
-    struct GeoAnimPart
-    {
-        public string name;
-        public List<uint> pos_time;
-        public List<uint> rot_time;
-        public List<Vector3> pos;
-        public List<Quaternion> rot;
-
-        public GeoAnimPart(string name)
-        {
-            this.name = name;
-            this.pos_time = new List<uint>();
-            this.rot_time = new List<uint>();
-            this.pos = new List<Vector3>();
-            this.rot = new List<Quaternion>();
-        }
-    }
-
-    void RunAnimation(int frameCount)
-    {
-        string animation_name = "animation.split_pea.idle";
-        int animation_index = 0;
-        for (int i = 0; i < animList.Count; i++)
-        {
-            if (animList[i].name == animation_name)
-            {
-                animation_index = i;
-            }
-        }
-
-        for (int i = 0; i < animList[animation_index].animaPart.Count; i++)
-        {
-            GeoAnimPart part = animList[animation_index].animaPart[i];
-            if (part.rot_time.Count > 0)
-            {
-                int max_rot_time = (int)part.rot_time[part.rot_time.Count - 1];
-                int now_time = frameCount % max_rot_time;
-                for (int j = 0; j < part.rot_time.Count - 1; j++)
-                {
-                    if (now_time >= part.rot_time[j] && now_time < part.rot_time[j + 1])
-                    {
-                        float r = (now_time - part.rot_time[j]) * 1.0f / (part.rot_time[j + 1] - part.rot_time[j]);
-                        Quaternion rot = Quaternion.Lerp(part.rot[j], part.rot[j + 1], r);
-                        RotateChild(theMob.transform, part.name, rot * GetBasicRot(part.name));
-                        break;
-                    }
-                }
-            }
-            if (part.pos_time.Count > 0)
-            {
-                int max_pos_time = (int)part.pos_time[part.pos_time.Count - 1];
-                int now_time = frameCount % max_pos_time;
-                for (int j = 0; j < part.pos_time.Count - 1; j++)
-                {
-                    if (now_time >= part.pos_time[j] && now_time < part.pos_time[j + 1])
-                    {
-                        float r = (now_time - part.pos_time[j]) * 1.0f / (part.pos_time[j + 1] - part.pos_time[j]);
-                        Vector3 pos = Vector3.Lerp(part.pos[j], part.pos[j + 1], r);
-                        TranslateChild(theMob.transform, part.name, GetBasicPos(part.name) + pos * 0.08f);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    void LoadAnimation(string path)
-    {
-        string[] lines = File.ReadAllLines(path);
-        GeoAnimPart animPart = new GeoAnimPart("");
-        GeoAnim anim = new GeoAnim();
-        bool mode_pos = true;
-        bool this_line_add = false;
-        int brackets_count = 0;
-        bool brackets_add = false;
-        bool plog = false;
-        foreach (string line in lines)
-        {
-            this_line_add = false;
-            if (line.Contains("{"))
-            {
-                brackets_count++;
-                brackets_add = true;
-                this_line_add = true;
-            }
-            if (line.Contains("}"))
-            {
-                brackets_count--;
-                brackets_add = false;
-                this_line_add = true;
-            }
-            if (plog) Debug.Log("brackets num" + brackets_count + " line = " + line);
-            if (brackets_count == 3 && this_line_add)
-            {
-                if (anim.length > 0)
-                {
-                    if (plog) Debug.Log("anim list added = " + anim.name + " count " + anim.animaPart.Count);
-                    animList.Add(anim);
-                }
-                string anim_name = line.Split(':')[0].Replace('"', ' ');
-                anim_name = anim_name.Trim();
-                if (plog) Debug.Log(" anim name = " + anim_name);
-                anim = new GeoAnim(anim_name, true, 1);
-            }
-            if (brackets_count == 5 && brackets_add && this_line_add)
-            {
-                string anim_part = line.Split(':')[0].Replace('"', ' ');
-                anim_part = anim_part.Trim();
-                if (plog) Debug.Log("anim part = " + anim_part);
-                animPart = new GeoAnimPart(anim_part);
-            }
-            if (brackets_count == 6 && brackets_add && line.Contains("position"))
-            {
-                if (plog) Debug.Log("mode pos");
-                mode_pos = true;
-            }
-            else if (brackets_count == 6 && brackets_add && line.Contains("rotation"))
-            {
-                if (plog) Debug.Log("mode rot");
-                mode_pos = false;
-            }
-            if (brackets_count == 7 && brackets_add && this_line_add)
-            {
-                float t = float.Parse(line.Split(':')[0].Replace('"', ' ').Replace(" ", ""));
-                uint tint = (uint)(t * 50);
-                if (plog) Debug.Log("mode pos t = " + t);
-                if (mode_pos)
-                {
-                    animPart.pos_time.Add(tint);
-                }
-                else
-                {
-                    animPart.rot_time.Add(tint);
-                }
-
-            }
-
-            if (brackets_count == 7 && brackets_add && line.Contains("vector"))
-            {
-                var match = Regex.Match(line, @"\[(.*?)\]");
-                if (match.Success)
-                {
-                    string numbersStr = match.Groups[1].Value;
-
-                    // ���ַ����ָ�Ϊ�����ַ�������ת��Ϊ����������
-                    float[] vector = numbersStr
-                        .Split(',')
-                        .Select(s => float.Parse(s.Trim()))
-                        .ToArray();
-                    if (plog) Debug.Log("mode pos vec = " + new Vector3(vector[0], vector[1], vector[2]));
-                    if (mode_pos)
-                    {
-                        animPart.pos.Add(new Vector3(vector[0], vector[1], vector[2]));
-                    }
-                    else
-                    {
-                        animPart.rot.Add(Quaternion.Euler(vector[0], vector[1], vector[2]));
-                    }
-                }
-            }
-
-            if (brackets_count == 4 && brackets_add == false && this_line_add)
-            {
-                if (plog) Debug.Log(" added anima part = name " + animPart.name + " count = " + animPart.pos_time.Count);
-                anim.animaPart.Add(animPart);
-            }
-        }
-        foreach (var animx in animList)
-        {
-            if (plog) Debug.Log("animx name" + animx.name);
-            foreach (var animy in animx.animaPart)
-            {
-
-                if (plog) Debug.Log("animy name" + animy.name);
-            }
-        }
-    }
     private List<CameraSetting> cameraSettings = new List<CameraSetting>();
     private List<ActorSettings> actorSettings = new List<ActorSettings>();
     private GameObject theMob;
@@ -353,19 +140,6 @@ public class ShowPlants : MonoBehaviour
 
     }
 
-    void RandomCamera(int startFrame, int endFrame)
-    {
-        int r = Random.Range(0, 4);
-        switch (r)
-        {
-            case 0: CameraIdle(startFrame, endFrame, new Vector3(3, 3, 0), theMob, 2); break;
-            case 1: cameraSettings.Add(addCameraMove(startFrame, endFrame, new Vector3(5, 5, 0), new Vector3(5, 5, 0) * 0.3f, theMob, headOffset)); break;
-            case 2: CameraSharpMovement(startFrame, endFrame, theMob); break;
-            case 3: CameraSharpMovement(startFrame, endFrame, player); break;
-            default: break;
-        }
-    }
-    //��Զ����Զ�ĵط���һֱ�ߵ����︽��������
     void CameraFarToCloseMovement(int startFrame, int endFrame, GameObject lookat)
     {
         float degree0 = Random.Range(0f, 3.14f);
@@ -463,7 +237,8 @@ public class ShowPlants : MonoBehaviour
 
 
 
-    private bool enableVoice = true;
+    public bool enableVoice = false;
+    public bool enableYeti = true;
     int[] GenerateComments(List<MPS> subtitles)
     {
         string writeto = "";
@@ -474,7 +249,7 @@ public class ShowPlants : MonoBehaviour
         }
         Random3 = Random.Range(1000, 9999);
         Debug.Log("show part random number = " + Random3);
-        
+
         if (enableVoice)
         {
             string pythonScriptPath = "D:/pr2023/test.py";
@@ -540,10 +315,14 @@ public class ShowPlants : MonoBehaviour
         string[] envs = { "grass lands", "desert" };
         string env_string = RandomString(envs);
 
-        SubReplacer replacer = new SubReplacer(DataTransfer.prefabName, env_string, "husk", "air bubbles", "nine");
+       // DataTransfer.prefabName = "Yeti";
+        DataTransfer.featureDesc = "cute";
+        DataTransfer.featurePart = "head";
+        SubReplacer replacer = new SubReplacer(DataTransfer.prefabName, env_string, "husk", "air bubbles", "nine", DataTransfer.featureDesc, DataTransfer.featurePart);
 
-        List<MSC> subEnum = new List<MSC>() { MSC.ENV, MSC.Nice, MSC.Character, MSC.Attack_Summary, MSC.Attacking };
-
+        //  List<MSC> subEnum = new List<MSC>() { MSC.ENV, MSC.LookAtNow, MSC.Nice, MSC.Animation, MSC.Attack_Summary,
+        //   MSC.LetPutAMob, MSC.EnemyStrongGetClose, MSC.MobStartFight, MSC.EnemyStartHurt, MSC.MobStartFight, MSC.EnemyDead, MSC.MobProtectMe, MSC.Grade };
+        List<MSC> subEnum = new List<MSC>() { MSC.ENV, MSC.Nice, MSC.Animation, MSC.Attack_Summary, MSC.LetPutAMob, MSC.MobStartFight, MSC.EnemyDead};
         List<MPS> possibleSubtitles = Prepare();
         List<MPS> subtitles = new List<MPS>();
         for (int i = 0; i < subEnum.Count; i++)
@@ -565,8 +344,7 @@ public class ShowPlants : MonoBehaviour
         audioSource = gameObject.AddComponent<AudioSource>();
         handb = hand.transform.localPosition;
 
-        bool loadZombieYeti = false;
-        if (loadZombieYeti == true)
+        if (enableYeti == true)
         {
             string prefab_name = "ZombieYeti";
             string path = "Assets/Characters/Plants/Prefab/" + prefab_name + ".prefab";
@@ -602,6 +380,60 @@ public class ShowPlants : MonoBehaviour
             endFrame += travel_time;
 
             bool handIsPlayer = false;
+
+            MFA famob = new MFA(MCH.Mob);
+            MFA faenemy = new MFA(MCH.Enemy);
+            MFA fame = new MFA(MCH.I);
+
+            // pre scene includes multiple possible settings, select one
+            switch (sub.sc)
+            {
+                case MSC.PreEnv:
+                    {
+                       sub.sc = MSC.ENV;
+                       break;
+                    }
+            }
+
+            switch (sub.sc)
+            {
+                case MSC.ENV:
+                    {
+                        sub.sc = MSC.ENV;
+                        famob.set(MAC.Idle, MSP.HabitatPlace);
+                        fame.set(MAC.WalkInvisible, MSP.HabitatPlaceFar, MSP.HabitatPlaceClose);
+                        sub.fa = new List<MFA>() { fame, famob };
+                        sub.ca = MCA.HandFollowPlayer;
+                        break;
+                    }
+                case MSC.LetPutAMob:
+                    {
+                        faenemy.set(MAC.Walk, MSP.PlayerAttackFar, MSP.PlayerAttackClose);
+                        famob.set(MAC.Walk, MSP.MobAttackClose, MSP.MobAttackClose);
+                        fame.set(MAC.WalkInvisible, MSP.WatchShow);
+                        sub.fa = new List<MFA>() { fame, famob, faenemy};
+                        sub.ca = MCA.FollowEmptyPlayerLookMob;
+                        break;
+                    }
+                case MSC.EnemyDead:
+                    {
+                        faenemy.set(MAC.Dead, MSP.PlayerAttackClose, MSP.PlayerAttackClose);
+                        famob.set(MAC.Idle, MSP.MobAttackClose, MSP.MobAttackClose);
+                        fame.set(MAC.WalkInvisible, MSP.WatchShow);
+                        sub.fa = new List<MFA>() { fame, famob, faenemy };
+                        sub.ca = MCA.FollowEmptyPlayerLookMob;
+                        break;
+                    }
+                case MSC.MobStartFight:
+                    {
+                        faenemy.set(MAC.Walk, MSP.PlayerAttackClose, MSP.PlayerAttackClose);
+                        famob.set(MAC.AttackEnemy, MSP.MobAttackClose, MSP.MobAttackClose);
+                        fame.set(MAC.WalkInvisible, MSP.WatchShow);
+                        sub.fa = new List<MFA>() { fame, famob, faenemy };
+                        sub.ca = MCA.FollowEmptyPlayerLookMob;
+                        break;
+                    }
+            }
 
             switch (sub.ca)
             {
@@ -686,11 +518,15 @@ public class ShowPlants : MonoBehaviour
             for (int k = 0; k < sub.fa.Count; k++)
             {
                 MFA fa = sub.fa[k];
-                GameObject mainActor = fa.ch == MCH.I ? player : theMob;
-                GameObject subActor = fa.ch == MCH.I ? theMob : player;
-                DataTransfer.mobFootOffset = 0.5f;
+                GameObject mainActor;
+                switch (fa.ch)
+                {
+                    case MCH.I: { mainActor = player; break; }
+                    case MCH.Mob: { mainActor = theMob; break; }
+                    default: { mainActor = theEnemy; break; }
+                }
+                //DataTransfer.mobFootOffset = 0.5f;
                 DataTransfer.playerFootOffset = 0.5f;
-                Vector3 posOffset = new Vector3(0, fa.ch == MCH.I ? DataTransfer.playerFootOffset : DataTransfer.mobFootOffset, 0);
                 if (mainActor == player && handIsPlayer) mainActor = emptyObject;
                 switch (fa.ac)
                 {
@@ -702,6 +538,11 @@ public class ShowPlants : MonoBehaviour
                     case MAC.LookingActor:
                         {
 
+                            break;
+                        }
+                    case MAC.Dead:
+                        {
+                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Dead, GetPos(fa.sp0), GetPos(fa.sp1)));
                             break;
                         }
                     case MAC.Walk:
@@ -719,10 +560,15 @@ public class ShowPlants : MonoBehaviour
                             actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Walk, GetPos(fa.sp0), GetPos(fa.sp1)));
                             break;
                         }
+                    case MAC.AttackEnemy:
+                        {
+                            actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Attack_ShootPea, GetPos(fa.sp0), GetPos(fa.sp1)));
+                            break;
+                        }
                     case MAC.WalkingAroundSub_r:
                         {
-                            Vector3 pos0 = CirlcePos(5, -10) + subActor.transform.position;
-                            Vector3 pos1 = CirlcePos(5, 10) + subActor.transform.position;
+                            Vector3 pos0 = CirlcePos(5, -10) + theMob.transform.position;
+                            Vector3 pos1 = CirlcePos(5, 10) + theMob.transform.position;
                             actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Walk, pos0, pos1));
                             break;
                         }
@@ -756,6 +602,10 @@ public class ShowPlants : MonoBehaviour
             case MSP.MobChaserEnd: return new Vector3(2, 0, 0);
             case MSP.PlayerChaseStart: return new Vector3(5, 0, -7);
             case MSP.PlayerChaseEnd: return new Vector3(5, 0, 3);
+            case MSP.MobAttackClose: return new Vector3(5, 0, -2);
+            case MSP.MobAttackFar: return new Vector3(5, 0, -6);
+            case MSP.PlayerAttackClose: return new Vector3(5, 0, 2);
+            case MSP.PlayerAttackFar: return new Vector3(5, 0, 6);
             case MSP.ShowLeft: return new Vector3(2, 0, -5);
             case MSP.ShowRight: return new Vector3(2, 0, 5);
             case MSP.WatchShow: return new Vector3(-2, 0, 0);
@@ -857,18 +707,32 @@ public class ShowPlants : MonoBehaviour
 
     public enum MSC
     {
+        PreEnv,
         None,
         ENV,
+        LookAtNow,
         Nice,
         Animation,
         Habit,
         Character,
         Attack_Summary,
         Attacking,
+        Grade,
+
+        LetPutAMob,
+        EnemyStrongGetClose,
+        MobStartFight,
+        EnemyStartHurt,
+        MobFightBack,
+        EnemyDead,
+        MobProtectMe,
     }
 
     public enum MCA
     {
+        // abstract method
+        PreHandFollowPlayer,
+
         None,
         NoHand,
         RotateAround,
@@ -915,6 +779,7 @@ public class ShowPlants : MonoBehaviour
 
     public enum MAC
     {
+        Dead,
         None,
         LookingActor,
         LookingActorFar,
@@ -927,17 +792,20 @@ public class ShowPlants : MonoBehaviour
         WalkingToMob,
         AttackCircle,
         RunAway,
-        AttackMob,
-        AttackPlayer,
         ChasePlayer,
         WalkingBackWard,
         BeingAttackNoDefend,
         AttackEverything,
+
+        AttackEnemy,
+        AttackPlayer,
+        AttackMob,
     }
 
     public enum MCH
     {
         None,
+        Enemy,
         Mob,
         I,
     }
@@ -1087,9 +955,6 @@ public class ShowPlants : MonoBehaviour
         pres.Add(new MPS("https://youtu.be/XN6B7vK4Yrw?t=445", MSC.None, MCA.HandFollowPlayer, fame, famob,
             "I need to try to defeat him and the problem is that these arms are long"));
 
-        famob.set(MAC.Idle, MSP.Flat);
-        pres.Add(new MPS("https://youtu.be/XN6B7vK4Yrw?t=445", MSC.None, MCA.RotateAround, famob,
-            "you can see all the details properly. but it turned out like this, the model of him here in minecraft"));
 
         famob.set(MAC.RunAway, MSP.FarRunnerStart, MSP.FarRunnerEnd);
         fame.set(MAC.ChasePlayer, MSP.FarRunnerEnd, MSP.FarRunnerEnd);
@@ -1117,19 +982,8 @@ public class ShowPlants : MonoBehaviour
             "I'm not going to waste too much time with him, so I'm going to try to defeat him without much delay"),
 
 
-
-            pres.Add(new MPS("https://youtu.be/XN6B7vK4Yrw?t=755", MSC.None, MCA.Hand, MCH.Mob, MAC.ChasePlayer, MSP.Attack0, MCH.I, MAC.WalkingBackWard, MSP.Attack1,
-            "come here my dear come look how his animation turned out it was very good"),
-
-                        pres.Add(new MPS("https://youtu.be/XN6B7vK4Yrw?t=755", MSC.None, MCA.Hand, MCH.Mob, MAC.Idle, MSP.Attack0, MCH.I, MAC.LookingActorFar, MSP.Attack1,
-            "I think it's better to leave _mob alone there in his place I thought he had taken me to bad place"),
-
-
-                        pres.Add(new MPS("https://youtu.be/XN6B7vK4Yrw?t=755", MSC.None, MCA.Hand, MCH.Mob, MAC.WalkingToPlayer, MSP.Attack0, MCH.I, MAC.LookingActor, MSP.Attack1,
-            "so here in front is our first character which is _mob"),
-
             pres.Add(new MPS("https://youtu.be/XN6B7vK4Yrw?t=755", MSC.None, MCA.EmptyLookingTwo, MCH.Mob, MAC.ChasePlayer, MSP.Attack0, MCH.I, MAC.RunAway, MSP.Attack1,
-            "the problem is that I forgot for a detail that he is _mob and he releases _weapons"),
+            "the problem is that I forgot for a detail that he is _name and he releases _weapons"),
 
 
             pres.Add(new MPS("https://youtu.be/XN6B7vK4Yrw?t=21", MSC.None, MCA.SelfLooking, MCH.Mob, MAC.Walk, MSP.Attack0,
@@ -1137,23 +991,52 @@ public class ShowPlants : MonoBehaviour
 
 
             pres.Add(new MPS("https://youtu.be/XN6B7vK4Yrw?t=755", MSC.None, MCA.AirLooking, MCH.Mob, MAC.AttackEverything, MSP.Attack0,
-            "okay I managed to defeat _mob, wow he is very strong"),
+            "okay I managed to defeat _name, wow he is very strong"),
 
 
             pres.Add(new MPS("https://youtu.be/LwjvP2qF9vQ?t=344", MSC.None, MCA.EmptyLookingAround, MCH.Mob, MAC.Idle, MSP.Attack0, 
-            "let's analyze all the details of this _mob. first that I put a reflective hat on him it already looked very beautiful"),
+            "let's analyze all the details of this _name. first that I put a reflective hat on him it already looked very beautiful"),
 
 
             pres.Add(new MPS("https://youtu.be/LwjvP2qF9vQ?t=367", MSC.None, MCA.EmptyLookingTwo, MCH.Mob, MAC.Idle, MSP.Attack0, MCH.I, MAC.Idle, MSP.Attack1, //near by
             "look let me tell you Halloween is also my favorite holiday like of all so yeah"),
             */
 
-        famob.set(MAC.Idle, MSP.HabitatPlace);
-        fame.set(MAC.WalkInvisible, MSP.HabitatPlaceFar, MSP.HabitatPlaceClose);
-        pres.Add(new MPS("", MSC.ENV, MCA.HandFollowPlayer, fame, famob,
+        pres.Add(new MPS("", MSC.ENV, MCA.PreHandFollowPlayer, fame, famob,
          new List<String>() { "anywhere in a _env we could find _name", "we've spotted some _env and that means we can find a _name",
              "if we sneak up to the _env we may be able to Feast Our Eyes Upon a wild baby _name",
-             "we have _name all over the _env and it matched a lot because his  color matched a lot with the surroundings"}));
+             "we have _name all over the _env and it matched a lot because his  color matched a lot with the surroundings",
+          "I think it's better to leave _name alone there in his place I thought he had taken me to bad place",
+          "so here in front is our first character which is _name",
+          "there you go, buddy, welcome to your new _env home",
+          "look at these _part thing on our _name",
+          "_part is looks little bit _desc",
+          "these _env is really perfect for our _name to join in",
+          "these is the most _feel thing i have ever seen in minecraft",
+          "this is our _name, look at how helpless , this body looks man has hidden powers",
+         }));
+
+
+        famob.set(MAC.Idle, MSP.Flat);
+        fame.set(MAC.WalkingAroundSub_r, MSP.Flat);
+        pres.Add(new MPS("", MSC.LookAtNow, MCA.HandFollowPlayer, fame, famob,
+            new List<String>() { " loot at the _desc _part",
+            }));
+
+        pres.Add(new MPS("", MSC.Animation, MCA.HandFollowPlayer, fame, famob,
+            new List<String>() {"oh and if anyone wants to know the animation of _name turned out like this " +
+            "look walking very smoothly also bending the legs standing and walking he bends the legs very smoothly",
+            "I tried to make a very smooth animation with his leg look they move as if they were a spider",
+            "I really like this animation to be honest",
+            // Scary 09:51 
+            //https://youtu.be/ioxX4R3VNj0?t=891
+            "these _name is very angry and it`s paying off big for us",
+            "I don't know his name he got the best animation I will hit him for you to see and look how his arm moves it's very fluid",
+            // Scary 12:07 he chase i run backward / he chase i run foreward
+            "I want to show you how his walking animation turned out did it go a little further here",
+            "seriously I dedicated seriously I dedicated perfect",
+             "their animation also turned out very good", "also this walking animation turned out very good",
+            "come here my dear come look how his animation turned out it was very good"}));
 
         famob.set(MAC.Idle, MSP.Flat);
         fame.set(MAC.WalkingAroundSub_r, MSP.Flat);
@@ -1162,31 +1045,28 @@ public class ShowPlants : MonoBehaviour
                             "in this case she's quite small, because like she's small in the game",
                             "look at this she's a little bigger than just a block but turned out very good",
                               "for now the character will be nice anyway",
-                            "look at this they turned out really nice. I think it matched the style" }));
-
-
-
-        pres.Add(new MPS("", MSC.Nice, MCA.HandFollowPlayer, fame, famob,
-         new List<String>() {"looking very cute in its Youth and Hungry",
+                            "look at this they turned out really nice. I think it matched the style",
+                            "looking very cute in its Youth and Hungry",
                           "the _name looks a little bit scary but don't be thrown off the _name is here to be your friend",
                           "and these guys are so cute. look at the face on this little guy. oh my goodness buddy I just want to come give you a pet",
                           "well the normal _name turned out like this in Minecraft",
                           "the _name just came out adorable all at all he's so cute",
-                          "we've got _name looking super cute extra furry"}));
+                          "we've got _name looking super cute extra furry",
+                          "you can see all the details properly. but it turned out like this, the model of him here in minecraft",
+            }));
+
 
         famob.set(MAC.Walk, MSP.MobChaserStart, MSP.MobChaserEnd);
         fame.set(MAC.Walk, MSP.PlayerChaseStart, MSP.PlayerChaseEnd);
         pres.Add(new MPS("", MSC.Character, MCA.FollowPlayerForward, fame, famob,
-
-        new List<String>() { "but there's a difference now yes he is aggressive", "in his baby form he'll run and hide",
+            new List<String>() { "but there's a difference now yes he is aggressive", "in his baby form he'll run and hide",
                                 "and this little guy looks happy all of the time"}));
 
         famob.set(MAC.Walk, MSP.MobChaserStart, MSP.MobChaserEnd);
         fame.set(MAC.WalkInvisible, MSP.PlayerChaseStart, MSP.PlayerChaseEnd);
         pres.Add(new MPS("", MSC.Attack_Summary, MCA.FollowEmptyPlayerLookMob, fame, famob,
-
             new List<String>() {"there's a small important detail I forgot to mention, he releases a _attack_weapon " +
-            "               which is the Sleep _attack_weapon so that makes me want to sleep", "this is the power of _name he can make his enemies fall asleep",
+            "which is the Sleep _attack_weapon so that makes me want to sleep", "this is the power of _name he can make his enemies fall asleep",
                             "she's peaceful so she's not going to hit me unless I annoy her",
                              "he is attack me and i was running out for my life, let`s defeat her here",
                             "_name is going to do everything he can to defend Us",
@@ -1194,64 +1074,114 @@ public class ShowPlants : MonoBehaviour
                             "growing little birch trees underneath the threat and launching it into the air",
                             "the _name spots anything threatening nearby by ready to take it down instantly right"}));
 
-        famob.set(MAC.Walk, MSP.ShowLeft, MSP.ShowRight);
-        fame.set(MAC.WalkInvisible, MSP.WatchShow);
-        pres.Add(new MPS("", MSC.Attacking, MCA.FollowEmptyPlayerLookMob, fame, famob,
-         new List<String>() {"head towards a _enemy and send the adult _name on it." +
+
+        pres.Add(new MPS("", MSC.LetPutAMob, MCA.FollowEmptyPlayerLookMob, fame, famob,
+         new List<String>() {
+            "the _enemy came out ! he's trying to tackle the _name !",
+            //https://youtu.be/ioxX4R3VNj0?t=104
+            "i intentionally put this _name into danger",
+            //https://youtu.be/GFRT4mhV3c8?t=46
+            "let make thise _name grow even more wild",
+            //https://youtu.be/ioxX4R3VNj0?t=808
+            "let`s add some _enemy here and see what happens to these poor guys",
+            // https://youtu.be/ioxX4R3VNj0?t=260
+            "let` give a _name",
+            "let`s give them a little danger to put this _enemy to test our _name, boom",
+            //https://youtu.be/ioxX4R3VNj0?t=458
+            "oh the other _enemy are coming to attack _name, they got very fast too, oh my godness",
+            //https://youtu.be/KYf70U6i6Ak?t=16
+            "oh, wait, _enemy`s attacking _name",
+            //https://youtu.be/Se0oM5liI-4?t=646
+            "around the edge we can see a few _enemy coming in and now _name is preparing defenses as soon as a _enemy threatens us",
+            "if any _enemy tries to come nearby, our _name is going to defend us hopefully ",
+            //https://youtu.be/hewT7YXbOhY?t=70
+            "bring in a _enemy here and let's see our _name go to work.  here you go. "}));
+
+        pres.Add(new MPS("", MSC.EnemyStrongGetClose, MCA.FollowEmptyPlayerLookMob, fame, famob,
+            new List<String>() {
+            "the _enemy came out ! he's trying to tackle the _name !",
+            "on my god, these _enemy look dangerous, oh they are _useweapon", "the _enemy has cornered _name int the opne",
+            //https://youtu.be/KYf70U6i6Ak?t=16
+            "oh, wait, _enemy`s attacking _name",}));
+
+        pres.Add(new MPS("", MSC.MobStartFight, MCA.FollowEmptyPlayerLookMob, fame, famob,
+            new List<String>() {
+            "the _enemy came out ! he's trying to tackle the _name !",
+            //https://youtu.be/KYf70U6i6Ak?t=16
+            "oh, wait, _enemy`s attacking _name",
+            "looks like our baby wolf got motivated,", "oh, looks like he`s ready to change again ",
+            "enemy is strong, but our _name is _name",
+            "our _name the improved greatly, and charge _enemy all down",
+            "he`s angry, he`s so angry",
+            "oh he`s angry, oh my godness, he`s fearless",
+            "head towards a _enemy and send the adult _name on it." +
             "the adult _name is going to send out _attack_weapon completely surrounding the",
             "the _name who will send out a _attack_weapon, full of allergic reaction." +
             "the _name defends us shoots out the _attack_weapon." +
             "one _enemy down after the second _enemy and this _enemy doesn't stand a chance against those allergies",
             "the _enemy came out ! he's trying to tackle the _enemy ! he got the _enemy knocked down",
-            //https://youtu.be/KYf70U6i6Ak?t=16
-            "oh, wait, he`s attacking _enemy",
-            //https://youtu.be/Se0oM5liI-4?t=646
-            "around the edge we can see a few _enemy coming in and now _name is preparing defenses as soon as a _enemy threatens us",
-            "if any _enemy tries to come nearby, our _name is going to defend us hopefully ",
-            //https://youtu.be/hewT7YXbOhY?t=70
-            "bring in a _enemy here and let's see our _name go to work. do the rest of your work here. here you go. I think it was four hits"}));
+            }));
 
-        pres.Add(new MPS("", MSC.Animation, MCA.HandFollowPlayer, fame, famob,
-         new List<String>() {"oh and if anyone wants to know the animation of _name turned out like this " +
-            "look walking very smoothly also bending the legs standing and walking he bends the legs very smoothly",
-        "I tried to make a very smooth animation with his leg look they move as if they were a spider",
-        "I really like this animation to be honest",
-        // Scary 09:51 
-        "I don't know his name he got the best animation I will hit him for you to see and look how his arm moves it's very fluid",
-        // Scary 12:07 he chase i run backward / he chase i run foreward
-        "I want to show you how his walking animation turned out did it go a little further here",
-        "seriously I dedicated seriously I dedicated perfect",
-                            "their animation also turned out very good", "also this walking animation turned out very good"}));
+        pres.Add(new MPS("", MSC.EnemyStartHurt, MCA.FollowEmptyPlayerLookMob, fame, famob,
+            new List<String>() {
+            "the _enemy came out ! he's trying to tackle the _name !",
+            //https://youtu.be/KYf70U6i6Ak?t=16
+            "oh, wait, _enemy`s attacking _name",}));
+
+        // mob fight agian == mob start fight
+
+        pres.Add(new MPS("", MSC.EnemyDead, MCA.FollowEmptyPlayerLookMob, fame, famob,
+            new List<String>() {
+            "_enemy is shot dead by our _name",}));
+
+
+        pres.Add(new MPS("", MSC.MobProtectMe, MCA.FollowEmptyPlayerLookMob, fame, famob,
+            new List<String>() {
+            " you were protecting me from behind? thank you dude",}));
+
+        // help : do not crying _name, i will save you,
+
+        pres.Add(new MPS("", MSC.Grade, MCA.FollowEmptyPlayerLookMob, fame, famob,
+            new List<String>() {
+            "and we'll go to the next character. but before I want you guys to comment a grade for _name, " +
+                         "Below in my opinion definitely it's _score. out of 10 because he's very beautiful well",
+                           "but as I made more just for the sake of making I'll give a grade eight out of _score"}));
+
+
 
         return pres;
     }
+
+    // first round, put a enemy
+    // 2th, enemy is strong, deal a damage
+    // 3th mob fight back, on,
+    // 4th ememy not dying, deal a huge damage
+    // 5th mob fight back again, ,
+    // 6th kill the enemy
+
+    string[] twoth = { };
+
+    string[] fiveth = { };
+    string[] sixth = { "and _enemy are gone so fast leaving only bones behind,", };
+
+
+    string[] i_fight = { "give us your brains!" , "i`m all one for bad ideas",
+        "thse _name will sneaf us if we get close, so we have to be very careful",
+        " i really should learn to follow my own advice once in a while","" +
+            "we will charing through the world",
+        "i got to be careful not to get too close for too long",
+        "these was my wrost nightmare",
+        "as you get close to him you actually start getting _feel",
+    "now you`re attacking me, i don`t meant to hurt you,", "i feel bad about these",
+    };
+
     // ����ʵս
     // https://youtu.be/Se0oM5liI-4?t=749
     // https://youtu.be/Se0oM5liI-4?t=422
-    string[] desc_attack_time = { "head towards a _enemy and send the adult _name on it." +
-            "the adult _name is going to send out _attack_weapon completely surrounding the",
-            "the _name who will send out a _attack_weapon, full of allergic reaction." +
-            "the _name defends us shoots out the _attack_weapon." +
-            "one _enemy down after the second _enemy and this _enemy doesn't stand a chance against those allergies",
-            "the _enemy came out ! he's trying to tackle the _enemy ! he got the _enemy knocked down",
-            //https://youtu.be/KYf70U6i6Ak?t=16
-            "oh, wait, he`s attacking _enemy",
-            //https://youtu.be/Se0oM5liI-4?t=646
-            "around the edge we can see a few _enemy coming in and now _name is preparing defenses as soon as a _enemy threatens us",
-            "if any _enemy tries to come nearby, our _name is going to defend us hopefully ",
-            //https://youtu.be/hewT7YXbOhY?t=70
-            "bring in a _enemy here and let's see our _name go to work. do the rest of your work here. here you go. I think it was four hits"};
+    string[] desc_attack_time = { };
 
 
     string[] drop_desc = { "if we defeat the Sheep yes it will drop green wool as I had imagined and all right" };
-
-
-
-
-    string[] desc_grade = { "and we'll go to the next character. but before I want you guys to comment a grade for _name, " +
-                         "Below in my opinion definitely it's _score. out of 10 because he's very beautiful well",
-                           "but as I made more just for the sake of making I'll give a grade eight out of _score"};
-
 
 
     // ����
@@ -1284,4 +1214,35 @@ public class ShowPlants : MonoBehaviour
 
     //Scary 11:55
     string[] MultipleView = { "look at the size of this cat he got huge and seriously tell me if it wasn't the best mob in this video surely" };
+
+    /*
+     
+    famob.set(MAC.Walk, MSP.ShowLeft, MSP.ShowRight);
+        fame.set(MAC.WalkInvisible, MSP.WatchShow);
+        pres.Add(new MPS("", MSC.Attacking, MCA.FollowEmptyPlayerLookMob, fame, famob,
+         new List<String>() {"head towards a _enemy and send the adult _name on it." +
+            "the adult _name is going to send out _attack_weapon completely surrounding the",
+            "the _name who will send out a _attack_weapon, full of allergic reaction." +
+            "the _name defends us shoots out the _attack_weapon." +
+            "one _enemy down after the second _enemy and this _enemy doesn't stand a chance against those allergies",
+            "the _enemy came out ! he's trying to tackle the _enemy ! he got the _enemy knocked down",
+            //https://youtu.be/ioxX4R3VNj0?t=104
+            "i intentionally put this _name into danger",
+            //https://youtu.be/GFRT4mhV3c8?t=46
+            "let make thise _name grow even more wild",
+            //https://youtu.be/ioxX4R3VNj0?t=808
+            "let`s add some _enemy here and see what happens to these poor guys",
+            // https://youtu.be/ioxX4R3VNj0?t=260
+            "let` give a _name",
+            "let`s give them a little danger to put this _name to test, boom",
+            //https://youtu.be/ioxX4R3VNj0?t=458
+            "oh the other _enemy are coming to attack us, they got very fast too, oh my godness",
+            //https://youtu.be/KYf70U6i6Ak?t=16
+            "oh, wait, he`s attacking _enemy",
+            //https://youtu.be/Se0oM5liI-4?t=646
+            "around the edge we can see a few _enemy coming in and now _name is preparing defenses as soon as a _enemy threatens us",
+            "if any _enemy tries to come nearby, our _name is going to defend us hopefully ",
+            //https://youtu.be/hewT7YXbOhY?t=70
+            "bring in a _enemy here and let's see our _name go to work. do the rest of your work here. here you go. I think it was four hits"}));
+     */
 }

@@ -41,6 +41,16 @@ public class HumanoidGenerator : MonoBehaviour
         RightHand,
         LeftToe,
         RightToe,
+
+        // plants
+        P_Stem,
+        P_LeftRootLeaf,
+        P_RightRootLeft,
+        P_Head,
+        P_LeftEye,
+        P_RightEye,
+        P_Mouth,
+        P_BackLeaf,
     }
 
     public enum FrameWork
@@ -86,16 +96,16 @@ public class HumanoidGenerator : MonoBehaviour
     {
         string[] shape_desc_str = new string[] { "default", "ear_top", "ear_side" };
         string real_name = "ear";
-        List<string> possible_name = new List<string>();
+        List<string> posSliceible_name = new List<string>();
         for (int i = 0; i < shape_desc_str.Length; i++)
         {
             if (shape_desc_str[i].Contains(real_name))
             {
-                possible_name.Add(shape_desc_str[i]);
+                posSliceible_name.Add(shape_desc_str[i]);
             }
         }
-        int r = Random.Range(0, possible_name.Count);
-        string final_str = possible_name[r];
+        int r = Random.Range(0, posSliceible_name.Count);
+        string final_str = posSliceible_name[r];
         return final_str;
     }
 
@@ -211,6 +221,14 @@ public class HumanoidGenerator : MonoBehaviour
         return result; // Return the result at the end of the method
     }
 
+    public enum SegmentMethod
+    {
+        None,
+        TopDown,
+        Sphere,
+        BigMouthZ,
+        FlatCircleShrink,
+    }
     public struct ShapeDesc
     {
         public List<GameObject> actors;
@@ -219,6 +237,7 @@ public class HumanoidGenerator : MonoBehaviour
         public Vector3 size;
         public ShapeName name;
         public int segment;
+        public SegmentMethod segmet;
         public string desc_str;
         public ShapeName appendName;
         public FrameWork appendWork;
@@ -233,12 +252,14 @@ public class HumanoidGenerator : MonoBehaviour
             this.desc_str = GenerateDesc(shapeName);
             this.actors = new List<GameObject>();
             segment = 1;
-            if(shapeName == ShapeName.Body)
+            this.segmet = SegmentMethod.None;
+            if (shapeName == ShapeName.Body)
             {
                 segment = Random.Range(1, 4);
                 int plus = Random.Range(0, 2);
                 if (plus == 0) plus = -1;
                 segment *= plus;
+                this.segmet = SegmentMethod.TopDown;
             }
             this.appendName = appendName;
             this.appendWork = appendWork;
@@ -295,11 +316,11 @@ public class HumanoidGenerator : MonoBehaviour
     struct Pros
     {
         public string name;
-        public List<string> poss;
+        public List<string> posSlice;
         public List<float> values;
         public Pros(string name, string p0, float v0){
             this.name = name;
-            this.poss = new List<string>() { p0 };
+            this.posSlice = new List<string>() { p0 };
             this.values = new List<float>() { v0 };
         }
 
@@ -314,7 +335,7 @@ public class HumanoidGenerator : MonoBehaviour
             tvalue = Random.Range(0, tvalue);
             int select = 0;
             for (int i = 0; i < values.Count; i++) if (tvalue > values[i] - values[0]) { select = i; break; }
-            return poss[select];
+            return posSlice[select];
         }
     }
     public static GameObject CreateHumaoid(string modelName, GameObject sourceModel, Texture2D sourceTexture, bool checkScene)
@@ -380,7 +401,7 @@ public class HumanoidGenerator : MonoBehaviour
                 for(int i = 0; i < pros.Count; i++)
                     if(pros[i].name == tStrs)
                     {
-                        pros[i].poss.Add(str);
+                        pros[i].posSlice.Add(str);
                         pros[i].values.Add(value);
                        // Debug.Log(" tStrs + " + tStrs + " str = " + str + " value = " + value);
                         update = false;
@@ -442,6 +463,9 @@ public class HumanoidGenerator : MonoBehaviour
             for (int i = 0; i < bodyEnum.Count; i++) names.Add(bodyEnum[i]);
             for (int i = 0; i < headEnum.Count; i++) names.Add(headEnum[i]);
         }
+
+        // todo : build from legs
+        names = new List<ShapeName>() { ShapeName.P_Head, ShapeName.P_Mouth, ShapeName.P_LeftEye, ShapeName.RightEye, ShapeName.P_Stem, ShapeName.P_LeftRootLeaf, ShapeName.P_RightRootLeft, ShapeName.P_BackLeaf }; ;
         for (int i =0; i< names.Count; i++)
         {
             switch(names[i])
@@ -544,7 +568,50 @@ public class HumanoidGenerator : MonoBehaviour
                         parts.Add(new ShapeDesc(ShapeName.Tail, partSize, ShapeName.Body, FrameWork.BodyTailPos, FrameWork.FrontCenter));
                         break;
                     }
-
+                case ShapeName.P_Head:
+                    {
+                        partSize = RandomSize(8, 12, 8, 12, 8, 12);
+                        ShapeDesc sd = new ShapeDesc(ShapeName.P_Head, partSize, ShapeName.P_Head, FrameWork.Zero, FrameWork.Zero);
+                        sd.segment = 2;
+                        sd.segmet = SegmentMethod.Sphere;
+                        parts.Add(sd);
+                        break;
+                    }
+                case ShapeName.P_Mouth:
+                    {
+                        partSize = RandomSize(2, 4, 2, 4, 4, 8);
+                        ShapeDesc sd = new ShapeDesc(ShapeName.P_Mouth, partSize, ShapeName.P_Head, FrameWork.FrontCenter, FrameWork.BackCenter);
+                        sd.segment = 1;
+                        sd.segmet = SegmentMethod.BigMouthZ;
+                        parts.Add(sd);
+                        break;
+                    }
+                case ShapeName.P_LeftEye:
+                    {
+                        partSize = RandomSize(2, 2, 2, 2, 1, 1);
+                        parts.Add(new ShapeDesc(ShapeName.P_LeftEye, partSize, ShapeName.P_Head, FrameWork.HeadLeftEyePos, FrameWork.BackCenter));
+                        parts.Add(new ShapeDesc(ShapeName.P_RightEye, partSize, ShapeName.P_Head, FrameWork.HeadRightEyePos, FrameWork.BackCenter));
+                        break;
+                    }
+                case ShapeName.P_Stem:
+                    {
+                        partSize = RandomSize(1, 3, 4, 12, 1, 3);
+                        parts.Add(new ShapeDesc(ShapeName.P_Stem, partSize, ShapeName.P_Head, FrameWork.BottomCenter, FrameWork.TopCenter));
+                        break;
+                    }
+                case ShapeName.P_LeftRootLeaf:
+                    {
+                        partSize = RandomSize(4, 8, 1, 3, 4, 8);
+                        parts.Add(new ShapeDesc(ShapeName.P_LeftRootLeaf, partSize, ShapeName.P_Stem, FrameWork.BottomeLeft, FrameWork.Right75));
+                        parts.Add(new ShapeDesc(ShapeName.P_RightRootLeft, partSize, ShapeName.P_Stem, FrameWork.BottomeRight, FrameWork.Left75));
+                        break;
+                    }
+                case ShapeName.P_BackLeaf:
+                    {
+                        partSize = RandomSize(1, 3, 1, 3, 1, 3);
+                        parts.Add(new ShapeDesc(ShapeName.P_BackLeaf, partSize, ShapeName.P_Head, FrameWork.BackCenter, FrameWork.FrontCenter));
+                        break;
+                    }
             }
         }
 
@@ -556,31 +623,75 @@ public class HumanoidGenerator : MonoBehaviour
         {
             bool isToe = (parts[i].name == ShapeName.LeftToe || parts[i].name == ShapeName.RightToe);
             int Segment = Mathf.Abs(parts[i].segment);
-            List<Vector3> poss = new List<Vector3>();
-            Vector3 nowPos = new Vector3(0, parts[i].size.y / 2, 0);
-            List<Vector3> sizes = new List<Vector3>();
-            for(int j = 0; j < Segment; j++)
+            List<Vector3> posSlice = new List<Vector3>();
+            List<Vector3> sizeSlice = new List<Vector3>();
+
+            switch (parts[i].segmet)
             {
-                int minus = j;
-                if (parts[i].segment > 0)
-                {
-                    minus = Segment - 1 - j;
-                }
-                Vector3 newSize = new Vector3(parts[i].size.x - 0.1f * minus, parts[i].size.y / Segment, parts[i].size.z - 0.1f * minus);
-                if(isToe) newSize = parts[i].size;
-                sizes.Add(newSize);
-                nowPos = nowPos - new Vector3(0, newSize.y / 2, 0);
-                if (isToe) nowPos = Vector3.zero;
-                poss.Add(nowPos);
-                nowPos = nowPos - new Vector3(0, newSize.y / 2, 0);
+                case SegmentMethod.TopDown:
+                    {
+                        Vector3 nowPos = new Vector3(0, parts[i].size.y / 2, 0);
+                        for (int j = 0; j < Segment; j++)
+                        {
+                            int minus = j;
+                            if (parts[i].segment > 0)
+                            {
+                                minus = Segment - 1 - j;
+                            }
+                            Vector3 newSize = new Vector3(parts[i].size.x - 0.1f * minus, parts[i].size.y / Segment, parts[i].size.z - 0.1f * minus);
+                            if (isToe) newSize = parts[i].size;
+                            sizeSlice.Add(newSize);
+                            nowPos = nowPos - new Vector3(0, newSize.y / 2, 0);
+                            if (isToe) nowPos = Vector3.zero;
+                            posSlice.Add(nowPos);
+                            nowPos = nowPos - new Vector3(0, newSize.y / 2, 0);
+                        }
+                        break;
+                    }
+                case SegmentMethod.Sphere:
+                    {
+                        posSlice.Add(new Vector3(0, 0, 0));
+                        Vector3 baseOffset = new Vector3(parts[i].size.x - 0.1f * (Segment - 1) * 2, parts[i].size.y - 0.1f * (Segment - 1) * 2, parts[i].size.z - 0.1f * (Segment - 1) * 2);
+                        sizeSlice.Add(baseOffset);
+                        for (int j = 0; j < Segment - 1; j++)
+                        {
+                            float offsetx = baseOffset.x * 0.5f + (0.5f + j) * 0.1f;
+                            float offsety = baseOffset.y * 0.5f + (0.5f + j) * 0.1f;
+                            float offsetz = baseOffset.z * 0.5f + (0.5f + j) * 0.1f;
+                            float sizex = baseOffset.x - 0.1f * j;
+                            float sizey = baseOffset.y - 0.1f * j;
+                            float sizez = baseOffset.z - 0.1f * j;
+                            posSlice.Add(new Vector3(offsetx, 0, 0));
+                            posSlice.Add(new Vector3(-offsetx, 0, 0));
+                            posSlice.Add(new Vector3(0, offsety, 0));
+                            posSlice.Add(new Vector3(0, -offsety, 0));
+                            posSlice.Add(new Vector3(0, 0, offsetz));
+                            posSlice.Add(new Vector3(0, 0, -offsetz));
+                            sizeSlice.Add(new Vector3(0.1f, sizey, sizez));
+                            sizeSlice.Add(new Vector3(0.1f, sizey, sizez));
+                            sizeSlice.Add(new Vector3(sizex, 0.1f, sizez));
+                            sizeSlice.Add(new Vector3(sizex, 0.1f, sizez));
+                            sizeSlice.Add(new Vector3(sizex, sizey, 0.1f));
+                            sizeSlice.Add(new Vector3(sizex, sizey, 0.1f));
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        posSlice.Add(new Vector3(0, 0, 0));
+                        sizeSlice.Add(parts[i].size);
+                        break;
+                    }
             }
+
+
             List<GameObject> actors = new List<GameObject>();
-            for (int j = 0; j < Segment; j++)
+            for (int j = 0; j < posSlice.Count; j++)
             {
                 GameObject actor = CreateCube();
-                actor.transform.localPosition = poss[j];
-                actor.transform.localScale = sizes[j];
-                Uint3 size = new Uint3((uint)(sizes[j].x * 10.0f), (uint)(sizes[j].y * 10.0f), (uint)(Mathf.Abs(sizes[j].z) * 10.0f));
+                actor.transform.localPosition = posSlice[j];
+                actor.transform.localScale = sizeSlice[j];
+                Uint3 size = new Uint3((uint)(sizeSlice[j].x * 10.0f), (uint)(sizeSlice[j].y * 10.0f), (uint)(Mathf.Abs(sizeSlice[j].z) * 10.0f));
                 actor.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                 actor.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, size);
 
@@ -665,8 +776,11 @@ public class HumanoidGenerator : MonoBehaviour
 
         foreach (var part in parts)
         {
-            
 
+            string part_name = part.name.ToString();
+            part_name = part_name.Replace("P_", "");
+            part_name = part_name.Replace("A_", "");
+            part_name = part_name.Replace("H_", "");
             GameObject parentObjectForPart = new GameObject(part.name.ToString());
             for (int i = 0; i < part.actors.Count; i++)
             {
@@ -678,11 +792,8 @@ public class HumanoidGenerator : MonoBehaviour
         }
 
         Bounds totalBounds = new Bounds(parentObject.transform.position, Vector3.zero);
-
-        // 递归计算总的包围框
         CalculateBoundsRecursive(parentObject.transform, ref totalBounds);
-
-        allObject.transform.position = new Vector3(0, totalBounds.size.y / 2, 0);
+        allObject.transform.position = new Vector3(0, totalBounds.size.y,0);
         // 返回这个新的父物体
         return parentObject;
 

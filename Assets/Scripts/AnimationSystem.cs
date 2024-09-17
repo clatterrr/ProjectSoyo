@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using static Structure;
 using static UnityEditor.SceneView;
@@ -15,6 +16,7 @@ public class AnimationSystem : MonoBehaviour
         Wait,
         Happy,
         Dead,
+        Attack_ShootPea,
 
     }
 
@@ -89,20 +91,35 @@ public class AnimationSystem : MonoBehaviour
         RotateChild(gameObject.transform, "head", targetRotation * Quaternion.Euler(0, 180, 0));
         RotateChild(gameObject.transform, "headwear", targetRotation * Quaternion.Euler(0, 180, 0));
     }
+
+    private GameObject pea_prefab;
     void Start()
     {
-        
+        string path = "Assets/Characters/Plants/Prefab/pea.prefab";
+        pea_prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
     }
 
     // Update is called once per frame
+    private int GlobalFrameCount = 0;
     void Update()
     {
+        GlobalFrameCount++;
         frameCount++;
         switch (anim)
         {
             case Animation.Walk:
                 {
                     VoxelWalkAnimation();
+                    break;
+                }
+            case Animation.Dead:
+                {
+                    SimpleDeadAnim();
+                    break;
+                }
+            case Animation.Attack_ShootPea:
+                {
+                    SimpleAttackShoot();
                     break;
                 }
             default: break;
@@ -114,7 +131,7 @@ public class AnimationSystem : MonoBehaviour
     }
 
     private int DeadCount = 0;
-    void VoxelDeadAnim()
+    void SimpleDeadAnim()
     {
         float deadHalfCycle = 60;
         if (DeadCount < deadHalfCycle)
@@ -123,7 +140,21 @@ public class AnimationSystem : MonoBehaviour
             float r = -89 * ratio + 1;
             gameObject.transform.localRotation = Quaternion.Euler(r, 90, 0);
         }
+        else
+        {
+
+            gameObject.transform.localRotation = Quaternion.Euler(-88, 90, 0);
+        }
         DeadCount++;
+    }
+
+    void SimpleAttackShoot()
+    {
+        int shootCycle = 60;
+        if(GlobalFrameCount % shootCycle == 0)
+        {
+            Instantiate(pea_prefab, gameObject.transform.position + new Vector3(0, 1, 0), Quaternion.identity);
+        }
     }
 
     float moveSpeed = 1.0f;
@@ -178,7 +209,7 @@ public class AnimationSystem : MonoBehaviour
     void SimpleIdleAnimation()
     {
         Vector3 baseScale = Vector3.zero;
-        float happyCycle = 6;
+        float happyCycle = 60;
         if (frameCount < happyCycle)
         {
             float ration = frameCount / happyCycle;

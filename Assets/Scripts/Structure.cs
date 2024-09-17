@@ -1,8 +1,9 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
 
@@ -18,6 +19,9 @@ public class Structure
         public static float mobEyeOffset;
         public static float playerFootOffset;
         public static float playerEyeOffset;
+
+        public static string featureDesc;
+        public static string featurePart;
     }
     public struct Uint2
     {
@@ -36,25 +40,25 @@ public class Structure
             this.y = (uint)height;
         }
 
-        // ÖØĞ´ ToString ·½·¨£¬±ãÓÚµ÷ÊÔÊ±Êä³ö
+        // é‡å†™ ToString æ–¹æ³•ï¼Œä¾¿äºè°ƒè¯•æ—¶è¾“å‡º
         public override string ToString()
         {
             return $"Uint2({x}, {y})";
         }
 
-        // ÖØÔØ + ÔËËã·û
+        // é‡è½½ + è¿ç®—ç¬¦
         public static Uint2 operator +(Uint2 a, Uint2 b)
         {
             return new Uint2(a.x + b.x, a.y + b.y);
         }
 
-        // ¿ÉÑ¡: ÖØÔØ - ÔËËã·û
+        // å¯é€‰: é‡è½½ - è¿ç®—ç¬¦
         public static Uint2 operator -(Uint2 a, Uint2 b)
         {
             return new Uint2(a.x - b.x, a.y - b.y);
         }
 
-        // ¿ÉÑ¡: ÖØÔØ * ÔËËã·û
+        // å¯é€‰: é‡è½½ * è¿ç®—ç¬¦
         public static Uint2 operator *(Uint2 a, uint scalar)
         {
             return new Uint2(a.x * scalar, a.y * scalar);
@@ -73,7 +77,7 @@ public class Structure
             this.z = z;
         }
 
-        // ÖØĞ´ ToString ·½·¨£¬±ãÓÚµ÷ÊÔÊ±Êä³ö
+        // é‡å†™ ToString æ–¹æ³•ï¼Œä¾¿äºè°ƒè¯•æ—¶è¾“å‡º
         public override string ToString()
         {
             return $"Uint3({x}, {y}, {z})";
@@ -95,7 +99,7 @@ public class Structure
             this.w = w;
         }
 
-        // ÖØĞ´ ToString ·½·¨£¬±ãÓÚµ÷ÊÔÊ±Êä³ö
+        // é‡å†™ ToString æ–¹æ³•ï¼Œä¾¿äºè°ƒè¯•æ—¶è¾“å‡º
         public override string ToString()
         {
             return $"Uint4({x}, {y}, {z}, {w})";
@@ -253,9 +257,17 @@ public class Structure
                     // walk _customRoate
 
                     Vector3 speed = posEnd - posStart;
+                    if(speed.magnitude < 0.01f)
+                    {
 
-                    Quaternion rot = Quaternion.LookRotation(speed.normalized);
-                    actor.GetComponent<AnimationSystem>().SetTransform(pos, rot);
+                        actor.GetComponent<AnimationSystem>().SetTransform(pos, Quaternion.identity);
+                    }
+                    else
+                    {
+
+                        Quaternion rot = Quaternion.LookRotation(speed.normalized);
+                        actor.GetComponent<AnimationSystem>().SetTransform(pos, rot);
+                    }
 
 
                 }
@@ -373,7 +385,7 @@ public class Structure
 
     public static void RecursiveFindAndModify(string targetName, Transform current, Quaternion rotation, bool local)
     {
-        // ¼ì²éµ±Ç°TransformµÄÃû³ÆÊÇ·ñÊÇÎÒÃÇÒªÕÒµÄ
+        // æ£€æŸ¥å½“å‰Transformçš„åç§°æ˜¯å¦æ˜¯æˆ‘ä»¬è¦æ‰¾çš„
         if (current.name == targetName)
         {
             if (!local)
@@ -388,7 +400,7 @@ public class Structure
             return;
         }
 
-        // µİ¹é±éÀúËùÓĞ×ÓÎïÌå
+        // é€’å½’éå†æ‰€æœ‰å­ç‰©ä½“
         foreach (Transform child in current)
         {
             RecursiveFindAndModify(targetName, child, rotation, local);
@@ -397,32 +409,32 @@ public class Structure
 
     public static float RecursiveFindAndLookat(string targetName, Transform current, Vector3 lookat)
     {
-        // ¼ì²éµ±Ç°TransformµÄÃû³ÆÊÇ·ñÊÇÎÒÃÇÒªÕÒµÄ
+        // æ£€æŸ¥å½“å‰Transformçš„åç§°æ˜¯å¦æ˜¯æˆ‘ä»¬è¦æ‰¾çš„
         if (current.name == targetName)
         {
             Vector3 directionToLookAt = lookat - current.position;
             Quaternion targetRotation = Quaternion.LookRotation(directionToLookAt) * Quaternion.Euler(0, 180, 0);
 
-            // ¼ÆËãµ±Ç°Ğı×ªºÍÄ¿±êĞı×ªÖ®¼äµÄ½Ç¶È²î
+            // è®¡ç®—å½“å‰æ—‹è½¬å’Œç›®æ ‡æ—‹è½¬ä¹‹é—´çš„è§’åº¦å·®
             float angleDifference = Quaternion.Angle(Quaternion.identity, targetRotation);
            // Debug.Log("name " + targetName + " angles = " + angleDifference);
-            // ÏŞÖÆĞı×ª½Ç¶È
+            // é™åˆ¶æ—‹è½¬è§’åº¦
             if (angleDifference > 60)
             {
-                // °´×î´ó½Ç¶ÈĞı×ª
+                // æŒ‰æœ€å¤§è§’åº¦æ—‹è½¬
                 current.rotation = Quaternion.RotateTowards(Quaternion.identity, targetRotation, 60);
 
                 return angleDifference;
             }
             else
             {
-                // Ö±½Ó³¯ÏòÄ¿±ê
+                // ç›´æ¥æœå‘ç›®æ ‡
                 current.rotation = targetRotation;
                 return angleDifference;
             }
         }
 
-        // µİ¹é±éÀúËùÓĞ×ÓÎïÌå
+        // é€’å½’éå†æ‰€æœ‰å­ç‰©ä½“
         foreach (Transform child in current)
         {
 
@@ -433,13 +445,13 @@ public class Structure
 
     public static int[] ReadNumbersFromFile(string filePath)
     {
-        // ¶ÁÈ¡ÎÄ¼şÄÚÈİ²¢È¥³ıÇ°ºó¿Õ°×
+        // è¯»å–æ–‡ä»¶å†…å®¹å¹¶å»é™¤å‰åç©ºç™½
         string line = File.ReadAllText(filePath).Trim();
 
-        // ¸ù¾İ¿Õ¸ñ²ğ·Ö³É×Ö·û´®Êı×é
+        // æ ¹æ®ç©ºæ ¼æ‹†åˆ†æˆå­—ç¬¦ä¸²æ•°ç»„
         string[] parts = line.Split(' ');
 
-        // ½«×Ö·û´®Êı×é×ª»»³ÉÕûĞÍÊı×é
+        // å°†å­—ç¬¦ä¸²æ•°ç»„è½¬æ¢æˆæ•´å‹æ•°ç»„
         int[] numbers = new int[parts.Length];
         for (int i = 0; i < parts.Length; i++)
         {
@@ -452,33 +464,55 @@ public class Structure
     public struct SubModelReplacer
     {
         public string name;
+        public string part;
         public string desc;
         public string dir;
         public string color;
         public string like;
+        public string feel;
 
-        public SubModelReplacer(string name, string des, string dir, string color, string like)
+        public SubModelReplacer(string name, string part, string des, string dir, string color, string like, string feel)
         {
             this.name = name;
+            this.part = part;
             this.desc = des;
             this.dir = dir;
             this.color = color;
             this.like = like;
+            this.feel = feel;
         }
     }
     public static string AddModelSub(string[] sentences, SubModelReplacer replacer)
     {
         int r = UnityEngine.Random.Range(0, sentences.Length);
         string subtitle = sentences[r];
+        subtitle = subtitle.Replace("_part", replacer.part);
+        subtitle = subtitle.Replace("_name", replacer.name);
+        subtitle = subtitle.Replace("_desc", replacer.desc);
+        subtitle = subtitle.Replace("_dir", replacer.dir);
+        subtitle = subtitle.Replace("_color", replacer.color);
+        subtitle = subtitle.Replace("_like", replacer.like);
+        subtitle = subtitle.Replace("_feel", replacer.feel);
+        subtitle = subtitle.Replace("P_", "");
+        subtitle = Regex.Replace(subtitle, "(\\B[A-Z])", " $1").ToLower();
+        subtitle = System.Text.RegularExpressions.Regex.Replace(subtitle, @"\d", "");
+        return subtitle;
+    }
+
+    public static string AddModelSubTwo(string[] sentences, string[] sentences2, SubModelReplacer replacer)
+    {
+        int r = UnityEngine.Random.Range(0, sentences.Length);
+        int r2 = UnityEngine.Random.Range(0, sentences2.Length);
+        string subtitle = sentences[r] + "," + sentences2[r2];
         subtitle = subtitle.Replace("_part", replacer.name);
         subtitle = subtitle.Replace("_desc", replacer.desc);
         subtitle = subtitle.Replace("_dir", replacer.dir);
         subtitle = subtitle.Replace("_color", replacer.color);
         subtitle = subtitle.Replace("_like", replacer.like);
+        subtitle = subtitle.Replace("_feel", replacer.feel);
         subtitle = System.Text.RegularExpressions.Regex.Replace(subtitle, @"\d", "");
         return subtitle;
     }
-
     public struct SubReplacer
     {
         public string name;
@@ -486,14 +520,19 @@ public class Structure
         public string enemy;
         public string attack_weapon;
         public string score;
+        public string featureDesc;
+        public string featurePart;
+       
 
-        public SubReplacer(string name, string env, string enemy, string attack_weapon, string score)
+        public SubReplacer(string name, string env, string enemy, string attack_weapon, string score, string desc, string part)
         {
             this.name = name;
             this.env = env;
             this.enemy = enemy;
             this.attack_weapon = attack_weapon;
             this.score = score;
+            this.featureDesc = desc;
+            this.featurePart = part;
         }
     }
     public static string AddSub3(List<string> sentences, SubReplacer replacer)
@@ -503,6 +542,8 @@ public class Structure
         subtitle = subtitle.Replace("_env", replacer.env);
         subtitle = subtitle.Replace("_name", replacer.name);
         subtitle = subtitle.Replace("_enemy", replacer.enemy);
+        subtitle = subtitle.Replace("_desc", replacer.featureDesc);
+        subtitle = subtitle.Replace("_part", replacer.featurePart);
         subtitle = subtitle.Replace("_attack_weapon", replacer.attack_weapon);
         subtitle = subtitle.Replace("_score", replacer.score);
         subtitle = System.Text.RegularExpressions.Regex.Replace(subtitle, @"\d", "");
@@ -544,14 +585,14 @@ public class Structure
 
     public static Vector4 ParseLineToVector4(string line)
     {
-        // È¥µô²»ĞèÒªµÄ×Ö·û£¬Ö»±£ÁôÊı×ÖºÍ¶ººÅ
-        line = line.Replace("\"", "")   // È¥µôË«ÒıºÅ
-                   .Replace(":", "")    // È¥µôÃ°ºÅ
-                   .Replace("[", "")    // È¥µô×óÀ¨ºÅ
-                   .Replace("]", "")    // È¥µôÓÒÀ¨ºÅ
+        // å»æ‰ä¸éœ€è¦çš„å­—ç¬¦ï¼Œåªä¿ç•™æ•°å­—å’Œé€—å·
+        line = line.Replace("\"", "")   // å»æ‰åŒå¼•å·
+                   .Replace(":", "")    // å»æ‰å†’å·
+                   .Replace("[", "")    // å»æ‰å·¦æ‹¬å·
+                   .Replace("]", "")    // å»æ‰å³æ‹¬å·
                    .Replace(",", " ");
 
-        // °´¿Õ¸ñ·Ö¸ô×Ö·û´®²¢½âÎöÎª¸¡µãÊı
+        // æŒ‰ç©ºæ ¼åˆ†éš”å­—ç¬¦ä¸²å¹¶è§£æä¸ºæµ®ç‚¹æ•°
         string[] parts = line.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
         float firstValue = float.Parse(parts[0]);
@@ -559,19 +600,19 @@ public class Structure
         float y = float.Parse(parts[2]);
         float z = float.Parse(parts[3]);
 
-        // ·µ»ØVector4
+        // è¿”å›Vector4
         return new Vector4(firstValue, x, y, z);
     }
 
     public static int[] ReadNumbersFromFile2(string filePath)
     {
-        // ¶ÁÈ¡ÎÄ¼şÄÚÈİ²¢È¥³ıÇ°ºó¿Õ°×
+        // è¯»å–æ–‡ä»¶å†…å®¹å¹¶å»é™¤å‰åç©ºç™½
         string line = File.ReadAllText(filePath).Trim();
 
-        // ¸ù¾İ¿Õ¸ñ²ğ·Ö³É×Ö·û´®Êı×é
+        // æ ¹æ®ç©ºæ ¼æ‹†åˆ†æˆå­—ç¬¦ä¸²æ•°ç»„
         string[] parts = line.Split(' ');
 
-        // ½«×Ö·û´®Êı×é×ª»»³ÉÕûĞÍÊı×é
+        // å°†å­—ç¬¦ä¸²æ•°ç»„è½¬æ¢æˆæ•´å‹æ•°ç»„
         int[] numbers = new int[parts.Length];
         for (int i = 0; i < parts.Length; i++)
         {
@@ -650,7 +691,7 @@ public class Structure
     }
     public static float FindModelOffset(Transform current)
     {
-        if (current.parent != null && current.parent.name == "LeftLeg")
+        if (current.parent != null && (current.parent.name == "LeftLeg" || current.parent.name.Contains("Root")))
         {
             return -current.transform.position.y + current.transform.localScale.y / 2;
         }
@@ -706,32 +747,32 @@ public class Structure
     }
     public static void AddBoxCollider(GameObject obj)
     {
-        // »ñÈ¡ËùÓĞµÄ MeshRenderer ×é¼ş
+        // è·å–æ‰€æœ‰çš„ MeshRenderer ç»„ä»¶
         MeshRenderer[] meshRenderers = obj.GetComponentsInChildren<MeshRenderer>();
 
         if (meshRenderers.Length == 0)
         {
-            Debug.LogWarning("Ã»ÓĞÕÒµ½ÈÎºÎMeshRenderer×é¼ş¡£");
+            Debug.LogWarning("æ²¡æœ‰æ‰¾åˆ°ä»»ä½•MeshRendererç»„ä»¶ã€‚");
             return;
         }
 
-        // ³õÊ¼»¯µÚÒ»¸ö bounds ÎªºÏ²¢µÄÆğµã
+        // åˆå§‹åŒ–ç¬¬ä¸€ä¸ª bounds ä¸ºåˆå¹¶çš„èµ·ç‚¹
         Bounds combinedBounds = meshRenderers[0].bounds;
 
-        // ±éÀúËùÓĞµÄ MeshRenderer ²¢ºÏ²¢ËüÃÇµÄ bounds
+        // éå†æ‰€æœ‰çš„ MeshRenderer å¹¶åˆå¹¶å®ƒä»¬çš„ bounds
         foreach (MeshRenderer meshRenderer in meshRenderers)
         {
             combinedBounds.Encapsulate(meshRenderer.bounds);
         }
 
-        // »ñÈ¡ BoxCollider£¬Èç¹û²»´æÔÚÔòÌí¼ÓÒ»¸ö
+        // è·å– BoxColliderï¼Œå¦‚æœä¸å­˜åœ¨åˆ™æ·»åŠ ä¸€ä¸ª
         BoxCollider boxCollider = obj.GetComponent<BoxCollider>();
         if (boxCollider == null)
         {
             boxCollider = obj.AddComponent<BoxCollider>();
         }
 
-        // ÉèÖÃ BoxCollider µÄÖĞĞÄºÍ´óĞ¡
+        // è®¾ç½® BoxCollider çš„ä¸­å¿ƒå’Œå¤§å°
         boxCollider.center = combinedBounds.center - obj.transform.position;
         boxCollider.size = combinedBounds.size;
         boxCollider.isTrigger = true;
@@ -740,20 +781,20 @@ public class Structure
     public static GameObject CreateCube()
     {
 
-        // ´´½¨Ò»¸ö¿ÕµÄ GameObject
+        // åˆ›å»ºä¸€ä¸ªç©ºçš„ GameObject
         GameObject part = new GameObject("CustomCube");
 
-        // ¸øËüÌí¼Ó MeshFilter ºÍ MeshRenderer ×é¼ş
+        // ç»™å®ƒæ·»åŠ  MeshFilter å’Œ MeshRenderer ç»„ä»¶
         MeshFilter meshFilter = part.AddComponent<MeshFilter>();
         MeshRenderer renderer = part.AddComponent<MeshRenderer>();
         //renderer.material = GeneratePoissonNoise();
 
 
-        // ´´½¨ĞÂµÄ Mesh
+        // åˆ›å»ºæ–°çš„ Mesh
         Mesh mesh = new Mesh();
         meshFilter.mesh = mesh;
 
-        // ¶¨Òå24¸ö¶¥µã£¨Ã¿¸öÃæÓĞ4¸ö¶¥µã£©
+        // å®šä¹‰24ä¸ªé¡¶ç‚¹ï¼ˆæ¯ä¸ªé¢æœ‰4ä¸ªé¡¶ç‚¹ï¼‰
         Vector3[] vertices = new Vector3[24]
         {
             // Back face
@@ -774,7 +815,7 @@ public class Structure
             vertices[i] *= 0.5f;
         }
 
-        // ¶¨ÒåÈı½ÇĞÎË÷Òı£¨Ã¿¸öÃæÁ½¸öÈı½ÇĞÎ£©
+        // å®šä¹‰ä¸‰è§’å½¢ç´¢å¼•ï¼ˆæ¯ä¸ªé¢ä¸¤ä¸ªä¸‰è§’å½¢ï¼‰
         int[] triangles = new int[36]
         {
             // Back face
@@ -791,7 +832,7 @@ public class Structure
             20, 21, 22, 20, 22, 23
         };
 
-        // ¶¨Òå UV ×ø±ê£¨Ã¿¸öÃæ4¸öUV£©
+        // å®šä¹‰ UV åæ ‡ï¼ˆæ¯ä¸ªé¢4ä¸ªUVï¼‰
         Vector2[] uvs = new Vector2[24]
         {
             // Back face
@@ -808,12 +849,12 @@ public class Structure
             new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0)
         };
 
-        // ÉèÖÃ Mesh µÄ¶¥µã¡¢Èı½ÇĞÎºÍ UV
+        // è®¾ç½® Mesh çš„é¡¶ç‚¹ã€ä¸‰è§’å½¢å’Œ UV
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.uv = uvs;
 
-        // ÖØĞÂ¼ÆËã·¨ÏßÒÔ±£Ö¤¹âÕÕĞ§¹û
+        // é‡æ–°è®¡ç®—æ³•çº¿ä»¥ä¿è¯å…‰ç…§æ•ˆæœ
         mesh.RecalculateNormals();
 
         return part;
@@ -855,5 +896,221 @@ public class Structure
         RecomputeUV2(uvs, new int[] { 16, 17, 18, 19 }, new Uint2(size.z, size.y), new Uint2(size.z, size.x), tSize);
         RecomputeUV2(uvs, new int[] { 20, 21, 22, 23 }, new Uint2(size.x + size.z, size.y), new Uint2(size.z, size.x), tSize);
         return uvs;
+    }
+
+
+    private List<GeoAnim> animList = new List<GeoAnim>();
+    Vector4 ParseLineToVector42(string line)
+    {
+        // È¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÖºÍ¶ï¿½ï¿½ï¿½
+        line = line.Replace("\"", "")   // È¥ï¿½ï¿½Ë«ï¿½ï¿½ï¿½ï¿½
+                   .Replace(":", "")    // È¥ï¿½ï¿½Ã°ï¿½ï¿½
+                   .Replace("[", "")    // È¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                   .Replace("]", "")    // È¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                   .Replace(",", " ");
+
+        // ï¿½ï¿½ï¿½Õ¸ï¿½Ö¸ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        string[] parts = line.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+        float firstValue = float.Parse(parts[0]);
+        float x = float.Parse(parts[1]);
+        float y = float.Parse(parts[2]);
+        float z = float.Parse(parts[3]);
+
+        // ï¿½ï¿½ï¿½ï¿½Vector4
+        return new Vector4(firstValue, x, y, z);
+    }
+
+    struct GeoAnim
+    {
+        public string name;
+        public bool loop;
+        public float length;
+        public List<GeoAnimPart> animaPart;
+
+        public GeoAnim(string name, bool loop, float length)
+        {
+            this.name = name;
+            this.loop = loop;
+            this.length = length;
+            this.animaPart = new List<GeoAnimPart>();
+        }
+    }
+
+    struct GeoAnimPart
+    {
+        public string name;
+        public List<uint> pos_time;
+        public List<uint> rot_time;
+        public List<Vector3> pos;
+        public List<Quaternion> rot;
+
+        public GeoAnimPart(string name)
+        {
+            this.name = name;
+            this.pos_time = new List<uint>();
+            this.rot_time = new List<uint>();
+            this.pos = new List<Vector3>();
+            this.rot = new List<Quaternion>();
+        }
+    }
+
+    void RunAnimation(int frameCount)
+    {
+        string animation_name = "animation.split_pea.idle";
+        int animation_index = 0;
+        for (int i = 0; i < animList.Count; i++)
+        {
+            if (animList[i].name == animation_name)
+            {
+                animation_index = i;
+            }
+        }
+
+        for (int i = 0; i < animList[animation_index].animaPart.Count; i++)
+        {
+            GeoAnimPart part = animList[animation_index].animaPart[i];
+            if (part.rot_time.Count > 0)
+            {
+                int max_rot_time = (int)part.rot_time[part.rot_time.Count - 1];
+                int now_time = frameCount % max_rot_time;
+                for (int j = 0; j < part.rot_time.Count - 1; j++)
+                {
+                    if (now_time >= part.rot_time[j] && now_time < part.rot_time[j + 1])
+                    {
+                        float r = (now_time - part.rot_time[j]) * 1.0f / (part.rot_time[j + 1] - part.rot_time[j]);
+                        Quaternion rot = Quaternion.Lerp(part.rot[j], part.rot[j + 1], r);
+                       // RotateChild(theMob.transform, part.name, rot * GetBasicRot(part.name));
+                        break;
+                    }
+                }
+            }
+            if (part.pos_time.Count > 0)
+            {
+                int max_pos_time = (int)part.pos_time[part.pos_time.Count - 1];
+                int now_time = frameCount % max_pos_time;
+                for (int j = 0; j < part.pos_time.Count - 1; j++)
+                {
+                    if (now_time >= part.pos_time[j] && now_time < part.pos_time[j + 1])
+                    {
+                        float r = (now_time - part.pos_time[j]) * 1.0f / (part.pos_time[j + 1] - part.pos_time[j]);
+                        Vector3 pos = Vector3.Lerp(part.pos[j], part.pos[j + 1], r);
+                      //  TranslateChild(theMob.transform, part.name, GetBasicPos(part.name) + pos * 0.08f);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    void LoadAnimation(string path)
+    {
+        string[] lines = File.ReadAllLines(path);
+        GeoAnimPart animPart = new GeoAnimPart("");
+        GeoAnim anim = new GeoAnim();
+        bool mode_pos = true;
+        bool this_line_add = false;
+        int brackets_count = 0;
+        bool brackets_add = false;
+        bool plog = false;
+        foreach (string line in lines)
+        {
+            this_line_add = false;
+            if (line.Contains("{"))
+            {
+                brackets_count++;
+                brackets_add = true;
+                this_line_add = true;
+            }
+            if (line.Contains("}"))
+            {
+                brackets_count--;
+                brackets_add = false;
+                this_line_add = true;
+            }
+            if (plog) Debug.Log("brackets num" + brackets_count + " line = " + line);
+            if (brackets_count == 3 && this_line_add)
+            {
+                if (anim.length > 0)
+                {
+                    if (plog) Debug.Log("anim list added = " + anim.name + " count " + anim.animaPart.Count);
+                    animList.Add(anim);
+                }
+                string anim_name = line.Split(':')[0].Replace('"', ' ');
+                anim_name = anim_name.Trim();
+                if (plog) Debug.Log(" anim name = " + anim_name);
+                anim = new GeoAnim(anim_name, true, 1);
+            }
+            if (brackets_count == 5 && brackets_add && this_line_add)
+            {
+                string anim_part = line.Split(':')[0].Replace('"', ' ');
+                anim_part = anim_part.Trim();
+                if (plog) Debug.Log("anim part = " + anim_part);
+                animPart = new GeoAnimPart(anim_part);
+            }
+            if (brackets_count == 6 && brackets_add && line.Contains("position"))
+            {
+                if (plog) Debug.Log("mode pos");
+                mode_pos = true;
+            }
+            else if (brackets_count == 6 && brackets_add && line.Contains("rotation"))
+            {
+                if (plog) Debug.Log("mode rot");
+                mode_pos = false;
+            }
+            if (brackets_count == 7 && brackets_add && this_line_add)
+            {
+                float t = float.Parse(line.Split(':')[0].Replace('"', ' ').Replace(" ", ""));
+                uint tint = (uint)(t * 50);
+                if (plog) Debug.Log("mode pos t = " + t);
+                if (mode_pos)
+                {
+                    animPart.pos_time.Add(tint);
+                }
+                else
+                {
+                    animPart.rot_time.Add(tint);
+                }
+
+            }
+
+            if (brackets_count == 7 && brackets_add && line.Contains("vector"))
+            {
+                var match = Regex.Match(line, @"\[(.*?)\]");
+                if (match.Success)
+                {
+                    string numbersStr = match.Groups[1].Value;
+
+                    // ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                    float[] vector = numbersStr
+                        .Split(',')
+                        .Select(s => float.Parse(s.Trim()))
+                        .ToArray();
+                    if (plog) Debug.Log("mode pos vec = " + new Vector3(vector[0], vector[1], vector[2]));
+                    if (mode_pos)
+                    {
+                        animPart.pos.Add(new Vector3(vector[0], vector[1], vector[2]));
+                    }
+                    else
+                    {
+                        animPart.rot.Add(Quaternion.Euler(vector[0], vector[1], vector[2]));
+                    }
+                }
+            }
+
+            if (brackets_count == 4 && brackets_add == false && this_line_add)
+            {
+                if (plog) Debug.Log(" added anima part = name " + animPart.name + " count = " + animPart.pos_time.Count);
+                anim.animaPart.Add(animPart);
+            }
+        }
+        foreach (var animx in animList)
+        {
+            if (plog) Debug.Log("animx name" + animx.name);
+            foreach (var animy in animx.animaPart)
+            {
+
+                if (plog) Debug.Log("animy name" + animy.name);
+            }
+        }
     }
 }

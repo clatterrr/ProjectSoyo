@@ -40,7 +40,7 @@ public class MinecraftEntity : MonoBehaviour
         damageMaterial.r = Mathf.Clamp01(damageMaterial.r + 0.5f);
         damageMaterial.g = Mathf.Clamp01(damageMaterial.g - 0.5f);
         damageMaterial.b = Mathf.Clamp01(damageMaterial.b - 0.5f);
-        TakeDamge();
+        //TakeDamge();
         baseY = transform.position.y;
 
         audioSource = gameObject.AddComponent<AudioSource>();
@@ -61,9 +61,9 @@ public class MinecraftEntity : MonoBehaviour
     private int DamageMaxCount = 60;
     private int DamageCount = 0;
 
-    public void TakeDamge()
+    public void TakeDamge(int damage)
     {
-        DamageCount = 0;
+        health -= damage;
         if (hitClip != null)
         {
             audioSource.clip = hitClip;

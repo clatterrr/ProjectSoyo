@@ -57,6 +57,12 @@ public class Bomb : MonoBehaviour
         {
             walker.TakeDamage(70);
         }
+
+        MinecraftEntity entity = other.GetComponent<MinecraftEntity>();
+        if (walker != null)
+        {
+            entity.TakeDamge(10);
+        }
     }
 
 }

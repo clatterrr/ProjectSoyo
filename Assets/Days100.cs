@@ -35,7 +35,10 @@ public static class Days100
 
     }
 
-    
+    // 动作分为 AttackFriends, AttackEnemy, AttackMe
+    // 首先推入 FA, 检查有哪些人物不在FAs中的，全部设置为False,
+    // 一开始就要设计好哪些人是哪些模型，对应的FA中的编号是什么
+    // Scene 分为两种，首先是PreScene，用于随机产生故事。然后PreScene 来产生随机场景，主要是摄像机机位和人物行动
     public struct AnimDesc
     {
         public string animPath;

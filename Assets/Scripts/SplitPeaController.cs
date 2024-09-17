@@ -61,7 +61,7 @@ public class SphereMovement : MonoBehaviour
         if(other.GetComponent<ZombieEntity>() != null)
         {
             MinecraftEntity entity = other.GetComponent<MinecraftEntity>();
-            entity.TakeDamge();
+            entity.TakeDamge(1);
         }
     }
 }

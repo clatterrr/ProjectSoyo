@@ -41,6 +41,7 @@ public class Apply2 : MonoBehaviour
         public Material material;
         public bool modelMode;
         public int strechMode;//0 center 1 edge
+        public bool materialStartGray;
 
         public ActivePart(string parentName, GameObject child, int activeStartFrame, int buildFrame, Vector3 size, int index)
         {
@@ -63,6 +64,7 @@ public class Apply2 : MonoBehaviour
             }
             this.modelMode = true;
             strechMode = Random.Range(0, 2);
+            this.materialStartGray = false;
         }
 
         public ActivePart(GameObject pa, int activeStartFrame, int buildFrame)
@@ -85,6 +87,7 @@ public class Apply2 : MonoBehaviour
             }
             this.modelMode = false;
             strechMode = 0;
+            this.materialStartGray = false;
         }
     }
 
@@ -111,61 +114,84 @@ public class Apply2 : MonoBehaviour
         }
     }
 
-    string GetBaseColor(float r, float g, float b)
+    private Dictionary<string, Color> colorDict = new Dictionary<string, Color>()
     {
-        if (Mathf.Abs(r - g) <= 0.1 && r - b >= 0.1 && g - b >= 0.1) return "yellow";    // 红+绿=黄
-        if (Mathf.Abs(r - b) <= 0.1 && r - g >= 0.1 && b - g >= 0.1) return "pink";   // 红+蓝=品红
-        if (Mathf.Abs(g - b) <= 0.1 && g - r >= 0.1 && b - r >= 0.1) return "cyan";      // 绿+蓝=青
+        { "Black", Color.black },
+        { "White", Color.white },
+        { "Red", Color.red },
+        { "Green", Color.green },
+        { "Blue", Color.blue },
+        { "Yellow", new Color(1f, 1f, 0f) },
+        { "Cyan", Color.cyan },
+        { "Magenta", Color.magenta },
+        { "Gray", Color.gray },
+        { "Orange", new Color(1f, 0.65f, 0f) },
+        { "Pink", new Color(1f, 0.75f, 0.8f) },
+        { "Brown", new Color(0.65f, 0.16f, 0.16f) },
+        { "Purple", new Color(0.5f, 0f, 0.5f) },
+        { "Violet", new Color(0.93f, 0.51f, 0.93f) },
+        { "Olive", new Color(0.5f, 0.5f, 0f) },
+        { "Teal", new Color(0f, 0.5f, 0.5f) },
+        { "Navy", new Color(0f, 0f, 0.5f) }
+    };
 
-        if (r > g && r > b) return "red";
-        if (g > r && g > b) return "green";
-        if (b > r && b > g) return "blue";
-
-        return "gray"; // 如果三者接近，输出灰色
+    private float ColorDistance(Color a, Color b)
+    {
+        float r = a.r - b.r;
+        float g = a.g - b.g;
+        float bDist = a.b - b.b;
+        return Mathf.Sqrt(r * r + g * g + bDist * bDist);
     }
-
-    Color GetMainColor(Texture2D tex)
+    string GetMainColor(Texture2D tex)
     {
 
-        Dictionary<Color, int> colorCounts = new Dictionary<Color, int>();
         Color[] pixels = tex.GetPixels(); // Get all the pixels from the texture
-
+        Dictionary<string, int> colorCount = new Dictionary<string, int>();
         // Traverse all pixels
-        for (int i = 0; i < pixels.Length; i++)
+        for (int x = 0; x < tex.width; x++)
         {
-            Color pixel = pixels[i];
-
-            // Ignore fully transparent pixels
-            if (pixel.a != 1.0) continue;
-            // Quantize the RGB values to 17 discrete levels (0, 16, 32, ..., 240)
-            Color quantizedColor = new Color(
-                Mathf.Floor(pixel.r * 255 / 16) * 16 / 255f,
-                Mathf.Floor(pixel.g * 255 / 16) * 16 / 255f,
-                Mathf.Floor(pixel.b * 255 / 16) * 16 / 255f,
-                pixel.a // Keep alpha as it is
-            );
-
-            // Count the occurrence of the quantized color
-            if (colorCounts.ContainsKey(quantizedColor))
-                colorCounts[quantizedColor]++;
-            else
-                colorCounts[quantizedColor] = 1;
-        }
-
-        // Find the most common color
-        Color mainColor = Color.clear;
-        int maxCount = 0;
-
-        foreach (var colorCount in colorCounts)
-        {
-            if (colorCount.Value > maxCount)
+            for (int y = 0; y < tex.height; y++)
             {
-                maxCount = colorCount.Value;
-                mainColor = colorCount.Key;
+                Color pixel = tex.GetPixel(x, y);
+
+                // Ignore fully transparent pixels
+                if (pixel.a != 1.0) continue;
+                //if (x == 0 || y == 0 || x == tex.width - 1 || y == tex.height - 1) continue; ;
+
+
+                string closestColorName = null;
+                float shortestDistance = Mathf.Infinity;
+
+                foreach (var colorPair in colorDict)
+                {
+                    Color knownColor = colorPair.Value;
+                    float distance = ColorDistance(pixel, knownColor);
+
+                    if (distance < shortestDistance)
+                    {
+                        shortestDistance = distance;
+                        closestColorName = colorPair.Key;
+                    }
+                }
+                // Count the occurrence of the quantized color
+                if (colorCount.ContainsKey(closestColorName)) colorCount[closestColorName]++;
+                else colorCount[closestColorName] = 1;
             }
         }
 
-        return mainColor;
+        string mostFrequentColor = null;
+        int maxCount = 0;
+
+        foreach (var pair in colorCount)
+        {
+            if (pair.Value > maxCount)
+            {
+                mostFrequentColor = pair.Key;
+                maxCount = pair.Value;
+            }
+        }
+
+        return mostFrequentColor;
     }
 
     GameObject generatedAnimal;
@@ -186,10 +212,10 @@ public class Apply2 : MonoBehaviour
     }
     int[] GenerateComments()
     {
-        string prefab_name = "FurnaceGolem";
+        string prefab_name = "IronGolemPeaShooter";
 
         GameObject sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/iron_golem.prefab");
-        Texture2D sourceTexture = LoadTexture("Assets/Furnace.png");
+        Texture2D sourceTexture = LoadTexture("Assets/iron_golem.png");
         if (enableRandomModel)
         {
             generatedAnimal = HumanoidGenerator.CreateHumaoid(prefab_name, sourceModel, sourceTexture, true);
@@ -209,13 +235,17 @@ public class Apply2 : MonoBehaviour
             TraverseChildren(generatedAnimal.transform);
         }
 
+        
+
         SubModelReplacer placer = new SubModelReplacer();
         placer.name = prefab_name;
-        placer.like = "pea shooter";
+        placer.like = "villager";
         placer.color = "green";
         placer.desc = "";
         placer.dir = "top";
+        placer.feel = "scary";
 
+            string[] whats = { "cursed", "dumb", "adorable", "crazy", "earthy", "comfy" , "cute"};
         subtitles.Add(AddModelSub(comment_all_start.ToArray(), placer));
         Debug.Log(" first comment " + subtitles[subtitles.Count - 1]);
 
@@ -223,6 +253,15 @@ public class Apply2 : MonoBehaviour
 
         for (int j = 0; j < parts.Count; j++)
         {
+            float typer = Random.Range(0.0f, 1.0f);
+            if (typer < 0.3f) subTypes.Add(SubtitleType.OnlyBase);
+            else if (typer < 0.7f) subTypes.Add(SubtitleType.BaseColor);
+            else subTypes.Add(SubtitleType.ColoredBase);
+         //   else if (typer < 0.93f) subTypes.Add(SubtitleType.BaseTwo);
+         //   else if (typer < 0.96f) subTypes.Add(SubtitleType.BaseTwoColor);
+          //  else subTypes.Add(SubtitleType.ColoredBaseTwo);
+
+
             GameObject part = parts[j];
             if (part.transform.childCount == 0)
             {
@@ -231,6 +270,10 @@ public class Apply2 : MonoBehaviour
             int count = CountDirectChildCubes(part.transform);
             if (count > 0)
             {
+
+                placer.color = GetMainColor((Texture2D)part.transform.GetChild(0).GetComponent<MeshRenderer>().material.mainTexture);
+                Debug.Log(" j = " + j + " partname " + part.name +  " subtype = " + subTypes[j] + " main color = " + placer.color);
+
                 bool first_cube = true;
                 for (int i = 0; i < count; i++)
                 {
@@ -268,10 +311,29 @@ public class Apply2 : MonoBehaviour
                             }
 
                             int r = Random.Range(0, 6 + du);
-                            placer.name = part.transform.name;
+                            placer.part = part.name;
                             if (r < 6)
                             {
-                                subtitles.Add(AddModelSub(comment_base.ToArray(), placer));
+                                switch (subTypes[subTypes.Count - 1])
+                                {
+                                    case SubtitleType.OnlyBase:
+                                    case SubtitleType.BaseColor:
+                                        {
+                                            subtitles.Add(AddModelSub(comment_base_fact.ToArray(), placer));
+                                            break;
+                                        }
+                                    case SubtitleType.ColoredBase:
+                                        {
+                                            placer.part = placer.color + " " + part.name;
+                                            subtitles.Add(AddModelSub(comment_base_fact.ToArray(), placer));
+                                            break;
+                                        }
+                                }
+
+                                if(subTypes[subTypes.Count - 1] == SubtitleType.OnlyBase)
+                                {
+                                }
+
                             }
                             else
                             {
@@ -285,12 +347,12 @@ public class Apply2 : MonoBehaviour
                         else if (i == count - 1)
                         {
 
-                            placer.name = "cube";
+                            placer.part = "cube";
                             subtitles.Add(AddModelSub(comment_finish.Concat(comment).ToArray(), placer));
                         }
                         else
                         {
-                            placer.name = part.name;
+                            placer.part = part.name;
                             subtitles.Add(AddModelSub(comment.ToArray(), placer));
                         }
 
@@ -299,11 +361,12 @@ public class Apply2 : MonoBehaviour
                     }
                 }
 
-                placer.name = part.name;
-                Color mainColor = GetMainColor((Texture2D)part.transform.GetChild(0).GetComponent<MeshRenderer>().material.mainTexture);
-                placer.color = GetBaseColor(mainColor.r, mainColor.g, mainColor.b);
-                subtitles.Add(AddModelSub(comment_color.ToArray(), placer)); 
-                Debug.Log(" parent name =" + part.transform.name + " color special comment === " + subtitles[subtitles.Count - 1]);
+                if(subTypes[subTypes.Count - 1] == SubtitleType.BaseColor)
+                {
+                    subtitles.Add(AddModelSub(comment_color.ToArray(), placer));
+                    Debug.Log(" parent name =" + part.transform.name + " color special comment === " + subtitles[subtitles.Count - 1]);
+                }
+                
 
                 added_part.Add(part.name);
             }
@@ -377,11 +440,23 @@ public class Apply2 : MonoBehaviour
 
     }
 
+    enum SubtitleType
+    {
+        OnlyBase, // 50 %
+        BaseTwo, // 10%
+        BaseColor, // 10%
+        BaseTwoColor, // 10%
+        ColoredBase, // 10%
+        ColoredBaseTwo, // 10%
+    }
+
     private string audioClipPath = "Audio/model"; // 声音文件的路径，假设在Assets/Resources/Audio/mySound.wav
 
     private AudioSource audioSource;
 
     private AudioClip modelClip;
+
+    private List<SubtitleType> subTypes ;
 
     private int Random3;
     void Start()
@@ -395,6 +470,7 @@ public class Apply2 : MonoBehaviour
 
         parts = new List<GameObject>();
         activeParts = new List<ActivePart>();
+        subTypes = new List<SubtitleType>();
         int[] build_times = GenerateComments();
         int build_times_index = 0;
         int build_time = 0;
@@ -433,8 +509,10 @@ public class Apply2 : MonoBehaviour
                     }
 
                     Vector3 size = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
-                    activeParts.Add(new ActivePart(part.transform.name,
-                    part.transform.GetChild(i).gameObject, activeCount - build_time, build_time, size, j));
+                    ActivePart ap = new ActivePart(part.transform.name,
+                    part.transform.GetChild(i).gameObject, activeCount - build_time, build_time, size, j);
+                    if(subTypes[j] == SubtitleType.BaseColor) ap.materialStartGray = true;
+                    activeParts.Add(ap);
                     GameObject emptyObject = new GameObject("MyEmptyObject");
                     Vector3 bound = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.center;
                     Vector3 ssize = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
@@ -470,28 +548,35 @@ public class Apply2 : MonoBehaviour
                     remainPos2 = bound2;
                 }
 
-                build_time = build_times[build_times_index++];
-                activeCount += build_time;
-                for (int i = 0; i < count; i++)
+
+
+                if(subTypes[j] == SubtitleType.BaseColor)
                 {
-                    activeParts.Add(new ActivePart(part.transform.GetChild(i).gameObject, activeCount - build_time, build_time));
+                    build_time = build_times[build_times_index++];
+                    activeCount += build_time;
+                    for (int i = 0; i < count; i++)
+                    {
+                        activeParts.Add(new ActivePart(part.transform.GetChild(i).gameObject, activeCount - build_time, build_time));
+                    }
+
+                    float colorr = Random.Range(0f, 1.0f);
+                    if (colorr < 0.3)
+                    {
+                        cameras[cameras.Count - 1].AddBuildTime(build_time);
+                    }
+                    else
+                    {
+
+                        GameObject emptyObject3 = new GameObject("MyEmptyObject");
+                        emptyObject3.transform.position = remianPos0;
+                        remainPos2 = remianPos0 + (remainPos2 - remianPos0) * Random.Range(0.8f, 1.2f);
+                        Quaternion rotation = Quaternion.AngleAxis(Random.Range(-60f, 60f), Vector3.up);
+                        Vector3 newCameraPosition = remianPos0 + rotation * (remainPos2 - remianPos0);
+                        cameras.Add(addCameraMove(activeCount - build_time, activeCount, remainPos2, newCameraPosition, emptyObject3, new Vector3(0, 0, 0)));
+                    }
                 }
 
-                float colorr = Random.Range(0f,1.0f);
-                if(colorr < 0.5)
-                {
-                    cameras[cameras.Count - 1].AddBuildTime(build_time);
-                }
-                else
-                {
-
-                    GameObject emptyObject3 = new GameObject("MyEmptyObject");
-                    emptyObject3.transform.position = remianPos0;
-                    remainPos2 = remianPos0 + (remainPos2 - remianPos0) * Random.Range(0.8f, 1.2f);
-                    Quaternion rotation = Quaternion.AngleAxis(Random.Range(-60f, 60f), Vector3.up);
-                    Vector3 newCameraPosition = remianPos0 + rotation * (remainPos2 - remianPos0);
-                    cameras.Add(addCameraMove(activeCount - build_time, activeCount, remainPos2, newCameraPosition, emptyObject3, new Vector3(0, 0, 0)));
-                }
+              
             }
         }
 
@@ -544,15 +629,10 @@ public class Apply2 : MonoBehaviour
             int frame1 = activeParts[i].activeStartFrame + activeParts[i].buildFrame;
             if (FrameCount == frame0)
             {
-                if (activeParts[i].modelMode)
-                {
-                    SetChildActive(generatedAnimal.transform, activeParts[i].name);
-                    SetChildMaterial(generatedAnimal.transform, activeParts[i].name, mushMaterial);
-                }
-                else
-                {
-                    SetChildMaterial(generatedAnimal.transform, activeParts[i].name, activeParts[i].material);
-                }
+                if (activeParts[i].modelMode) SetChildActive(generatedAnimal.transform, activeParts[i].name);
+                if(activeParts[i].modelMode && activeParts[i].materialStartGray) SetChildMaterial(generatedAnimal.transform, activeParts[i].name, mushMaterial);
+                else SetChildMaterial(generatedAnimal.transform, activeParts[i].name, activeParts[i].material);
+           
             }
             if (FrameCount >= frame0 && FrameCount < frame1)
             {
@@ -606,37 +686,148 @@ public class Apply2 : MonoBehaviour
         parts.Add(parent.gameObject);
     }
 
-
+    string[] comment_turn = { "first I will be making the Villager better by turning it into a villager Knight", 
+                            "we want to make the _prename better",
+    "_prename looks kinds of boring, so let`s make it way better"};
 
     string[] comment_all_start = { "all right I'm already here to start making our _part mob",
                                     "the first thing I'm going to do to make our _part is to create a standard base",
                                     "and the _part is going to be quite funny",
+                                    
         };
+
+
+    // fact + feel
+    string[] comment_base_dir = { " for" };
+    string[] comment_base_feel = { " these one will be _feel, trust me",
+                                "my goal is to see if i can make this _name almost _feel",
+                                "these guy is looking _feel", "to make it really get that _like look",
+                                " i will make a _part like this",
+                                "as i mentioned before the _part is _desc than the regular one",
+                                "because i want ot make it super _feel _name",
+                                "the real work is going to making its _part look much much better",
+                                "to make it really cool"};
+
+    // if has part add comment_dir
+    // add _color to _part ahead,
+    // base1 and 50% base2 , 50% no
+    //_part may be cube, things when coloring
 
     // 由于是第一，所以必须说明_part
     // 每组中的第一个正方体  
-    string[] comment_base = { "i am going to create a base for his _part， i`ll make a _part like this",
-        "let's add the arm and as I mentioned the arm is a thousand times bigger than the body",
-        "now for the _prepart it has a _desc _part",
-                                "we'll start by adding a cube here and stretching it to form the _part",
+    string[] comment_base_fact = { "i am going to create a base for his _part", 
+                               // "now for the _prepart it has a _desc _part",
+                                "i have to turn these into _part",
+                                "a _part would work for here",
+                                "i will even give this _part",
+                                "i will make these piece the new _part",
+                                "some _desc _part just like these",
+                                "tis _part is going to have to get a lot _desc",
+                                "i will attach _part to the _name",
+                                " i made it _part like this",
+                                "i also wanted to make the _part extremely _feel looking",
+                                "with these _feel _part ",
+                                "adding these _part are definitely going to help",
+                                "when i think of _name i think of _feel, so i am going to add these _aprt",
+                                "the real _feel _part is going to be this _desc _part for the bdoy",
+                                "we will start by adding a cube here and stretching it to form the _part",
                                 "he has a somewhat _desc _part, so I would have to make it like this",
                                 "so I will create here and pull a cube down to make the _part",
-                                "i`ll put a _part to be able to make a very cool animation",
+                                "i will put a _part to be able to make a very cool animation",
                                 "to make the _part I think it has to be another color",
-                                "i`ll made his _part and then added all the details",
-                                " then i`ll add a base to start making his _part",
-                                "I'll start by making this _desc piece of _part",
+                                "i will made his _part and then added all the details",
+                                "i also thought it would be cool to add this _desc _part",
+                                "give this guy some super _desc _part",
+                                "i will need those _desc _part though",
+                                "these _part are going to magically attached to the _name",
+                                "i want to make it look like there`s a _feel _part",
+                                " then i will add a base to start making his _part",
+                                "I will start by making this _desc piece of _part",
+                                "and this part will becone _part",
+                                "but i also can`t forget to give him a _part",
+                                "this _part looks so dumb right now, but we will fix later",
+                                "it`s time to get a total _part",
+                                "we will come back to this _desc _axe later",
                                 "these _part will be _desc ones like these",
                                 "I adjusted _part to make it more pointed",
                                 "then i went to the part of the _part",
                                 "and on _dir of it, the _part part",
+                                "i will be using all parts of the _name to make this _part look totally _feel",
+                                "i will start by with a regular _part, but it going to have to get a lot _desc",
+                                "now for th awesome part, the _part",
                                 "this part here is the _part",
-                                "now i`m going to add _part",
+                                "i use these part to make some _part",
+                                "let`s start to give it those _name with some _desc _part",
+                                "let`s get to work the _part, it`s looks amazing",
+                                "we will going to need some _part in there just like that",
+                                "can you image if we made a _name without _part?",
+                                "i nearly forgot to give it a _part",
+                                "i am going to use this as the _part",
+                                "once i got the _part part complete",
+                                "i decided to give it _part like this",
+                                "make some room for this _part",
+                                "the regular _part is _desc, so i started editing to create some of these _part",
+                                "unlike the _prename, we will be making all these _part parts way _desc",
+                                "now i am going to add _part",
+
+                                // chatgpt generated
+                                "i decided to color the _part to match the overall look",
+                                "he's going to need a better _part for balance",
+                                "i'll add a _desc _part here to give it more personality",
+                                "the next step is to tweak this _part so it fits better",
+                                "i'm thinking of making this _part more _feel",
+                                "we can adjust the size of the _part to get the right proportion",
+                                "this character definitely needs a stronger _part",
+                                "i will add a _part to the _name to complete the design",
+                                "this _desc _part is going to make a huge difference",
+                                "i'll work on this _part first, then focus on the details",
+                                "it's time to add a custom _part to really make it stand out",
+                                "i'm going to try a _desc _part here to see how it looks",
+                                "once we finalize the _part, everything else will come together",
+                                "i might make this _part a little more _feel to match the theme",
+                                "this _part is crucial for the overall aesthetic",
+                                "i'm planning to blend this _part with a subtle gradient",
+                                "adding a _feel _part here will give it a more dynamic look",
+                                "this section needs a totally new _part",
+                                "i think i'll switch the _part to something more _desc",
+                                "now i'll focus on adding the _part before moving on",
+                                "let's enhance the _part with some detailed textures",
+                                "i'll create a _desc _part to give it more visual interest",
+                                "the next _part will be the final piece of the puzzle",
+                                "this _feel _part should balance out the overall design",
+                                "i'll replace this old _part with something more modern",
+                                "this _part needs to be _desc so it fits with the rest",
+                                "we can't forget to adjust the _part to match the _name",
+                                "i'll try a different color scheme for the _part",
+                                "let's add some shine to the _part for a polished finish",
+                                "i need to tweak the size of the _part to make it work",
+                                "we're going to need a stronger _part for support",
+                                "this _part should be more _feel to complete the vibe",
+                                "i'll make sure this _part is perfectly aligned",
+                                "i'll sculpt the _part so it blends in seamlessly",
+                                "we can duplicate this _part and adjust the position",
+                                "i'll attach this _desc _part to the _name",
+                                "i need to add a _part that's more _desc for contrast",
+                                "let's focus on perfecting the _part before we move on",
+                                "i'll make sure the _part is sized just right",
+                                "this _feel _part will give it that unique touch",
+                                "i'll finish up this _part and then work on the next one",
+                                "let's highlight this _part to draw more attention",
+                                "i think this _part needs to be a little more _desc",
+                                "once the _part is in place, the design will feel complete",
+                                "i'll layer a _desc _part on top for extra depth",
+                                "this _part needs to complement the overall structure",
+                                "we'll add some fine details to the _part to enhance it",
+                                "let's smooth out the edges of the _part to soften the look",
+                                "i'll experiment with a different material for the _part",
+                                "this _desc _part should add more contrast to the design",
                             };
     // 必须是 first cube
     string[] comment_duplicate = { "I duplicated the _part to the other side",
                                     "select _part and duplicate to the other side",
-                                    "then I'll duplicate here down",
+                                    "then I will duplicate here down",
+                                    "i create another piece",
+                                    "duplicate that over again",
                                     "i wanted another _part, so pull and one more",
                                 "before I create the rest of the body I need to make the other _part",
                                 ""};
@@ -648,6 +839,7 @@ public class Apply2 : MonoBehaviour
                         "he has very _desc _part by the way",
                         "something like this, see ?",
                         " and the _part !!!",
+                        "look at this little _part",
                         "pull one more",
                         "add a cube here",
                         "we will bring a _part",
@@ -656,6 +848,7 @@ public class Apply2 : MonoBehaviour
                          "and stretch one more time",
                          "just stretch the _desc one",
                          "and another bigger cube",
+                         "shrink it down",
                          "one more",
                          " pull another _part _dir here", " pull one more here",
                           };
@@ -663,23 +856,56 @@ public class Apply2 : MonoBehaviour
     //https://youtu.be/DcDNgGLpJgs?t=344
     string[] comment_appedn = { "that later I can animate and rotate any way I want look" };
 
-    string[] comment_finish = { " it`s already looks like a _part", 
+    string[] comment_finish = { " it`s already looks like a _name", 
                                 "the shape is gonna be totally different, it gonna be super _desc", 
                                 "ok, cool",
+                                "let`s see how _feel it really is in minecraft",
+                                "i would not want to mess with these _name",
                                 "it's already taking a bit of shape", 
-                                "and look our nightmare _part is practically ready",
+                                "after some work i am pretty happy with how it came together",
+                                "and look our nightmare _name is practically ready",
+                                "let`s find _name for sure in game",
+                                "i feel pretty good about what the _name has turned into",
                                 "let me get back to Minecraft and well",
-                                "so let's see how this turned out in mind", 
-                                "and our catnap is ready look how it turned out"};
+                                "so let's see how this _name turned out in mind", 
+                                "and our _name is ready look how it turned out"};
 
     string[] comment_color = { "I'm going to start doing the texture.",
                                 "i start painting him the color he is. in this case it's _color",
                                 "i colored it _color",
-                                "I'll start by adding a texture to it about this color which is _color",
+                                "attach it and paint it all _color",
+                                "these _part one will be this _color",
+                                " and there will be _color too",
+                                "let`s give it the sense that it has some _feel",
+                                " there are some _color for his _part",
+                                "turn it all _part color",
+                                "let`s grab this _color and use it on _part",
+                                "it absolutely no details, so i paint it all _color",
+                                "a _color _part would be perfect",
+                                "the start to recolor the whole thing",
+                                "i will change it _part to _color",
+                                "now for the _color _part on the _name",
+                                "let`s recolor it so it will be more _feel",
+                                "it`s time to retexturing _part _color",
+                                "i will recolor it _color to give it these _part",
+                                "i did some subtle texturing all around",
+                                "i created this _part texture and will use for those",
+                                "_name also have these _color colors in the _part",
+                                "these _color colors works perfectly for the _part",
+                                "i put this pattern on its _part",
+                                "I will start by adding a texture to it about this color which is _color",
                                 "okay finishing the texture it looks like this",
                                 "his _part will be a slightly different _color color",
+                                "make him _color",
                                 "I will also start texturing her _part", 
                                 "I use a very good style to make _color texture",
+                                "i added this _color design to the _part",
+                                "and now look at those _color _part",
+                                "this _color is absolutely ridiculous right now",
+                                "now it`s time to _color _part",
+                                "get the basic coloring done",
+                                "you know we had to give it the _color, it look like kinds cursed",
+                                "let`s make it more look like _name",
                                 };
 
 

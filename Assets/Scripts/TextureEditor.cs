@@ -149,6 +149,8 @@ public class TextureEditor
             case HumanoidGenerator.ShapeName.LeftLeg: bodyPartNameString = "left_leg"; break;
             case HumanoidGenerator.ShapeName.RightLeg: bodyPartNameString = "right_leg"; break;
             case HumanoidGenerator.ShapeName.LeftEye:
+            case HumanoidGenerator.ShapeName.P_LeftEye:
+            case HumanoidGenerator.ShapeName.P_RightEye:
             case HumanoidGenerator.ShapeName.RightEye: return SpecialEyeMat(size); break;
             default: bodyPartNameString = "body"; break;
         }
@@ -280,8 +282,6 @@ public class TextureEditor
                     CopyY = i - (featureHeight - featureYStart);
                 }
             }
-            Debug.Log(" i = " + i + " copy + " + CopyY);
-
             for (int j = 0; j < targetWidth; j++)
             {
 
