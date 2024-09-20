@@ -347,7 +347,7 @@ public class Days100: MonoBehaviour
         fellow.Add(ActorType.Friend, DataTransfer.messageToPass);
 
         List<PreSceneToScene> pscT = new List<PreSceneToScene>();
-        pscT.Add(new PreSceneToScene(PreScene.Attack, new List<SC>() {SC.ActorIdleCameraAroundRotate }));
+        pscT.Add(new PreSceneToScene(PreScene.Attack, new List<SC>() {SC.HeroEntrance }));
 
         // generate comments
 
@@ -367,7 +367,7 @@ public class Days100: MonoBehaviour
             switch (scenes[scene_index].sc)
             {
                 // Scene 就不应该包含Camera 信息，虽然也有要随机选择Camera
-                case SC.ActorIdleCameraAroundRotate:
+                case SC.HeroEntrance:
                     {
                         // 位置是Idle, 但具体哪儿Idle 呢？ 要根据场景设置吗？但这个场景设置快变成摄像机设置了
                         break;
@@ -385,6 +385,7 @@ public class Days100: MonoBehaviour
         // 粗任务是follow the map, 细动作可以是跑，走，或者停在那儿四处张望
         List<PS> pres = new List<PS>()
         {
+            /*
             new PS("https://youtu.be/y2yRPKQ5nnE?t=115", PreScene.TalkRun, CA.Idle, CH.I, AC.TalkCamera, SP.HidenPlaace,
             "I got to find a way out of here"),
             new PS("https://youtu.be/y2yRPKQ5nnE?t=121", PreScene.LookingActor, CA.ACtor0LookingActor1, CH.I, AC.LookingActor, SP.HidenPlaace, CH.Friend, AC.LookingActor, SP.Cage,
@@ -403,7 +404,7 @@ public class Days100: MonoBehaviour
             "which blasted them back"),
             new PS("https://youtu.be/y2yRPKQ5nnE?t=150", PreScene.Attack, CA.Idle, CH.I, AC.TalkCamera, SP.IAttack,
             "oh, what did i just do !"),
-
+            */
             new PS("", PreScene.Spawn, new List<string>(){
             "on day one I spawned in as a baby "  }),
 
