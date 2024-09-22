@@ -2,17 +2,21 @@ using JetBrains.Annotations;
 using Palmmedia.ReportGenerator.Core;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using TMPro;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 using static HumanoidGenerator;
 using static Structure;
 using static TextureEditor;
+using static UnityEditor.PlayerSettings;
 using static UnityEngine.GraphicsBuffer;
 using Color = UnityEngine.Color;
 using Random = UnityEngine.Random;
@@ -45,12 +49,22 @@ public class HumanoidGenerator : MonoBehaviour
         // plants
         P_Stem,
         P_LeftRootLeaf,
-        P_RightRootLeft,
+        P_RightRootLeaf,
         P_Head,
         P_LeftEye,
         P_RightEye,
         P_Mouth,
         P_BackLeaf,
+
+        PH_Stem,
+        PH_LeftRootLeaf,
+        PH_RightRootLeaf,
+        PH_Head,
+        PH_LeftEye,
+        PH_RightEye,
+        PH_Mouth,
+        PH_Lip,
+        PH_BackLeaf,
     }
 
     public enum FrameWork
@@ -228,6 +242,20 @@ public class HumanoidGenerator : MonoBehaviour
         Sphere,
         BigMouthZ,
         FlatCircleShrink,
+
+        Hollow,
+        SolidSphere,
+    }
+
+    public enum ShapeDir
+    {
+        Full,
+        XP,
+        XM,
+        YP,
+        YM,
+        ZP,
+        ZM,
     }
     public struct ShapeDesc
     {
@@ -238,10 +266,12 @@ public class HumanoidGenerator : MonoBehaviour
         public ShapeName name;
         public int segment;
         public SegmentMethod segmet;
+        public int direction;
         public string desc_str;
         public ShapeName appendName;
         public FrameWork appendWork;
         public FrameWork myWork;
+        public ShapeDir dir;
 
         public ShapeDesc(ShapeName shapeName, Vector3 size, ShapeName appendName, FrameWork appendWork, FrameWork myWork)
         {
@@ -252,6 +282,7 @@ public class HumanoidGenerator : MonoBehaviour
             this.desc_str = GenerateDesc(shapeName);
             this.actors = new List<GameObject>();
             segment = 1;
+            direction = 0;
             this.segmet = SegmentMethod.None;
             if (shapeName == ShapeName.Body)
             {
@@ -264,6 +295,7 @@ public class HumanoidGenerator : MonoBehaviour
             this.appendName = appendName;
             this.appendWork = appendWork;
             this.myWork = myWork;
+            dir = ShapeDir.Full;
         }
 
         public void SetActors(List<GameObject> actors)
@@ -283,6 +315,12 @@ public class HumanoidGenerator : MonoBehaviour
     public static Vector3 RandomSize(int x0, int x1, int y0, int y1, int z0, int z1)
     {
         return new Vector3(Random.Range(x0, x1) , Random.Range(y0, y1), Random.Range(z0, z1));
+    }
+
+    public static Vector3 RandomSize(int x0, int x1)
+    {
+        int r = Random.Range(x0, x1);
+        return new Vector3(r,r,r);
     }
 
     // 使用Linq打乱List
@@ -465,7 +503,8 @@ public class HumanoidGenerator : MonoBehaviour
         }
 
         // todo : build from legs
-        names = new List<ShapeName>() { ShapeName.P_Head, ShapeName.P_Mouth, ShapeName.P_LeftEye, ShapeName.RightEye, ShapeName.P_Stem, ShapeName.P_LeftRootLeaf, ShapeName.P_RightRootLeft, ShapeName.P_BackLeaf }; ;
+        names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShapeName.PH_Head, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf};
+        //names = new List<ShapeName>() {  ShapeName.PH_Head };
         for (int i =0; i< names.Count; i++)
         {
             switch(names[i])
@@ -603,7 +642,7 @@ public class HumanoidGenerator : MonoBehaviour
                     {
                         partSize = RandomSize(4, 8, 1, 3, 4, 8);
                         parts.Add(new ShapeDesc(ShapeName.P_LeftRootLeaf, partSize, ShapeName.P_Stem, FrameWork.BottomeLeft, FrameWork.Right75));
-                        parts.Add(new ShapeDesc(ShapeName.P_RightRootLeft, partSize, ShapeName.P_Stem, FrameWork.BottomeRight, FrameWork.Left75));
+                        parts.Add(new ShapeDesc(ShapeName.P_RightRootLeaf, partSize, ShapeName.P_Stem, FrameWork.BottomeRight, FrameWork.Left75));
                         break;
                     }
                 case ShapeName.P_BackLeaf:
@@ -612,12 +651,88 @@ public class HumanoidGenerator : MonoBehaviour
                         parts.Add(new ShapeDesc(ShapeName.P_BackLeaf, partSize, ShapeName.P_Head, FrameWork.BackCenter, FrameWork.FrontCenter));
                         break;
                     }
+                case ShapeName.PH_Stem:
+                    {
+                        partSize = RandomSize(2, 5, 10, 16, 2, 5);
+                        ShapeDesc sd = new ShapeDesc(ShapeName.PH_Stem, partSize, ShapeName.PH_Stem, FrameWork.Zero, FrameWork.Zero);
+                        sd.segmet = SegmentMethod.Hollow;
+                        sd.segment = 1;
+                        sd.dir = ShapeDir.YP;
+                        parts.Add(sd);
+                        break;
+                    }
+                case ShapeName.PH_Head:
+                    {
+                        // 2 x radius
+                        partSize = RandomSize(8,9) * 2;
+                        bodySize = partSize;
+                        ShapeDesc sd = new ShapeDesc(ShapeName.PH_Head, partSize, ShapeName.PH_Stem, FrameWork.TopCenter, FrameWork.BottomCenter);
+                        sd.segmet = SegmentMethod.SolidSphere;
+                        sd.segment = 1;
+                        parts.Add(sd);
+                        break;
+                    }
+                case ShapeName.PH_Mouth:
+                    {
+                        partSize = RandomSize(2, 4, 2, 4, 4, 6);
+                        ShapeDesc sd = new ShapeDesc(ShapeName.PH_Mouth, partSize, ShapeName.PH_Head, FrameWork.FrontCenter, FrameWork.BackCenter);
+                        sd.segmet = SegmentMethod.Hollow;
+                        sd.direction = 1;
+                        sd.segment = 1;
+                        sd.dir = ShapeDir.ZP;
+                        parts.Add(sd);
+                        break;
+                    }
+                case ShapeName.PH_Lip:
+                    {
+                        int r0 = (int)(bodySize.x / 2);
+                        partSize = RandomSize(r0, r0 + 2, r0, r0 + 2, 4, 6);
+                        ShapeDesc sd = new ShapeDesc(ShapeName.PH_Lip, partSize, ShapeName.PH_Mouth, FrameWork.FrontCenter, FrameWork.BackCenter);
+                        sd.segmet = SegmentMethod.SolidSphere;
+                        sd.dir = ShapeDir.ZP;
+                        sd.segment = 1;
+                        parts.Add(sd);
+                        break;
+                    }
+                case ShapeName.PH_LeftRootLeaf:
+                    {
+                        partSize = RandomSize(6, 10, 2, 4, 6, 10);
+                        ShapeDesc sd0 = new ShapeDesc(ShapeName.PH_LeftRootLeaf, partSize, ShapeName.PH_Stem, FrameWork.BottomeLeft, FrameWork.Right75);
+                        ShapeDesc sd1 = new ShapeDesc(ShapeName.PH_RightRootLeaf, partSize, ShapeName.PH_Stem, FrameWork.BottomeRight, FrameWork.Left75);
+                        sd0.segmet = SegmentMethod.Hollow;
+                        sd0.segment = 1;
+                        sd0.dir = ShapeDir.YP;
+                        sd1.segmet = SegmentMethod.Hollow;
+                        sd1.segment = 1;
+                        sd1.dir = ShapeDir.YP;
+                        parts.Add(sd0);
+                        parts.Add(sd1);
+                        break;
+                    }
+                case ShapeName.PH_LeftEye:
+                    {
+                        partSize = RandomSize(2, 2, 2, 2, 1, 1);
+                        parts.Add(new ShapeDesc(ShapeName.PH_LeftEye, partSize, ShapeName.PH_Head, FrameWork.HeadLeftEyePos, FrameWork.BackCenter));
+                        parts.Add(new ShapeDesc(ShapeName.PH_RightEye, partSize, ShapeName.PH_Head, FrameWork.HeadRightEyePos, FrameWork.BackCenter));
+                        break;
+                    }
+                case ShapeName.PH_BackLeaf:
+                    {
+                        partSize = RandomSize(6, 8, 1, 3, 6, 8);
+                        ShapeDesc sd = new ShapeDesc(ShapeName.PH_BackLeaf, partSize, ShapeName.PH_Head, FrameWork.BackCenter, FrameWork.FrontCenter); 
+                        sd.segment = 1;
+                        sd.segmet = SegmentMethod.Hollow;
+                        sd.dir = ShapeDir.YP;
+                        parts.Add(sd);
+                        break;
+                    }
             }
         }
 
 
 
         int index = 0;
+        DataTransfer.indexToIndex = new List<int>();
 
         for (int i = 0; i < parts.Count; i++)
         {
@@ -625,6 +740,8 @@ public class HumanoidGenerator : MonoBehaviour
             int Segment = Mathf.Abs(parts[i].segment);
             List<Vector3> posSlice = new List<Vector3>();
             List<Vector3> sizeSlice = new List<Vector3>();
+
+            bool saveOnce = false;
 
             switch (parts[i].segmet)
             {
@@ -676,6 +793,307 @@ public class HumanoidGenerator : MonoBehaviour
                         }
                         break;
                     }
+                case SegmentMethod.Hollow:
+                    {
+
+                        saveOnce = true;
+
+                        int radius = (int)(parts[i].size.x * 10 * 0.5);
+                        int basex = (int)(radius / Mathf.Sqrt(2) + 0.5f); // 5 -> 3.5 -> 4
+                        posSlice.Add(new Vector3(0, 0, 0));
+
+                        switch (parts[i].dir)
+                        {
+                            case ShapeDir.YP:
+                            case ShapeDir.YM:
+                                {
+                                    sizeSlice.Add(new Vector3(basex * 0.2f, parts[i].size.y, basex * 0.2f));
+                                    break;
+                                }
+                            case ShapeDir.ZP:
+                            case ShapeDir.ZM:
+                                {
+                                    sizeSlice.Add(new Vector3(basex * 0.2f, basex * 0.2f, parts[i].size.z));
+                                    break;
+                                }
+                            case ShapeDir.XP:
+                            case ShapeDir.XM:
+                                {
+                                    sizeSlice.Add(new Vector3(parts[i].size.x, basex * 0.2f, basex * 0.2f));
+                                    break;
+                                }
+                            default: break;
+                        }
+
+                        Debug.Log(" size = " + sizeSlice.Count + " poss = " + posSlice.Count);
+
+                        for (int px = basex; px < radius; px++)
+                        {
+                            int possibleDis = -1;
+                            for (int pz = 0; pz < radius; pz++)
+                            {
+                                float dis = (float)((px + 0.5) * (px + 0.5) + (pz + 0.5) * (pz + 0.5));
+                                if (dis <= radius * radius) possibleDis = pz;
+                            }
+                            int startPx = px;
+                            possibleDis += 1;
+                            while (true)
+                            {
+                                float dis = (float)((px + 1.5) * (px + 1.5) + (possibleDis + 0.5) * (possibleDis + 0.5));
+                                if (dis <= radius * radius) px += 1;
+                                else
+                                {
+                                    switch (parts[i].dir)
+                                    {
+                                        case ShapeDir.YP:
+                                        case ShapeDir.YM:
+                                            {
+                                                Vector3 bpos = new Vector3((px + 1 + startPx) * 0.05f, 0, 0);
+                                                Vector3 bsize = new Vector3((px + 1 - startPx) * 0.1f, parts[i].size.y, possibleDis * 0.2f);
+
+                                                posSlice.Add(new Vector3(bpos.x, bpos.y, bpos.z));
+                                                sizeSlice.Add(new Vector3(bsize.x, bsize.y, bsize.z));
+                                                posSlice.Add(new Vector3(-bpos.x, bpos.y, bpos.z));
+                                                sizeSlice.Add(new Vector3(bsize.x, bsize.y, bsize.z));
+
+                                                posSlice.Add(new Vector3(bpos.z, bpos.y, bpos.x));
+                                                sizeSlice.Add(new Vector3(bsize.z, bsize.y, bsize.x));
+                                                posSlice.Add(new Vector3(bpos.z, bpos.y, -bpos.x));
+                                                sizeSlice.Add(new Vector3(bsize.z, bsize.y, bsize.x));
+                                                break;
+                                            }
+                                        case ShapeDir.ZP:
+                                        case ShapeDir.ZM:
+                                            {
+                                                Vector3 bpos = new Vector3(0 ,(px + 1 + startPx) * 0.05f, 0);
+                                                Vector3 bsize = new Vector3(possibleDis * 0.2f, (px + 1 - startPx) * 0.1f, parts[i].size.z);
+
+                                                posSlice.Add(new Vector3(bpos.x, bpos.y, bpos.z));
+                                                sizeSlice.Add(new Vector3(bsize.x, bsize.y, bsize.z));
+                                                posSlice.Add(new Vector3(bpos.x, -bpos.y, bpos.z));
+                                                sizeSlice.Add(new Vector3(bsize.x, bsize.y, bsize.z));
+
+                                                posSlice.Add(new Vector3(bpos.y, bpos.x, bpos.z));
+                                                sizeSlice.Add(new Vector3(bsize.y, bsize.x, bsize.z));
+                                                posSlice.Add(new Vector3(-bpos.y, bpos.x, bpos.z));
+                                                sizeSlice.Add(new Vector3(bsize.y, bsize.x, bsize.z));
+                                                break;
+                                            }
+                                        default: break;
+                                    }
+
+                                    
+                                    break;
+                                }
+                            }
+                        }
+                        Debug.Log(" size = " + sizeSlice.Count + " poss = " + posSlice.Count);
+                        break;
+                    }
+                case SegmentMethod.SolidSphere:
+                    {
+                        saveOnce = true;
+
+                        int radius =  (int)(parts[i].size.x * 10 * 0.5);
+                        int basex = (int)(radius / Mathf.Sqrt(2) - 0.5f); // 5 -> 3.5 -> 4
+                        Debug.Log(" x = " + parts[i].size.x + " radius = " + radius + " basex = " + basex);
+
+                        switch (parts[i].dir)
+                        {
+                            case ShapeDir.Full:
+                                {
+                                    posSlice.Add(new Vector3(0, 0, 0));
+                                    sizeSlice.Add(new Vector3(basex * 0.2f, basex * 0.2f, basex * 0.2f));
+                                    break;
+                                }
+                            case ShapeDir.ZM:
+                                {
+                                    posSlice.Add(new Vector3(0, 0, -basex * 0.05f));
+                                    sizeSlice.Add(new Vector3(basex * 0.2f, basex * 0.2f, basex * 0.1f));
+                                    break;
+                                }
+                            case ShapeDir.ZP:
+                                {
+                                    posSlice.Add(new Vector3(0, 0, basex * 0.05f));
+                                    sizeSlice.Add(new Vector3(basex * 0.2f, basex * 0.2f, basex * 0.1f));
+                                    break;
+                                }
+                            default: break;
+                        }
+
+
+                        for(int px = basex; px <= radius; px++)
+                        {
+                            int possibleDis = -1;
+                            for (int pz = 0; pz <= radius; pz++)
+                            {
+                                float dis = (float)((px + 0.5) * (px + 0.5) + (pz + 0.5) * (pz + 0.5));
+                                if (dis <= radius * radius) possibleDis = pz;
+                            }
+                            int startPx = px;
+                            possibleDis += 1;
+                            while (true)
+                            {
+                                float dis = (float)((px + 1.5) * (px + 1.5) + (possibleDis + 0.5) * (possibleDis + 0.5));
+                                if (dis <= radius * radius) px += 1;
+                                else
+                                {
+                                    List<Vector3> bpos = new List<Vector3>();
+                                    List<Vector3> bsize = new List<Vector3>();
+                                    int bbasex = (int)(possibleDis / Mathf.Sqrt(2) + 0.5f);
+                                    Debug.Log(" for 2= " + bbasex + " ppdis = " + possibleDis);
+                                    bpos.Add(new Vector3((px + startPx) * 0.05f + 0.05f, 0, 0));
+                                    float bbasey = bbasex * 0.2f;
+                                    if (px == basex) bbasey -= 0.2f;
+                                    bsize.Add(new Vector3((px + 1 - startPx) * 0.1f, bbasey, bbasex * 0.2f));
+                                    for (int ppx = bbasex; ppx < possibleDis; ppx++)
+                                    {
+                                        int ppDis = -1;
+                                        for(int ppz = 0; ppz < possibleDis; ppz++)
+                                        {
+                                            float ddis = (float)((ppx + 0.5) * (ppx + 0.5) + (ppz + 0.5) * (ppz + 0.5));
+                                            if (ddis <= possibleDis * possibleDis) ppDis = ppz;
+                                        }
+                                        int startppx = ppx;
+                                        while (true)
+                                        {
+                                            float ddis = (float)((ppx + 1.5) * (ppx + 1.5) + (ppDis + 0.5) * (ppDis + 0.5));
+                                            if (ddis <= possibleDis * possibleDis) ppx += 1;
+                                            else
+                                            {
+                                                Vector3 bbpos = new Vector3((px + startPx) * 0.05f + 0.05f, 0, (ppx + startppx) * 0.05f + 0.05f);
+                                                Vector3 bbsize = new Vector3((px + 1 - startPx) * 0.1f, (ppDis + 1) * 0.2f, (ppx + 1 - startppx) * 0.1f);
+                                                bpos.Add(new Vector3(bbpos.x, bbpos.y, bbpos.z));
+                                                bsize.Add(new Vector3(bbsize.x, bbsize.y, bbsize.z));
+                                                bpos.Add(new Vector3(bbpos.x, bbpos.y, -bbpos.z));
+                                                bsize.Add(new Vector3(bbsize.x, bbsize.y, bbsize.z));
+                                                bpos.Add(new Vector3(bbpos.x, bbpos.z, bbpos.y));
+                                                bsize.Add(new Vector3(bbsize.x, bbsize.z, bbsize.y));
+                                                bpos.Add(new Vector3(bbpos.x, -bbpos.z, bbpos.y));
+                                                bsize.Add(new Vector3(bbsize.x, bbsize.z, bbsize.y));
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    for(int bposindex = 0; bposindex < bpos.Count; bposindex++)
+                                    {
+                                        Vector3 pos0 = bpos[bposindex];
+                                        Vector3 size0 = bsize[bposindex];
+
+                                        switch (parts[i].dir)
+                                        {
+                                            case ShapeDir.Full:
+                                                {
+                                                    posSlice.Add(new Vector3(pos0.x, pos0.y, pos0.z));
+                                                    sizeSlice.Add(new Vector3(size0.x, size0.y, size0.z));
+                                                    posSlice.Add(new Vector3(-pos0.x, pos0.y, pos0.z));
+                                                    sizeSlice.Add(new Vector3(size0.x, size0.y, size0.z));
+
+                                                   // if (bposindex > 0)
+                                                    {
+                                                       posSlice.Add(new Vector3(pos0.z, pos0.x, pos0.y));
+                                                       sizeSlice.Add(new Vector3(size0.z, size0.x, size0.y));
+                                                       posSlice.Add(new Vector3(pos0.z, -pos0.x, pos0.y));
+                                                       sizeSlice.Add(new Vector3(size0.z, size0.x, size0.y));
+                                                    }
+
+                                                   
+                                      
+                                                        posSlice.Add(new Vector3(pos0.y, pos0.z, pos0.x));
+                                                        sizeSlice.Add(new Vector3(size0.y, size0.z, size0.x));
+                                                        posSlice.Add(new Vector3(pos0.y, pos0.z, -pos0.x));
+                                                        sizeSlice.Add(new Vector3(size0.y, size0.z, size0.x));
+                                                    
+
+                                                    
+                                                    break;
+                                                }
+                                            case ShapeDir.ZM:
+                                                {
+                                                    if (pos0.z == 0)
+                                                    {
+                                                        posSlice.Add(new Vector3(pos0.x, pos0.y, pos0.z - size0.z / 4));
+                                                        sizeSlice.Add(new Vector3(size0.x, size0.y, size0.z / 2));
+                                                        posSlice.Add(new Vector3(-pos0.x, pos0.y, pos0.z - size0.z / 4));
+                                                        sizeSlice.Add(new Vector3(size0.x, size0.y, size0.z / 2));
+                                                    }else if(pos0.z < 0)
+                                                    {
+                                                        posSlice.Add(new Vector3(pos0.x, pos0.y, pos0.z));
+                                                        sizeSlice.Add(new Vector3(size0.x, size0.y, size0.z));
+                                                        posSlice.Add(new Vector3(-pos0.x, pos0.y, pos0.z));
+                                                        sizeSlice.Add(new Vector3(size0.x, size0.y, size0.z));
+                                                    }
+
+                                                    if(pos0.y == 0)
+                                                    {
+                                                        posSlice.Add(new Vector3(pos0.z, pos0.x, pos0.y - size0.y / 4));
+                                                        sizeSlice.Add(new Vector3(size0.z, size0.x, size0.y / 2));
+                                                        posSlice.Add(new Vector3(pos0.z, -pos0.x, pos0.y - size0.y / 4));
+                                                        sizeSlice.Add(new Vector3(size0.z, size0.x, size0.y / 2));
+                                                    }
+                                                    else if(pos0.y < 0)
+                                                    {
+                                                        posSlice.Add(new Vector3(pos0.z, pos0.x, pos0.y));
+                                                        sizeSlice.Add(new Vector3(size0.z, size0.x, size0.y));
+                                                        posSlice.Add(new Vector3(pos0.z, -pos0.x, pos0.y));
+                                                        sizeSlice.Add(new Vector3(size0.z, size0.x, size0.y));
+                                                    }
+
+                                                    posSlice.Add(new Vector3(pos0.y, pos0.z, -pos0.x));
+                                                    sizeSlice.Add(new Vector3(size0.y, size0.z, size0.x));
+                                                    break;
+                                                }
+                                            case ShapeDir.ZP:
+                                                {
+                                                    if (pos0.z == 0)
+                                                    {
+                                                        posSlice.Add(new Vector3(pos0.x, pos0.y, pos0.z + size0.z / 4));
+                                                        sizeSlice.Add(new Vector3(size0.x, size0.y, size0.z / 2));
+                                                        posSlice.Add(new Vector3(-pos0.x, pos0.y, pos0.z + size0.z / 4));
+                                                        sizeSlice.Add(new Vector3(size0.x, size0.y, size0.z / 2));
+                                                    }
+                                                    else if (pos0.z > 0)
+                                                    {
+                                                        posSlice.Add(new Vector3(pos0.x, pos0.y, pos0.z));
+                                                        sizeSlice.Add(new Vector3(size0.x, size0.y, size0.z));
+                                                        posSlice.Add(new Vector3(-pos0.x, pos0.y, pos0.z));
+                                                        sizeSlice.Add(new Vector3(size0.x, size0.y, size0.z));
+                                                    }
+
+                                                    if (pos0.y == 0)
+                                                    {
+                                                        posSlice.Add(new Vector3(pos0.z, pos0.x, pos0.y + size0.y / 4));
+                                                        sizeSlice.Add(new Vector3(size0.z, size0.x, size0.y / 2));
+                                                        posSlice.Add(new Vector3(pos0.z, -pos0.x, pos0.y + size0.y / 4));
+                                                        sizeSlice.Add(new Vector3(size0.z, size0.x, size0.y / 2));
+                                                    }
+                                                    else if (pos0.y > 0)
+                                                    {
+                                                        posSlice.Add(new Vector3(pos0.z, pos0.x, pos0.y));
+                                                        sizeSlice.Add(new Vector3(size0.z, size0.x, size0.y));
+                                                        posSlice.Add(new Vector3(pos0.z, -pos0.x, pos0.y));
+                                                        sizeSlice.Add(new Vector3(size0.z, size0.x, size0.y));
+                                                    }
+
+                                                    posSlice.Add(new Vector3(pos0.y, pos0.z, pos0.x));
+                                                    sizeSlice.Add(new Vector3(size0.y, size0.z, size0.x));
+                                                    break;
+                                                }
+                                            default: break;
+                                        }
+                                       
+
+
+                                    }
+
+
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                        
+                    }
                 default:
                     {
                         posSlice.Add(new Vector3(0, 0, 0));
@@ -686,6 +1104,7 @@ public class HumanoidGenerator : MonoBehaviour
 
 
             List<GameObject> actors = new List<GameObject>();
+            int startIndex = index;
             for (int j = 0; j < posSlice.Count; j++)
             {
                 GameObject actor = CreateCube();
@@ -695,7 +1114,7 @@ public class HumanoidGenerator : MonoBehaviour
                 actor.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
                 actor.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, size);
 
-                if (checkScene)
+                if (!saveOnce || (saveOnce && j == 0))
                 {
 
                     Material tempM = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, size);
@@ -703,7 +1122,9 @@ public class HumanoidGenerator : MonoBehaviour
                     //AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mat");
                     AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mesh");
                 }
-                
+
+                if (saveOnce) DataTransfer.indexToIndex.Add(startIndex);
+                else DataTransfer.indexToIndex.Add(index);
                 
                 actors.Add(actor);
                 index += 1;
@@ -745,6 +1166,7 @@ public class HumanoidGenerator : MonoBehaviour
                     }
                 }
                 Vector3 now = FindFrameWork(parts[i], parts[i].myWork);
+                Debug.Log(" offset target = " + target + " now = " + now);
                 ShapeDesc desc = parts[i];
                 desc.localPos = target - now;
                 parts[i] = desc;
@@ -778,6 +1200,7 @@ public class HumanoidGenerator : MonoBehaviour
         {
 
             string part_name = part.name.ToString();
+            part_name = part_name.Replace("PH_", "");
             part_name = part_name.Replace("P_", "");
             part_name = part_name.Replace("A_", "");
             part_name = part_name.Replace("H_", "");
@@ -789,11 +1212,13 @@ public class HumanoidGenerator : MonoBehaviour
                 part.actors[i].transform.SetParent(parentObjectForPart.transform);
             }
             parentObjectForPart.transform.SetParent(allObject.transform);
+            parentObject.transform.localRotation = Quaternion.identity;
         }
 
         Bounds totalBounds = new Bounds(parentObject.transform.position, Vector3.zero);
         CalculateBoundsRecursive(parentObject.transform, ref totalBounds);
-        allObject.transform.position = new Vector3(0, totalBounds.size.y,0);
+        allObject.transform.position = new Vector3(0, -(totalBounds.center.y - totalBounds.size.y / 2),0);
+        Debug.Log(" center = " + totalBounds.center.y + " sziey = " + totalBounds.size.y);
         // 返回这个新的父物体
         return parentObject;
 

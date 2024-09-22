@@ -22,6 +22,7 @@ public class Structure
 
         public static string featureDesc;
         public static string featurePart;
+        public static List<int> indexToIndex;
     }
     public struct Uint2
     {
@@ -193,6 +194,43 @@ public class Structure
         return new CameraSetting(frameStart, frameEnd, pos, pos2, lookat, lookatOffset, follow);
     }
 
+    enum AnimPart
+    {
+        Body,
+        Leg,
+        Arm,
+        Head, // 主要是看向哪儿
+        FullBody,
+        None,
+    }
+
+    enum AnimObject
+    {
+        Ground,
+        Lookat,
+    }
+
+    enum RotationStrategy
+    {
+        LookAtSomething,
+        Forward,
+    }
+
+    // 我觉得还是段落比较好
+    public struct AnimFrameKey
+    {
+        AnimPart animPart;
+        AnimationSystem.Animation anim; // 是否有动画从这帧开始
+        bool animStart; // 动画是开始还是结束 还有过渡呢，边跑步边受伤 动画结束后，是应该Idle 还是 转入下一个动画
+        AnimObject animObject;
+        public int frameStart;
+        public int frameEnd;
+        public Vector3 posStart;
+        public Vector3 posEnd;
+       // public RotationStrategy rotationStrategy;
+        public Quaternion rotStart;
+        public Quaternion rotEnd;
+    }
     public struct ActorSettings
     {
         public int frameStart;
@@ -493,6 +531,7 @@ public class Structure
         subtitle = subtitle.Replace("_color", replacer.color);
         subtitle = subtitle.Replace("_like", replacer.like);
         subtitle = subtitle.Replace("_feel", replacer.feel);
+        subtitle = subtitle.Replace("PH_", "");
         subtitle = subtitle.Replace("P_", "");
         subtitle = Regex.Replace(subtitle, "(\\B[A-Z])", " $1").ToLower();
         subtitle = System.Text.RegularExpressions.Regex.Replace(subtitle, @"\d", "");

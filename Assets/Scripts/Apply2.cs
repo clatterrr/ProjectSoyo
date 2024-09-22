@@ -483,7 +483,7 @@ public class Apply2 : MonoBehaviour
 
 
         GameObject emptyObject2 = new GameObject("MyEmptyObject");
-        emptyObject2.transform.position = new Vector3(0, 1, 0);
+        emptyObject2.transform.position = new Vector3(0, 3, 0);
 
         activeCount = 100;
         build_time = build_times[build_times_index++];
@@ -536,7 +536,7 @@ public class Apply2 : MonoBehaviour
                     }
 
                     float randomAngle = baseAngle + Random.Range(-10f, 10f);  // ÔÚ¡À10¶È·¶Î§ÄÚÆ«ÒÆ
-                    float randomDistance = ssize.magnitude * Random.Range(1.0f,2.4f);
+                    float randomDistance = ssize.magnitude * Random.Range(1.5f,3.0f);
                     float rx = bound.x + randomDistance * Mathf.Cos(randomAngle * Mathf.Deg2Rad);
                     float ry = bound.y * Random.Range(-0.2f, 0.2f) + ssize.magnitude * Random.Range(-0.2f, 0.2f);
                     if (bound.y < 0) ry = -ry;
@@ -583,7 +583,7 @@ public class Apply2 : MonoBehaviour
         generatedAnimal.SetActive(true);
 
         build_time = build_times[build_times_index++];
-        cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-3, 2, -3), new Vector3(3, 2, -3), emptyObject2, new Vector3(0, 0, 0)));
+        cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-3, 3, -3), new Vector3(3, 3, -3), emptyObject2, new Vector3(0, 0, 0)));
         activeCount += build_time;
     }
 

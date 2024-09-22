@@ -233,7 +233,7 @@ public class Days100: MonoBehaviour
         I,
     }
 
-    enum SP
+    public enum SP
     {
         None,
         HidenPlaace, // sometime not straight
@@ -244,6 +244,7 @@ public class Days100: MonoBehaviour
         EnemyDefend,
         IAttack,
         IDefend,
+        Entrance,
     }
 
     // characters
@@ -339,7 +340,12 @@ public class Days100: MonoBehaviour
 
     }
 
+    public Vector3 GetPos(SP sp)
+    {
+        return Vector3.zero;
+    }
 
+    GameObject hero;
     void Start()
     {
 
@@ -361,18 +367,81 @@ public class Days100: MonoBehaviour
                     int r = Random.Range(0, pscT[i].scs.Count);
                     p.sc = pscT[i].scs[r];
                     scenes[scene_index] = p;
+
+                    // 摄像机设置也要随机
+
+                    // psc == StartSmallScene
+                    {
+
+                       // Hero.SetPos(Entrance);
+                    }
                 }
+
+
+            // 给人物设置地点
 
             fellow.SetAllActiveFalse();
             switch (scenes[scene_index].sc)
             {
-                // Scene 就不应该包含Camera 信息，虽然也有要随机选择Camera
-                case SC.HeroEntrance:
+                // Scene 就不应该包含Camera 信息。要有角色信息
+                case SC.HeroEntrance: // 最好不要Entrance
                     {
+                        // idle 应该用PreScene
+                        // 直接Idle 或者Walk 就行了
+                        //actorSettings.Add(new ActorSettings(0, 0, Plane, AnimationSystem.Animation.Idle, SP.Entrance,m))
                         // 位置是Idle, 但具体哪儿Idle 呢？ 要根据场景设置吗？但这个场景设置快变成摄像机设置了
+                        actorSettings.Add(addActorMove(0,0, hero, AnimationSystem.Animation.Idle, GetPos(SP.Entrance), GetPos(SP.Entrance), Camera.main));
                         break;
                     }
             }
+
+            // added good animation
+
+            for(int i = 0; i < 0; i++)
+            {
+                // Sort Anim
+
+                // for body anim
+                AnimationSystem.Animation currentAnim;
+                AnimationSystem.Animation nextAnim;
+
+                int startFrame = 0;
+                int endFrame = 0;
+                int startFrame1 = endFrame;
+                int endFrame1 = 0;
+
+                float easeRatio = 0.1f;
+                int easeFrame0 = (int)((endFrame - startFrame) * (1 - easeRatio) + startFrame);
+                int easeFrame1 = (int)((endFrame1 - startFrame1) * easeRatio + startFrame1);
+                float easeValue0 = 1.0f;
+                float easeValue1 = 0.0f;
+                float weight = 0.3f;
+                float outTangent = 0.03f;
+                float inTangent = 0.03f;
+                float currentTime = 0f;
+
+                float deltaTime = easeFrame1 - easeFrame0;
+
+                // 计算控制点
+                float C0x = easeFrame0 + deltaTime / 3f;  // C0 的时间
+                float C0y = easeValue0 + outTangent * deltaTime / 3f;  // C0 的值
+
+                float C1x = easeFrame1 - deltaTime / 3f;  // C1 的时间
+                float C1y = easeValue1 - inTangent * deltaTime / 3f;   // C1 的值
+
+                // 将时间归一化到 [0, 1]
+                float u = (currentTime - easeFrame0) / deltaTime;
+
+                // 三次贝塞尔插值公式
+                float value = Mathf.Pow(1 - u, 3) * easeValue0 +
+                              3 * Mathf.Pow(1 - u, 2) * u * C0y +
+                              3 * (1 - u) * Mathf.Pow(u, 2) * C1y +
+                              Mathf.Pow(u, 3) * easeValue1;
+
+                // for head anim
+
+            }
+
             fellow.SetFalse(0, 0, actorSettings);
         }
     }

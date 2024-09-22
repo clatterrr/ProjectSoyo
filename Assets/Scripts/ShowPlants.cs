@@ -204,7 +204,8 @@ public class ShowPlants : MonoBehaviour
     {
         if (current.name.Contains("cube"))
         {
-            string indexStr = current.name.Replace("cube_", "");
+            int index = int.Parse(current.name.Replace("cube_", ""));
+            string indexStr = DataTransfer.indexToIndex[index].ToString();
             string texturePath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".png";
             string meshPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".mesh";
             Material material = new(Shader.Find("Standard"));

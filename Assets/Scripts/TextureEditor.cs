@@ -151,6 +151,8 @@ public class TextureEditor
             case HumanoidGenerator.ShapeName.LeftEye:
             case HumanoidGenerator.ShapeName.P_LeftEye:
             case HumanoidGenerator.ShapeName.P_RightEye:
+            case HumanoidGenerator.ShapeName.PH_LeftEye:
+            case HumanoidGenerator.ShapeName.PH_RightEye:
             case HumanoidGenerator.ShapeName.RightEye: return SpecialEyeMat(size); break;
             default: bodyPartNameString = "body"; break;
         }
