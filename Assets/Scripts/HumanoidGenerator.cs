@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using Palmmedia.ReportGenerator.Core;
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -11,6 +12,7 @@ using TMPro;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 using static HumanoidGenerator;
@@ -235,7 +237,7 @@ public class HumanoidGenerator : MonoBehaviour
         return result; // Return the result at the end of the method
     }
 
-    public enum SegmentMethod
+    public enum SpecialBuilds
     {
         None,
         TopDown,
@@ -244,7 +246,9 @@ public class HumanoidGenerator : MonoBehaviour
         FlatCircleShrink,
 
         Hollow,
+        HollowCurve,
         SolidSphere,
+        Curve, 
     }
 
     public enum ShapeDir
@@ -265,13 +269,14 @@ public class HumanoidGenerator : MonoBehaviour
         public Vector3 size;
         public ShapeName name;
         public int segment;
-        public SegmentMethod segmet;
+        public SpecialBuilds segmet;
         public int direction;
         public string desc_str;
         public ShapeName appendName;
         public FrameWork appendWork;
         public FrameWork myWork;
         public ShapeDir dir;
+        public List<float> values;
 
         public ShapeDesc(ShapeName shapeName, Vector3 size, ShapeName appendName, FrameWork appendWork, FrameWork myWork)
         {
@@ -283,19 +288,20 @@ public class HumanoidGenerator : MonoBehaviour
             this.actors = new List<GameObject>();
             segment = 1;
             direction = 0;
-            this.segmet = SegmentMethod.None;
+            this.segmet = SpecialBuilds.None;
             if (shapeName == ShapeName.Body)
             {
                 segment = Random.Range(1, 4);
                 int plus = Random.Range(0, 2);
                 if (plus == 0) plus = -1;
                 segment *= plus;
-                this.segmet = SegmentMethod.TopDown;
+                this.segmet = SpecialBuilds.TopDown;
             }
             this.appendName = appendName;
             this.appendWork = appendWork;
             this.myWork = myWork;
             dir = ShapeDir.Full;
+            values = new List<float>();
         }
 
         public void SetActors(List<GameObject> actors)
@@ -612,7 +618,7 @@ public class HumanoidGenerator : MonoBehaviour
                         partSize = RandomSize(8, 12, 8, 12, 8, 12);
                         ShapeDesc sd = new ShapeDesc(ShapeName.P_Head, partSize, ShapeName.P_Head, FrameWork.Zero, FrameWork.Zero);
                         sd.segment = 2;
-                        sd.segmet = SegmentMethod.Sphere;
+                        sd.segmet = SpecialBuilds.Sphere;
                         parts.Add(sd);
                         break;
                     }
@@ -621,7 +627,7 @@ public class HumanoidGenerator : MonoBehaviour
                         partSize = RandomSize(2, 4, 2, 4, 4, 8);
                         ShapeDesc sd = new ShapeDesc(ShapeName.P_Mouth, partSize, ShapeName.P_Head, FrameWork.FrontCenter, FrameWork.BackCenter);
                         sd.segment = 1;
-                        sd.segmet = SegmentMethod.BigMouthZ;
+                        sd.segmet = SpecialBuilds.BigMouthZ;
                         parts.Add(sd);
                         break;
                     }
@@ -655,7 +661,7 @@ public class HumanoidGenerator : MonoBehaviour
                     {
                         partSize = RandomSize(2, 5, 10, 16, 2, 5);
                         ShapeDesc sd = new ShapeDesc(ShapeName.PH_Stem, partSize, ShapeName.PH_Stem, FrameWork.Zero, FrameWork.Zero);
-                        sd.segmet = SegmentMethod.Hollow;
+                        sd.segmet = SpecialBuilds.Hollow;
                         sd.segment = 1;
                         sd.dir = ShapeDir.YP;
                         parts.Add(sd);
@@ -664,10 +670,10 @@ public class HumanoidGenerator : MonoBehaviour
                 case ShapeName.PH_Head:
                     {
                         // 2 x radius
-                        partSize = RandomSize(8,9) * 2;
+                        partSize = RandomSize(6,8) * 2;
                         bodySize = partSize;
                         ShapeDesc sd = new ShapeDesc(ShapeName.PH_Head, partSize, ShapeName.PH_Stem, FrameWork.TopCenter, FrameWork.BottomCenter);
-                        sd.segmet = SegmentMethod.SolidSphere;
+                        sd.segmet = SpecialBuilds.SolidSphere;
                         sd.segment = 1;
                         parts.Add(sd);
                         break;
@@ -676,7 +682,7 @@ public class HumanoidGenerator : MonoBehaviour
                     {
                         partSize = RandomSize(2, 4, 2, 4, 4, 6);
                         ShapeDesc sd = new ShapeDesc(ShapeName.PH_Mouth, partSize, ShapeName.PH_Head, FrameWork.FrontCenter, FrameWork.BackCenter);
-                        sd.segmet = SegmentMethod.Hollow;
+                        sd.segmet = SpecialBuilds.Hollow;
                         sd.direction = 1;
                         sd.segment = 1;
                         sd.dir = ShapeDir.ZP;
@@ -688,7 +694,7 @@ public class HumanoidGenerator : MonoBehaviour
                         int r0 = (int)(bodySize.x / 2);
                         partSize = RandomSize(r0, r0 + 2, r0, r0 + 2, 4, 6);
                         ShapeDesc sd = new ShapeDesc(ShapeName.PH_Lip, partSize, ShapeName.PH_Mouth, FrameWork.FrontCenter, FrameWork.BackCenter);
-                        sd.segmet = SegmentMethod.SolidSphere;
+                        sd.segmet = SpecialBuilds.SolidSphere;
                         sd.dir = ShapeDir.ZP;
                         sd.segment = 1;
                         parts.Add(sd);
@@ -699,12 +705,12 @@ public class HumanoidGenerator : MonoBehaviour
                         partSize = RandomSize(6, 10, 2, 4, 6, 10);
                         ShapeDesc sd0 = new ShapeDesc(ShapeName.PH_LeftRootLeaf, partSize, ShapeName.PH_Stem, FrameWork.BottomeLeft, FrameWork.Right75);
                         ShapeDesc sd1 = new ShapeDesc(ShapeName.PH_RightRootLeaf, partSize, ShapeName.PH_Stem, FrameWork.BottomeRight, FrameWork.Left75);
-                        sd0.segmet = SegmentMethod.Hollow;
-                        sd0.segment = 1;
-                        sd0.dir = ShapeDir.YP;
-                        sd1.segmet = SegmentMethod.Hollow;
-                        sd1.segment = 1;
-                        sd1.dir = ShapeDir.YP;
+                        sd0.segmet = SpecialBuilds.HollowCurve;
+                        sd1.segmet = SpecialBuilds.HollowCurve;
+                        for(int k = 0; k <= partSize.x; k++) {
+                            float he = (1 - k / partSize.x) * partSize.y;
+                            sd0.values.Add(he);  sd1.values.Add(he); 
+                        }
                         parts.Add(sd0);
                         parts.Add(sd1);
                         break;
@@ -721,10 +727,13 @@ public class HumanoidGenerator : MonoBehaviour
                         partSize = RandomSize(6, 8, 1, 3, 6, 8);
                         ShapeDesc sd = new ShapeDesc(ShapeName.PH_BackLeaf, partSize, ShapeName.PH_Head, FrameWork.BackCenter, FrameWork.FrontCenter); 
                         sd.segment = 1;
-                        sd.segmet = SegmentMethod.Hollow;
+                        sd.segmet = SpecialBuilds.Hollow;
                         sd.dir = ShapeDir.YP;
                         parts.Add(sd);
                         break;
+                    }
+                    {
+                        // curve
                     }
             }
         }
@@ -740,12 +749,13 @@ public class HumanoidGenerator : MonoBehaviour
             int Segment = Mathf.Abs(parts[i].segment);
             List<Vector3> posSlice = new List<Vector3>();
             List<Vector3> sizeSlice = new List<Vector3>();
+            List<Quaternion> rotateSlice = new List<Quaternion>();
 
             bool saveOnce = false;
 
             switch (parts[i].segmet)
             {
-                case SegmentMethod.TopDown:
+                case SpecialBuilds.TopDown:
                     {
                         Vector3 nowPos = new Vector3(0, parts[i].size.y / 2, 0);
                         for (int j = 0; j < Segment; j++)
@@ -765,7 +775,7 @@ public class HumanoidGenerator : MonoBehaviour
                         }
                         break;
                     }
-                case SegmentMethod.Sphere:
+                case SpecialBuilds.Sphere:
                     {
                         posSlice.Add(new Vector3(0, 0, 0));
                         Vector3 baseOffset = new Vector3(parts[i].size.x - 0.1f * (Segment - 1) * 2, parts[i].size.y - 0.1f * (Segment - 1) * 2, parts[i].size.z - 0.1f * (Segment - 1) * 2);
@@ -793,7 +803,220 @@ public class HumanoidGenerator : MonoBehaviour
                         }
                         break;
                     }
-                case SegmentMethod.Hollow:
+                case SpecialBuilds.BigMouthZ: // retangle z
+                    {
+
+                        int sx = (int)(parts[i].size.x * 10 * 0.5);
+                        int sz = (int)(parts[i].size.x * 10 * 0.5);
+                        int radius = 1;
+                        posSlice.Add(new Vector3(0, 0, 0)); 
+                        sizeSlice.Add(new Vector3((sx - radius) * 0.2f, parts[i].size.y, sz));
+                        int baseWidth = sz - radius;
+                        List<int> widths = GetCircle(0, radius);
+                        for(int j = 0; j < widths.Count; j += 3)
+                        {
+                            int startx = widths[j];
+                            int continuex = widths[j + 1];
+                            int widthz = widths[j + 2];
+
+                            posSlice.Add(new Vector3(0, 0, 0));
+                            sizeSlice.Add(new Vector3((startx + continuex) * 0.2f, parts[i].size.y, widthz));
+                            posSlice.Add(new Vector3(0, 0, 0));
+                            sizeSlice.Add(new Vector3(-(startx + continuex) * 0.2f, parts[i].size.y, widthz));
+                        }
+                        saveOnce = true;
+
+                        break;
+                    }
+
+                case SpecialBuilds.HollowCurve:
+                    {
+
+                        saveOnce = true;
+                        int sx = (int)(parts[i].size.x * 10 * 0.5);
+                        int sz = (int)(parts[i].size.x * 10 * 0.5);
+                        for (int px = 0;  px < sx; px++)
+                        {
+                            float they = parts[i].values[px];
+                            for(int pz = 0; pz < sz; pz++)
+                            {
+                                float dis0 = (float)((px + 0.5) * (px + 0.5) / sx / sx + (pz + 0.5) * (pz + 0.5) / sz / sz);
+                                float dis1 = (float)((px + 0.5) * (px + 0.5) / sx / sx + (pz + 1.5) * (pz + 1.5) / sz / sz);
+                                if(dis0 <= 1 && dis1 > 0)
+                                {
+                                    posSlice.Add(new Vector3((px + 1) * 0.05f, they, 0));
+                                    posSlice.Add(new Vector3(-(px + 1) * 0.05f, they, 0));
+                                    sizeSlice.Add(new Vector3(0.1f, 0.1f, pz * 0.2f));
+                                    sizeSlice.Add(new Vector3(0.1f, 0.1f, pz * 0.2f));
+                                }
+                            }
+                        }
+
+
+                        break;
+                    }
+                case SpecialBuilds.Curve:
+                    {
+                        // Spider Legs
+                        // 只能一个叠一个，不能4个叠4个
+                        saveOnce = true;
+                        int sx = (int)(parts[i].size.x * 10 * 0.5);
+                        int sz = (int)(parts[i].size.x * 10 * 0.5);
+                        for (int px = 0; px < sx; px++)
+                        {
+                            float they = parts[i].values[px * 2 + 0];
+                            float thez = parts[i].values[px * 2 + 1];
+                            posSlice.Add(new Vector3(px, they, thez));
+                            sizeSlice.Add(new Vector3(0.1f, 0.1f, 0.1f));
+                        }
+
+
+                        break;
+                    }
+                case SpecialBuilds.Muscle:
+                    {
+                        int sx = (int)(parts[i].size.x * 10 * 0.5);
+                        int sz = (int)(parts[i].size.x * 10 * 0.5);
+                        // Spider Legs
+                        // 只能一个叠一个，不能4个叠4个
+                        saveOnce = true;
+                        posSlice.Add(new Vector3(0, 0, 0));
+                        sizeSlice.Add(new Vector3(0.1f, 0.1f, 0.3f));
+                        posSlice.Add(new Vector3(0, parts[i].size.y / 9, 0));
+                        sizeSlice.Add(new Vector3(0.1f, 0.1f, 0.1f));
+                        posSlice.Add(new Vector3(0, -parts[i].size.y / 9, 0));
+                        sizeSlice.Add(new Vector3(0.1f, 0.1f, 0.1f));
+                        rotateSlice.AddRange(new Quaternion[] { Quaternion.identity, Quaternion.identity, Quaternion.identity });
+
+                        float rotatedx = (sx - 0.5f) / 2;
+                        float rotateSize = (sx - 0.5f);
+                        posSlice.AddRange(new Vector3[] { new Vector3(rotatedx, 0, -1.5f), new Vector3(rotatedx, 0, 1.5f),
+                                new Vector3(-rotatedx, 0, -1.5f),new Vector3(-rotatedx, 0, 1.5f),
+                                new Vector3(rotatedx, -1.5f, 0), new Vector3(rotatedx, 1.5f, 0),
+                                new Vector3(-rotatedx, -1.5f, 0),new Vector3(-rotatedx, 1.5f, 0)
+                        });
+                        for(int j = 0; j < 8;j++)sizeSlice.Add(new Vector3(0.1f, 0.1f, rotateSize));
+                        rotateSlice.AddRange(new Quaternion[] { 
+                            Quaternion.Euler(0,15,0), Quaternion.Euler(0,-15,0), Quaternion.Euler(0,15,0), Quaternion.Euler(0,-15,0),
+                            Quaternion.Euler(0,0,15), Quaternion.Euler(0,0,-15), Quaternion.Euler(0,0,15), Quaternion.Euler(0,0,-15),
+                        });
+
+                        break;
+                    }
+                case SpecialBuilds.HR_Body:
+                    {
+                        //https://youtu.be/M2fBL0Z9aVw?t=720 怀疑用旋转的，还不如我用立方体的
+                        float width = (parts[i].size.x * 10 / parts[i].segment);
+                        int sx = (int)(parts[i].size.x * 10 * 0.5f);
+                        int sz = (int)(parts[i].size.z * 10 * 0.5f);
+                        for(int px = 0; px < parts[i].size.x; px++)
+                        {
+                            for(int pz = 0; pz < parts[i].size.x; pz++)
+                            {
+                                float dis0 = (float)((px + 0.5) * (px + 0.5) / sx / sx + (pz + 0.5) * (pz + 0.5) / sz / sz);
+                                float dis1 = (float)((px + 0.5) * (px + 0.5) / sx / sx + (pz + 1.5) * (pz + 1.5) / sz / sz);
+                                if (dis0 <= 1 && dis1 > 0)
+                                {
+                                    posSlice.Add(new Vector3((px + 1) * 0.05f, they, 0));
+                                    posSlice.Add(new Vector3(-(px + 1) * 0.05f, they, 0));
+                                    sizeSlice.Add(new Vector3(0.1f, 0.1f, pz * 0.2f));
+                                    sizeSlice.Add(new Vector3(0.1f, 0.1f, pz * 0.2f));
+                                }
+                            }
+                        }
+                    }
+                case SpecialBuilds.RoundCircle:
+                    {
+                        /*
+                           
+                         / ---  \
+                         |      |
+                         \ --- /
+                         */
+                        //https://youtu.be/M2fBL0Z9aVw?t=720 怀疑用旋转的，还不如我用立方体的
+                        float radius = 0.1f;
+                        posSlice.Add(new Vector3(0,0,0));
+                        sizeSlice.Add(new Vector3(parts[i].size.x, parts[i].size.y, parts[i].size.z - radius - radius));
+                        posSlice.Add(new Vector3(0, 0, (parts[i].size.z + radius ) / 2));
+                        sizeSlice.Add(new Vector3(parts[i].size.x - radius - radius, parts[i].size.y, radius));
+                        posSlice.Add(new Vector3(0, 0, -(parts[i].size.z + radius) / 2));
+                        sizeSlice.Add(new Vector3(parts[i].size.x - radius - radius, parts[i].size.y, radius));
+                        rotateSlice.AddRange(new Quaternion[] { Quaternion.identity, Quaternion.identity, Quaternion.identity, Quaternion.identity });
+
+                        Vector3 bp = new Vector3(parts[i].size.x / 2 - radius, 0, parts[i].size.z / 2 - radius);
+                        Vector3 bs = new Vector3(radius * 1.5f, parts[i].size.y, radius * 1.5f);
+                        posSlice.AddRange(new Vector3[] { new Vector3(bp.x, bp.y, bp.z), new Vector3(-bp.x, bp.y, bp.z), new Vector3(bp.x, bp.y, -bp.z), new Vector3(-bp.x, bp.y, -bp.z) });
+                        sizeSlice.AddRange(new Vector3[] {bs,bs,bs,bs});
+                        rotateSlice.AddRange(new Quaternion[] { Quaternion.Euler(0, 45, 0), Quaternion.Euler(0, 45, 0), Quaternion.Euler(0, 45, 0), Quaternion.Euler(0, 45, 0) });
+
+                    }
+                case SpecialBuilds.RoundCircleForCircle:
+                    {
+                        // X 轴适合做身体，Y轴做肌肉和脑袋
+                        /*
+                           
+                         / ---  \
+                         |      |
+                         \ --- /
+                         */
+                        //https://youtu.be/M2fBL0Z9aVw?t=720 怀疑用旋转的，还不如我用立方体的
+
+                        for(int px = 0; px < 0; px++)
+                        {
+                            float outterR = 0.1f;
+                            float innerR = 0.1f;
+                            posSlice.Add(new Vector3(0, 0, 0));
+                            sizeSlice.Add(new Vector3(0.1f, (outterR - innerR) * 2, outterR * 2));
+                            posSlice.Add(new Vector3(0, 0, outterR + innerR / 2));
+                            sizeSlice.Add(new Vector3(0.1f, innerR, outterR - innerR - innerR));
+                            posSlice.Add(new Vector3(0, 0, -outterR - innerR / 2));
+                            sizeSlice.Add(new Vector3(0.1f, innerR, outterR - innerR - innerR));
+                            rotateSlice.AddRange(new Quaternion[] { Quaternion.identity, Quaternion.identity, Quaternion.identity, });
+
+                            Vector3 bp = new Vector3(0, outterR - innerR, outterR - innerR);
+                            Vector3 bs = new Vector3(0.1f, innerR * 1.5f, innerR * 1.5f);
+                            posSlice.AddRange(new Vector3[] { new Vector3(bp.x, bp.y, bp.z), new Vector3(-bp.x, bp.y, bp.z), new Vector3(bp.x, bp.y, -bp.z), new Vector3(-bp.x, bp.y, -bp.z) });
+                            sizeSlice.AddRange(new Vector3[] { bs, bs, bs, bs });
+                            rotateSlice.AddRange(new Quaternion[] { Quaternion.Euler(45, 0, 0), Quaternion.Euler(45, 0, 0), Quaternion.Euler(45, 0, 0), Quaternion.Euler(45, 0, 0) });
+                        }
+
+                        // up wards
+
+                        float outterR = 0.1f;
+                        float innerR = 0.1f;
+                        posSlice.Add(new Vector3(0.05f, 0, outterR));
+                        sizeSlice.Add(new Vector3(innerR * 1.5f, outterR, innerR * 1.5f));
+                        posSlice.Add(new Vector3(0.05f, 0, -outterR));
+                        sizeSlice.Add(new Vector3(innerR * 1.5f, outterR, innerR * 1.5f));
+
+
+                        posSlice.Add(new Vector3(0.05f, outterR, 0));
+                        sizeSlice.Add(new Vector3(innerR * 1.5f, innerR * 1.5f, outterR));
+                        posSlice.Add(new Vector3(0.05f, -outterR, 0));
+                        sizeSlice.Add(new Vector3(innerR * 1.5f, innerR * 1.5f, outterR)); 
+                        rotateSlice.AddRange(new Quaternion[] { Quaternion.Euler(0, 45, 0), Quaternion.Euler(0, 45, 0), Quaternion.Euler(0, 0, 45), Quaternion.Euler(0, 45, 0) });
+
+
+                    }
+                case SpecialBuilds.Angle:
+                    {
+                        saveOnce = true;
+                        float currentRadius = 4;
+                        float accRadius = 0;
+                        while (currentRadius >= 1)
+                        {
+                            accRadius += currentRadius * 0.5f;
+
+                            posSlice.Add(new Vector3(accRadius, 0, 0));
+                            sizeSlice.Add(new Vector3(accRadius, accRadius , accRadius));
+                            rotateSlice.Add(Quaternion.Euler(posSlice.Count * 15, 0, 0));
+
+                            accRadius += currentRadius * 0.5f;
+                            currentRadius -= 0.5f;
+                        }
+
+                    }
+                case SpecialBuilds.Hollow:
                     {
 
                         saveOnce = true;
@@ -890,7 +1113,7 @@ public class HumanoidGenerator : MonoBehaviour
                         Debug.Log(" size = " + sizeSlice.Count + " poss = " + posSlice.Count);
                         break;
                     }
-                case SegmentMethod.SolidSphere:
+                case SpecialBuilds.SolidSphere:
                     {
                         saveOnce = true;
 

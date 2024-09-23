@@ -1152,4 +1152,32 @@ public class Structure
             }
         }
     }
+
+    public static List<int> GetCircle(int start, int radius)
+    {
+        List<int> result = new List<int>();
+        for (int circlex = start; circlex < radius; circlex++)
+        {
+            int pDis = 0;
+            for (int circlez = 0; circlez < radius; circlez++)
+            {
+                float dis = (float)((circlex + 0.5) * (circlex + 0.5) + (circlez + 0.5) * (circlez + 0.5));
+                if (dis < radius * radius) { pDis = circlez; }
+            }
+            int startX = circlex;
+            while (true)
+            {
+                float dis = (float)((circlex + 1.5) * (circlex + 1.5) + (pDis + 0.5) * (pDis + 0.5));
+                if (dis < radius * radius) { circlex += 1; };
+            else
+                {
+                    Vector3 basePos = new Vector3((circlex + 1 + startX) * 0.05f, 0f, 0f);
+                    Vector3 baseSize = new Vector3((circlex + 1 - startX) * 0.1f, 0.1f, 0.1f);
+                    break;
+                }
+            }
+            result.AddRange(new int[3] { startX, circlex - startX, pDis });
+        }
+        return result;
+    }
 }
