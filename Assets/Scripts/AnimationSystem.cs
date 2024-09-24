@@ -20,6 +20,16 @@ public class AnimationSystem : MonoBehaviour
 
     }
 
+    public enum AnimationActor
+    {
+        None,
+        Human,
+        Villager,
+        Plants,
+    }
+
+    public AnimationActor animActor;
+
     public Animation anim;
     public void SetAnimation(Animation anim)
     {
@@ -95,6 +105,7 @@ public class AnimationSystem : MonoBehaviour
     private GameObject pea_prefab;
     void Start()
     {
+        animActor = AnimationActor.Plants;
         string path = "Assets/Characters/Plants/Prefab/pea.prefab";
         pea_prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
     }
@@ -178,6 +189,13 @@ public class AnimationSystem : MonoBehaviour
             RecursiveFindAndModify("right_leg", gameObject.transform, rotation1, true);
             RecursiveFindAndModify("left_arm", gameObject.transform, rotation1, true);
             RecursiveFindAndModify("right_arm", gameObject.transform, rotation, true);
+            if(animActor == AnimationActor.Plants)
+            {
+                rotation = Quaternion.Euler(0, r, r);
+                rotation1 = Quaternion.Euler(0, 0, -r);
+                RecursiveFindAndModify("LeftRootLeaf", gameObject.transform, rotation, true);
+                RecursiveFindAndModify("RightRootLeaf", gameObject.transform, rotation, true);
+            }
         }
         else if (frameCount < walkHalfCycle * 2)
         {
@@ -194,6 +212,13 @@ public class AnimationSystem : MonoBehaviour
             RecursiveFindAndModify("right_leg", gameObject.transform, rotation1, true);
             RecursiveFindAndModify("left_arm", gameObject.transform, rotation1, true);
             RecursiveFindAndModify("right_arm", gameObject.transform, rotation, true);
+            if (animActor == AnimationActor.Plants)
+            {
+                rotation = Quaternion.Euler(0, -r, r);
+                rotation1 = Quaternion.Euler(0, 0, r);
+                RecursiveFindAndModify("LeftRootLeaf", gameObject.transform, rotation, true);
+                RecursiveFindAndModify("RightRootLeaf", gameObject.transform, rotation, true);
+            }
         }
         else
         {

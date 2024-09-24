@@ -321,9 +321,11 @@ public class ShowPlants : MonoBehaviour
         DataTransfer.featurePart = "head";
         SubReplacer replacer = new SubReplacer(DataTransfer.prefabName, env_string, "husk", "air bubbles", "nine", DataTransfer.featureDesc, DataTransfer.featurePart);
 
+        // todo: Edit Scene Order
         //  List<MSC> subEnum = new List<MSC>() { MSC.ENV, MSC.LookAtNow, MSC.Nice, MSC.Animation, MSC.Attack_Summary,
         //   MSC.LetPutAMob, MSC.EnemyStrongGetClose, MSC.MobStartFight, MSC.EnemyStartHurt, MSC.MobStartFight, MSC.EnemyDead, MSC.MobProtectMe, MSC.Grade };
-        List<MSC> subEnum = new List<MSC>() { MSC.ENV, MSC.Nice, MSC.Animation, MSC.Attack_Summary, MSC.LetPutAMob, MSC.MobStartFight, MSC.EnemyDead};
+        // List<MSC> subEnum = new List<MSC>() { MSC.ENV, MSC.Nice, MSC.Animation, MSC.Attack_Summary, MSC.LetPutAMob, MSC.MobStartFight, MSC.EnemyDead};
+        List<MSC> subEnum = new List<MSC>() { MSC.Talk };
         List<MPS> possibleSubtitles = Prepare();
         List<MPS> subtitles = new List<MPS>();
         for (int i = 0; i < subEnum.Count; i++)
@@ -365,6 +367,7 @@ public class ShowPlants : MonoBehaviour
         // ��һ��SimpleAnimation
         //
         theMob.AddComponent<AnimationSystem>();
+        theMob.GetComponent<AnimationSystem>().animActor = AnimationSystem.AnimationActor.Plants;
         //LoadAnimation("D:\\GameDe\\GLTFmodl\\split_pea.animation.json");
 
         TraverseChildren(theMob.transform);
@@ -413,7 +416,7 @@ public class ShowPlants : MonoBehaviour
                         famob.set(MAC.Walk, MSP.MobAttackClose, MSP.MobAttackClose);
                         fame.set(MAC.WalkInvisible, MSP.WatchShow);
                         sub.fa = new List<MFA>() { fame, famob, faenemy};
-                        sub.ca = MCA.FollowEmptyPlayerLookMob;
+                        sub.ca = MCA.FollowEmptyPlayerLookEnemy;
                         break;
                     }
                 case MSC.EnemyDead:
@@ -431,8 +434,18 @@ public class ShowPlants : MonoBehaviour
                         famob.set(MAC.AttackEnemy, MSP.MobAttackClose, MSP.MobAttackClose);
                         fame.set(MAC.WalkInvisible, MSP.WatchShow);
                         sub.fa = new List<MFA>() { fame, famob, faenemy };
-                        sub.ca = MCA.FollowEmptyPlayerLookMob;
+                        List<MCA> mcas = new List<MCA>() { MCA.FollowEmptyPlayerLookMob, MCA.HandLookBehindMob, MCA.HandLookBehindEnemy };
+                        sub.ca = mcas[Random.Range(0, mcas.Count)];
                         break;
+                    }
+                case MSC.Talk:
+                    {
+                        //https://youtu.be/h0mVRZJkPME?t=126
+                        fame.set(MAC.Walk, MSP.WalkAround0, MSP.WalkAround1);
+                        sub.fa = new List<MFA>() { fame };
+                        sub.ca = MCA.LookAheadPlayer;
+                        break;
+
                     }
             }
 
@@ -442,6 +455,14 @@ public class ShowPlants : MonoBehaviour
                     {
                         actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
                         actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
+                        break;
+                    };
+                case MCA.LookAheadPlayer:
+                    {
+                        Vector3 forward = new Vector3(0, 0, 1);
+                        actorSettings.Add(addActorMove(startFrame, endFrame, player, true));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, -forward * 5 + new Vector3(0, 5, 0), player, headOffset));
                         break;
                     };
                 case MCA.RotateAround:
@@ -478,6 +499,17 @@ public class ShowPlants : MonoBehaviour
                         actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
                         break;
                     }
+                case MCA.FollowEmptyPlayerLookEnemy:
+                    {
+                        handIsPlayer = true;
+                        MFA fa = GetMFA(MCH.I, sub.fa);
+                        Vector3 offset = (GetPos(fa.sp0) - GetPos(fa.sp1)).normalized * 2f + new Vector3(0, 2, 0);
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, offset, offset, theEnemy, headOffset, emptyObject));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, emptyObject, true));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+                        break;
+                    }
                 case MCA.FollowPlayerForward:
                     {
                         MFA fa = GetMFA(MCH.I, sub.fa);
@@ -489,7 +521,22 @@ public class ShowPlants : MonoBehaviour
                     }
                 case MCA.HandFollowMob:
                     {
+
                         cameraSettings.Add(addCameraMove(startFrame, endFrame, Vector3.zero, Vector3.zero, theMob, headOffset));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+                        break;
+                    }
+                case MCA.HandLookBehindEnemy:
+                    {
+                        Vector3 forward = new Vector3(0, 0, -1);
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, -forward * 5 + new Vector3(0,5,0), theEnemy, headOffset));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+                        break;
+                    }
+                case MCA.HandLookBehindMob:
+                    {
+                        Vector3 forward = new Vector3(0, 0, 1);
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, -forward * 5 + new Vector3(0, 5, 0), theEnemy, headOffset));
                         actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
                         break;
                     }
@@ -727,6 +774,7 @@ public class ShowPlants : MonoBehaviour
         MobFightBack,
         EnemyDead,
         MobProtectMe,
+        Talk,
     }
 
     public enum MCA
@@ -744,6 +792,16 @@ public class ShowPlants : MonoBehaviour
         EmptyLookingTwo,
         EmptyLookingAround,
         FollowEmptyPlayerLookMob,
+        FollowEmptyPlayerLookEnemy,
+        HandLookBehindMob,
+        HandLookBehindEnemy,
+
+        LookAheadPlayer,
+        LookAheadMob,
+        LookAheadEnemy,
+
+        LookPlayerFace,
+
         AirLooking,
         SelfLooking,
         FollowPlayerForward,
@@ -867,6 +925,8 @@ public class ShowPlants : MonoBehaviour
         ShowLeft,
         ShowRight,
         WatchShow,
+        WalkAround0,
+        WalkAround1,
     }
 
     struct MPS
@@ -1076,7 +1136,7 @@ public class ShowPlants : MonoBehaviour
                             "the _name spots anything threatening nearby by ready to take it down instantly right"}));
 
 
-        pres.Add(new MPS("", MSC.LetPutAMob, MCA.FollowEmptyPlayerLookMob, fame, famob,
+        pres.Add(new MPS("", MSC.LetPutAMob, MCA.FollowEmptyPlayerLookEnemy, fame, famob,
          new List<String>() {
             "the _enemy came out ! he's trying to tackle the _name !",
             //https://youtu.be/ioxX4R3VNj0?t=104
@@ -1130,7 +1190,9 @@ public class ShowPlants : MonoBehaviour
             "oh, wait, _enemy`s attacking _name",}));
 
         // mob fight agian == mob start fight
-
+        pres.Add(new MPS("", MSC.Talk, MCA.FollowEmptyPlayerLookMob, fame, famob,
+    new List<String>() {
+            "_enemy is shot dead by our _name",}));
         pres.Add(new MPS("", MSC.EnemyDead, MCA.FollowEmptyPlayerLookMob, fame, famob,
             new List<String>() {
             "_enemy is shot dead by our _name",}));

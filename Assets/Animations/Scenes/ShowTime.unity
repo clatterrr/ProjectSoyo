@@ -25,7 +25,7 @@ RenderSettings:
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 0
-  m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
+  m_SubtractiveShadowColor: {r: 0.53844786, g: 0.6530557, b: 0.9433962, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
@@ -350,6 +350,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d0cf8f4797844c46887af199e580b1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animActor: 0
   anim: 0
 --- !u!114 &269606644
 MonoBehaviour:
@@ -545,7 +546,7 @@ MonoBehaviour:
   theEnemy: {fileID: 269606641}
   generateStory: 1
   enableVoice: 0
-  enableYeti: 0
+  enableYeti: 1
 --- !u!1001 &1032051399
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -658,6 +659,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d0cf8f4797844c46887af199e580b1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animActor: 0
   anim: 0
 --- !u!1 &1374896419 stripped
 GameObject:

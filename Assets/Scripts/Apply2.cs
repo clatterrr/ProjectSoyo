@@ -214,8 +214,8 @@ public class Apply2 : MonoBehaviour
     {
         string prefab_name = "IronGolemPeaShooter";
 
-        GameObject sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/iron_golem.prefab");
-        Texture2D sourceTexture = LoadTexture("Assets/iron_golem.png");
+        GameObject sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/zombie.prefab");
+        Texture2D sourceTexture = LoadTexture("Assets/dragon.png");
         if (enableRandomModel)
         {
             generatedAnimal = HumanoidGenerator.CreateHumaoid(prefab_name, sourceModel, sourceTexture, true);
@@ -583,11 +583,12 @@ public class Apply2 : MonoBehaviour
         generatedAnimal.SetActive(true);
 
         build_time = build_times[build_times_index++];
-        cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-3, 3, -3), new Vector3(3, 3, -3), emptyObject2, new Vector3(0, 0, 0)));
+        cameras.Add(addCameraMove(activeCount, activeCount + build_time, new Vector3(-3, 1, -3), new Vector3(3, 1, -3), emptyObject2, new Vector3(0, 0, 0)));
         activeCount += build_time;
     }
 
     public bool checkScene = false;
+    public bool fastCheckScene = false;
     private int FrameCount = 0;
     private int CheckAudioCount = 0;
     private bool CheckAudio = false;
@@ -671,7 +672,7 @@ public class Apply2 : MonoBehaviour
         }
 
         FrameCount++;
-        if(FrameCount > activeCount + 5 && checkScene)
+        if((FrameCount > activeCount + 5 && checkScene) || fastCheckScene)
         {
             SceneManager.LoadScene("ShowTime");
         }

@@ -180,7 +180,11 @@ public class Structure
         }
     }
 
+    public static CameraSetting addCameraMove(int frameStart, int frameEnd, Vector3 pos,  GameObject lookat, Vector3 lookatOffset)
+    {
 
+        return new CameraSetting(frameStart, frameEnd, pos, pos, lookat, lookatOffset);
+    }
 
     public static CameraSetting addCameraMove(int frameStart, int frameEnd,  Vector3 pos, Vector3 pos2, GameObject lookat, Vector3 lookatOffset)
     {
@@ -424,7 +428,7 @@ public class Structure
     public static void RecursiveFindAndModify(string targetName, Transform current, Quaternion rotation, bool local)
     {
         // 检查当前Transform的名称是否是我们要找的
-        if (current.name == targetName)
+        if (current.name.ToLower().Contains(targetName.ToLower()))
         {
             if (!local)
             {
@@ -1168,8 +1172,9 @@ public class Structure
             while (true)
             {
                 float dis = (float)((circlex + 1.5) * (circlex + 1.5) + (pDis + 0.5) * (pDis + 0.5));
-                if (dis < radius * radius) { circlex += 1; };
-            else
+                if (dis < radius * radius) { circlex += 1; }
+
+                else
                 {
                     Vector3 basePos = new Vector3((circlex + 1 + startX) * 0.05f, 0f, 0f);
                     Vector3 baseSize = new Vector3((circlex + 1 - startX) * 0.1f, 0.1f, 0.1f);

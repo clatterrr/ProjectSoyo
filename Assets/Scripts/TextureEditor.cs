@@ -129,8 +129,22 @@ public class TextureEditor
         return material;
     }
 
+    public static Material ColorfulMat(Uint3 size, Color color)
+    {
+        Material material = new Material(Shader.Find("Standard"));
+        Texture2D texture = new Texture2D((int)(size.x * 2 + size.z * 2), (int)(size.y + size.z));
+        for (int i = 0; i < texture.width; i++)
+            for (int j = 0; j < texture.height; j++)
+                texture.SetPixel(i, j, color);
+
+        texture.Apply();
+        texture.filterMode = FilterMode.Point;
+        material.mainTexture = texture;
+        return material;
+    }
+
     public static Material ExpectMaterial(Texture2D sourceTexture, GameObject sourceModel, 
-        HumanoidGenerator.ShapeName bodyPartName, Uint3 size)
+        HumanoidGenerator.ShapeName bodyPartName, HumanoidGenerator.ShapeMaterialName matName, Uint3 size)
     {
 
 
@@ -140,20 +154,16 @@ public class TextureEditor
         texture.filterMode = FilterMode.Point;
 
         string bodyPartNameString = "";
-        switch (bodyPartName)
+        switch (matName)
         {
-            case HumanoidGenerator.ShapeName.Body: bodyPartNameString = "body"; break;
-            case HumanoidGenerator.ShapeName.Head: bodyPartNameString = "head"; break;
-            case HumanoidGenerator.ShapeName.LeftArm: bodyPartNameString = "left_arm"; break;
-            case HumanoidGenerator.ShapeName.RightArm: bodyPartNameString = "right_arm"; break;
-            case HumanoidGenerator.ShapeName.LeftLeg: bodyPartNameString = "left_leg"; break;
-            case HumanoidGenerator.ShapeName.RightLeg: bodyPartNameString = "right_leg"; break;
-            case HumanoidGenerator.ShapeName.LeftEye:
-            case HumanoidGenerator.ShapeName.P_LeftEye:
-            case HumanoidGenerator.ShapeName.P_RightEye:
-            case HumanoidGenerator.ShapeName.PH_LeftEye:
-            case HumanoidGenerator.ShapeName.PH_RightEye:
-            case HumanoidGenerator.ShapeName.RightEye: return SpecialEyeMat(size); break;
+            case HumanoidGenerator.ShapeMaterialName.Body: bodyPartNameString = "body"; break;
+            case HumanoidGenerator.ShapeMaterialName.Head: bodyPartNameString = "head"; break;
+            case HumanoidGenerator.ShapeMaterialName.LeftArm: bodyPartNameString = "left_arm"; break;
+            case HumanoidGenerator.ShapeMaterialName.RightArm: bodyPartNameString = "right_arm"; break;
+            case HumanoidGenerator.ShapeMaterialName.LeftLeg: bodyPartNameString = "left_leg"; break;
+            case HumanoidGenerator.ShapeMaterialName.RightLeg: bodyPartNameString = "right_leg"; break;
+            case HumanoidGenerator.ShapeMaterialName.Eye:return SpecialEyeMat(size);
+            case HumanoidGenerator.ShapeMaterialName.Black: return ColorfulMat(size, Color.black);
             default: bodyPartNameString = "body"; break;
         }
 
