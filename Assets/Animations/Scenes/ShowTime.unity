@@ -545,8 +545,8 @@ MonoBehaviour:
   hand: {fileID: 237802089}
   theEnemy: {fileID: 269606641}
   generateStory: 1
-  enableVoice: 0
-  enableYeti: 1
+  enableVoice: 1
+  enableYeti: 0
 --- !u!1001 &1032051399
 PrefabInstance:
   m_ObjectHideFlags: 0

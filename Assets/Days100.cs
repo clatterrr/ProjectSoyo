@@ -180,6 +180,7 @@ public class Days100: MonoBehaviour
         Build_Bed,
     }
 
+    // 规定所有的物体移动和摄像机，随机旋转
     struct PreSceneToScene
     {
         public PreScene psc;
@@ -203,13 +204,23 @@ public class Days100: MonoBehaviour
         HeroTalkFriendInCage
     }
 
+    struct CameraSettings
+    {
+        int startFrame;
+        int endFrame;
+        GameObject follow;
+        Vector3 followOffset0;
+        Vector3 followOffset1;
+        GameObject lookat;
+    }
+
+    // follow empty and look some one
+
+    // camera 中才去设置 CameraFollower 的位置
     enum CA
     {
-        Idle, // look someone
-        IdleRotationZ,
-        ACtor0LookingActor1,
-        Main,
-        LookingMeRotate45,
+        LookBehind,
+        StaticAtStart,
         
     }
 
@@ -253,8 +264,7 @@ public class Days100: MonoBehaviour
 
         public CH ch0;
         public AC ac0;
-        public SP sp00;
-        public SP sp01;
+        public List<SP> sps;
     }
 
     struct PS
@@ -266,6 +276,7 @@ public class Days100: MonoBehaviour
         public CA ca;
         public List<FA> fas;
         public List<string> contents;
+        public bool showHand;
 
 
         public PS(string link, PreScene sc, List<string> contents)
@@ -273,9 +284,10 @@ public class Days100: MonoBehaviour
             this.link = link;
             this.sc = SC.None;
             this.psc = sc;
-            this.ca = CA.Idle;
+            this.ca = CA.StaticAtStart;
             this.fas = new List<FA>();
             this.contents = contents;
+            showHand = false;
         }
     }
 
@@ -284,10 +296,12 @@ public class Days100: MonoBehaviour
 
     enum ActorType
     {
-        Hand,
         Player,
         Friend,
         Enemy,
+
+        CameraFollow,
+        CameraLookat,
     }
 
 

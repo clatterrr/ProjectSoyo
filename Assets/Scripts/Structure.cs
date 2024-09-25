@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
+using Random = UnityEngine.Random;
 
 public class Structure
 {
@@ -23,6 +24,7 @@ public class Structure
         public static string featureDesc;
         public static string featurePart;
         public static List<int> indexToIndex;
+        public static int startIndex = 0;
     }
     public struct Uint2
     {
@@ -445,8 +447,14 @@ public class Structure
         // 递归遍历所有子物体
         foreach (Transform child in current)
         {
-            RecursiveFindAndModify(targetName, child, rotation, local);
+            RecursiveFindAndModify(targetName, child, rotation, local); 
         }
+    }
+
+    public static void RecursiveFindAndModifyScale(string targetName, Transform current, Vector3 scale)
+    {
+        if (current.name.ToLower().Contains(targetName.ToLower())) current.localScale = scale;
+        else foreach (Transform child in current) RecursiveFindAndModifyScale(targetName, child, scale);
     }
 
     public static float RecursiveFindAndLookat(string targetName, Transform current, Vector3 lookat)
@@ -1185,4 +1193,102 @@ public class Structure
         }
         return result;
     }
+
+    public enum ShuffleRuleOrder
+    {
+
+        MustPreOne,
+        MustPostOne,
+        Pre,
+        Post,
+    }
+    public struct ShuffleRule
+    {
+        public int index0;
+        public int index1;
+        public ShuffleRuleOrder order;
+
+        public ShuffleRule(int index0, int index1, ShuffleRuleOrder order)
+        {
+            this.index0 = index0;
+            this.index1 = index1;
+            this.order = order;
+        }
+
+        public bool Compare(List<int> tempList)
+        {
+            int index0Pos = -1;
+            int index1Pos = -1;
+            for (int w = 0; w < tempList.Count; w++)
+            {
+                if (tempList[w] == index0) index0Pos = w;
+                if (tempList[w] == index1) index1Pos = w;
+            }
+            if (index0Pos == -1 || index1Pos == -1) return true;
+            switch (order)
+            {
+                case ShuffleRuleOrder.Pre: return index0Pos < index1Pos;
+                case ShuffleRuleOrder.Post: return index0Pos > index1Pos;
+                case ShuffleRuleOrder.MustPreOne: return index0Pos == index1Pos - 1;
+                case ShuffleRuleOrder.MustPostOne: return index0Pos == index1Pos + 1;
+            }
+            return false;
+        }
+    }
+
+    public static List<int> ShuffleTheList(int listCount, List<ShuffleRule> rules)
+    {
+        List<int> list = new List<int>();
+        for (int i = 0; i < listCount; i++) list.Add(i);
+
+        for (int i = 0; i < list.Count; i++)
+        {
+            // while(true)
+            for (int j = 0; j < list.Count; j++)
+            {
+                int rindex = Random.Range(0, list.Count);
+                List<int> tempList = list;
+                tempList[rindex] = i;
+                tempList[i] = rindex;
+
+                bool MatchRules = true;
+
+                for (int k = 0; k < rules.Count; k++)
+                {
+                    if (!rules[k].Compare(tempList))
+                    {
+                        MatchRules = false;
+                        break;
+                    }
+                }
+                if (MatchRules)
+                {
+                    list = tempList;
+                    break;
+                }
+            }
+        }
+        return list;
+
+    }
+    // TODO DEBUG SPHERE LENGHT
+    // TODO REVERSE GET FRAME WORK
+    // TODO GENERATE MESH
+    // TODO MORE SHOW PLANTS
+    // TODO MORE CURVE FOR STEM
+    // TODO MORE WIDTH FOR ROOT LEAVES
+    // TODO IDLE ANIAMTION FOR PLANTS
+    public static T RandomList<T>(List<T> list)
+    {
+        if (list == null || list.Count == 0)
+        {
+            Debug.LogError("The list is either null or empty.");
+            return default;
+        }
+
+        // 使用Random.Range随机选择一个索引
+        int randomIndex = Random.Range(0, list.Count);
+        return list[randomIndex];
+    }
+
 }

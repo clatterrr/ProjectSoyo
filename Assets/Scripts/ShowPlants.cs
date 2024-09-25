@@ -207,8 +207,9 @@ public class ShowPlants : MonoBehaviour
             int index = int.Parse(current.name.Replace("cube_", ""));
             string indexStr = DataTransfer.indexToIndex[index].ToString();
             string texturePath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".png";
-            string meshPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".mesh";
-            Material material = new(Shader.Find("Standard"));
+            string meshPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".mesh"; 
+            string materialPath = "Assets/Temp/" + DataTransfer.prefabName + "_" + indexStr + ".mat";
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
             Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
 
 
@@ -310,6 +311,7 @@ public class ShowPlants : MonoBehaviour
 
     void Start()
     {
+
         emptyObject = new GameObject("MyEmptyObject");
         emptyObject.transform.position = new Vector3(0, 0, 0);
         emptyObject.AddComponent<AnimationSystem>();
@@ -322,10 +324,10 @@ public class ShowPlants : MonoBehaviour
         SubReplacer replacer = new SubReplacer(DataTransfer.prefabName, env_string, "husk", "air bubbles", "nine", DataTransfer.featureDesc, DataTransfer.featurePart);
 
         // todo: Edit Scene Order
-        //  List<MSC> subEnum = new List<MSC>() { MSC.ENV, MSC.LookAtNow, MSC.Nice, MSC.Animation, MSC.Attack_Summary,
+        //  List<MSC> subEnum = new List<MSC>() { MSC.HandWalkTowardsMob, MSC.LookAtNow, MSC.Nice, MSC.Animation, MSC.Attack_Summary,
         //   MSC.LetPutAMob, MSC.EnemyStrongGetClose, MSC.MobStartFight, MSC.EnemyStartHurt, MSC.MobStartFight, MSC.EnemyDead, MSC.MobProtectMe, MSC.Grade };
-        // List<MSC> subEnum = new List<MSC>() { MSC.ENV, MSC.Nice, MSC.Animation, MSC.Attack_Summary, MSC.LetPutAMob, MSC.MobStartFight, MSC.EnemyDead};
-        List<MSC> subEnum = new List<MSC>() { MSC.Talk };
+         List<MSC> subEnum = new List<MSC>() { MSC.PreEnv, MSC.Nice, MSC.Animation, MSC.Attack_Summary, MSC.LetPutAMob, MSC.MobStartFight, MSC.EnemyDead, MSC.Grade};
+       // List<MSC> subEnum = new List<MSC>() { MSC.PreEnv };
         List<MPS> possibleSubtitles = Prepare();
         List<MPS> subtitles = new List<MPS>();
         for (int i = 0; i < subEnum.Count; i++)
@@ -389,25 +391,72 @@ public class ShowPlants : MonoBehaviour
             MFA faenemy = new MFA(MCH.Enemy);
             MFA fame = new MFA(MCH.I);
 
-            // pre scene includes multiple possible settings, select one
+            //todo: pre scene to scene
             switch (sub.sc)
             {
                 case MSC.PreEnv:
                     {
-                       sub.sc = MSC.ENV;
-                       break;
+                       sub.sc = RandomList(new List<MSC>() { MSC.HandWalkTowardsMob, MSC.HandRotateAroundMob, MSC.EmptyRotateAroundMob, MSC.LookAheadMob });
+                       
+                        break;
+                    }
+                case MSC.Nice:
+                    {
+                        sub.sc = RandomList(new List<MSC>() { MSC.HandWalkTowardsMob, MSC.HandRotateAroundMob, MSC.EmptyRotateAroundMob, MSC.LookAheadMob });
+                        break;
+                    }
+                case MSC.Animation:
+                    {
+                        sub.sc = RandomList(new List<MSC>() { MSC.HandWalkTowardsMob, MSC.HandRotateAroundMob, MSC.EmptyRotateAroundMob, MSC.LookAheadMob, MSC.LookAtNow });
+                        break;
+                    }
+                case MSC.Grade:
+                    {
+                        sub.sc = RandomList(new List<MSC>() { MSC.HandWalkTowardsMob, MSC.HandRotateAroundMob, MSC.EmptyRotateAroundMob, MSC.LookAheadMob, MSC.LookAtNow });
+                        break;
                     }
             }
 
             switch (sub.sc)
             {
-                case MSC.ENV:
+                case MSC.HandWalkTowardsMob:
                     {
-                        sub.sc = MSC.ENV;
+                        sub.sc = MSC.HandWalkTowardsMob;
                         famob.set(MAC.Idle, MSP.HabitatPlace);
                         fame.set(MAC.WalkInvisible, MSP.HabitatPlaceFar, MSP.HabitatPlaceClose);
                         sub.fa = new List<MFA>() { fame, famob };
                         sub.ca = MCA.HandFollowPlayer;
+                        break;
+                    }
+                case MSC.HandRotateAroundMob:
+                    {
+                        sub.sc = MSC.HandWalkTowardsMob;
+                        famob.set(MAC.Idle, MSP.HabitatPlace);
+                        fame.set(MAC.WalkInvisible, MSP.HabitatPlaceClose2, MSP.HabitatPlaceClose);
+                        sub.fa = new List<MFA>() { fame, famob };
+                        sub.ca = MCA.FollowHandLookMob;
+                        break;
+                    }
+                case MSC.EmptyRotateAroundMob:
+                    {
+                        sub.sc = MSC.HandWalkTowardsMob;
+                        famob.set(MAC.Idle, MSP.HabitatPlace);
+                        fame.set(MAC.Walk, MSP.HabitatPlaceClose2, MSP.HabitatPlaceClose);
+                        sub.fa = new List<MFA>() { fame, famob };
+                        sub.ca = MCA.FollowEmptyLookPlayer;
+                        sub.ShowHand = false;
+                        sub.CameraFollowEmpty = true;
+                        break;
+                    }
+                case MSC.LookAheadMob:
+                    {
+                        sub.sc = MSC.HandWalkTowardsMob;
+                        famob.set(MAC.Idle, MSP.HabitatPlace);
+                        fame.set(MAC.WalkInvisible, MSP.HabitatPlaceClose2, MSP.HabitatPlaceClose2);
+                        sub.fa = new List<MFA>() { fame, famob };
+                        sub.ca = MCA.FollowEmptyPlayerLookMob;
+                        sub.ShowHand = false;
+                        sub.CameraFollowEmpty = true;
                         break;
                     }
                 case MSC.LetPutAMob:
@@ -444,6 +493,15 @@ public class ShowPlants : MonoBehaviour
                         fame.set(MAC.Walk, MSP.WalkAround0, MSP.WalkAround1);
                         sub.fa = new List<MFA>() { fame };
                         sub.ca = MCA.LookAheadPlayer;
+                        break;
+
+                    }
+                case MSC.LookAtNow:
+                    {
+                        //https://youtu.be/h0mVRZJkPME?t=126
+                        fame.set(MAC.Walk, MSP.WalkAround0, MSP.WalkAround1);
+                        sub.fa = new List<MFA>() { fame };
+                        sub.ca = MCA.SelfLooking;
                         break;
 
                     }
@@ -488,7 +546,20 @@ public class ShowPlants : MonoBehaviour
                         actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
                         break;
                     }
-                case MCA.FollowEmptyPlayerLookMob:
+                case MCA.FollowHandLookForward:
+                    {
+                        handIsPlayer = true;
+                        MFA fa = GetMFA(MCH.I, sub.fa);
+                        Vector3 offset = (GetPos(fa.sp0) - GetPos(fa.sp1)).normalized * 2f + new Vector3(0, 2, 0);
+                        GameObject lookat = new GameObject("MyEmptyObject");
+                        lookat.transform.position = GetPos(fa.sp0) + (GetPos(fa.sp1) - GetPos(fa.sp0));
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, offset, offset, lookat, headOffset, emptyObject));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, emptyObject, true));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+                        break;
+                    }
+                case MCA.FollowHandLookMob:
                     {
                         handIsPlayer = true;
                         MFA fa = GetMFA(MCH.I, sub.fa);
@@ -497,6 +568,28 @@ public class ShowPlants : MonoBehaviour
                         actorSettings.Add(addActorMove(startFrame, endFrame, emptyObject, true));
                         actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
                         actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+                        break;
+                    }
+                case MCA.FollowEmptyLookPlayer:
+                    {
+                        handIsPlayer = false;
+                        MFA fa = GetMFA(MCH.I, sub.fa);
+                        Vector3 offset = (GetPos(fa.sp0) - GetPos(fa.sp1)).normalized * 2f + new Vector3(0, 2, 0);
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, offset, offset, player, headOffset, emptyObject));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, emptyObject, true));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, player, true));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
+                        break;
+                    }
+                case MCA.FollowEmptyPlayerLookMob:
+                    {
+                        handIsPlayer = true;
+                        MFA fa = GetMFA(MCH.I, sub.fa);
+                        Vector3 offset = (GetPos(fa.sp0) - GetPos(fa.sp1)).normalized * 2f + new Vector3(0, 2, 0);
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, offset, offset, theMob, headOffset, emptyObject));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, emptyObject, true));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, player, false));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, sub.ShowHand));
                         break;
                     }
                 case MCA.FollowEmptyPlayerLookEnemy:
@@ -555,8 +648,10 @@ public class ShowPlants : MonoBehaviour
                         // player from -z to z
                         float playerEyeHeight = 0f;
                         Vector3 offset = new Vector3(0, playerEyeHeight, 0) * 1.2f;
-                        cameraSettings.Add(addCameraMove(startFrame, endFrame, Vector3.zero, Vector3.zero, theMob, headOffset));
-                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, true));
+                        cameraSettings.Add(addCameraMove(startFrame, endFrame, new Vector3(0,3,6), new Vector3(0, 3, 3), player, headOffset));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, theMob, false));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, player, true));
+                        actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
 
                         break;
                     }
@@ -595,7 +690,9 @@ public class ShowPlants : MonoBehaviour
                         }
                     case MAC.Walk:
                         {
-                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Walk, GetPos(fa.sp0), GetPos(fa.sp1)));
+                            Vector3 offset = new Vector3(0, 0, 0);
+                            if (!handIsPlayer) offset = new Vector3(0, -0.5f, 0);
+                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Walk, GetPos(fa.sp0) + offset, GetPos(fa.sp1) + offset));
                             break;
                         }
                     case MAC.WalkInvisible:
@@ -645,6 +742,7 @@ public class ShowPlants : MonoBehaviour
         {
             case MSP.HabitatPlace: return new Vector3(-10, 0, -10);
             case MSP.HabitatPlaceClose: return new Vector3(-8, 0, -8);
+            case MSP.HabitatPlaceClose2: return new Vector3(-12, 0, -8);
             case MSP.HabitatPlaceFar: return new Vector3(2, 0, 2);
             case MSP.MobChaserStart: return new Vector3(2, 0, -10);
             case MSP.MobChaserEnd: return new Vector3(2, 0, 0);
@@ -752,12 +850,25 @@ public class ShowPlants : MonoBehaviour
         }
 
     }
-
+    enum CameraFocus
+    {
+        None,
+        Hero,
+        Enemy,
+    }
+    enum CameraFollow
+    {
+        None,
+        Hero,
+        Enemy,
+        EmptyHand,
+    }
     public enum MSC
     {
         PreEnv,
         None,
         ENV,
+        ENV2,
         LookAtNow,
         Nice,
         Animation,
@@ -775,6 +886,11 @@ public class ShowPlants : MonoBehaviour
         EnemyDead,
         MobProtectMe,
         Talk,
+
+        HandWalkTowardsMob,
+        HandRotateAroundMob,
+        EmptyRotateAroundMob,
+        LookAheadMob,
     }
 
     public enum MCA
@@ -782,11 +898,18 @@ public class ShowPlants : MonoBehaviour
         // abstract method
         PreHandFollowPlayer,
 
+        RotateAroundFocus_Hand,
+
         None,
         NoHand,
         RotateAround,
         Env_Hand,
         HandFollowPlayer,
+
+        FollowHandLookForward,
+        FollowHandLookMob,
+        FollowEmptyLookPlayer,
+
         HandFollowMob,
         HandAttack,
         EmptyLookingTwo,
@@ -873,6 +996,7 @@ public class ShowPlants : MonoBehaviour
     {
         public MCH ch;
         public MAC ac;
+        // todo : list<MSP>
         public MSP sp0;
         public MSP sp1;
 
@@ -914,6 +1038,7 @@ public class ShowPlants : MonoBehaviour
         HabitatPlace,
         HabitatPlaceFar,
         HabitatPlaceClose,
+        HabitatPlaceClose2,
         MobChaserStart,
         MobChaserEnd,
         PlayerChaseStart,
@@ -936,6 +1061,8 @@ public class ShowPlants : MonoBehaviour
         public MCA ca;
         public List<MFA> fa;
         public List<string> content;
+        public bool CameraFollowEmpty;
+        public bool ShowHand;
 
         public MPS(string link, MSC sc, MCA ca, MFA fa, string content)
         {
@@ -944,6 +1071,8 @@ public class ShowPlants : MonoBehaviour
             this.ca = ca;
             this.fa = new List<MFA>() { fa };
             this.content = new List<string>() { content };
+            CameraFollowEmpty = false;
+            ShowHand = false;
         }
 
         public MPS(string link, MSC sc, MCA ca, MFA fa0, MFA fa1, string content)
@@ -953,6 +1082,8 @@ public class ShowPlants : MonoBehaviour
             this.ca = ca;
             this.fa = new List<MFA>() { fa0, fa1, };
             this.content = new List<string>() { content };
+            CameraFollowEmpty = false;
+            ShowHand = false;
         }
 
         public MPS(string link, MSC sc, MCA ca, MFA fa, List<String> content)
@@ -962,6 +1093,8 @@ public class ShowPlants : MonoBehaviour
             this.ca = ca;
             this.fa = new List<MFA>() { fa };
             this.content = content;
+            CameraFollowEmpty = false;
+            ShowHand = false;
         }
 
         public MPS(string link, MSC sc, MCA ca, MFA fa0, MFA fa1, List<String> content)
@@ -971,6 +1104,8 @@ public class ShowPlants : MonoBehaviour
             this.ca = ca;
             this.fa = new List<MFA>() { fa0, fa1, };
             this.content = content;
+            CameraFollowEmpty = false;
+            ShowHand = false;
         }
         public void SelectOne(SubReplacer replacer)
         {
@@ -1063,7 +1198,7 @@ public class ShowPlants : MonoBehaviour
             "look let me tell you Halloween is also my favorite holiday like of all so yeah"),
             */
 
-        pres.Add(new MPS("", MSC.ENV, MCA.PreHandFollowPlayer, fame, famob,
+        pres.Add(new MPS("", MSC.PreEnv, MCA.PreHandFollowPlayer, fame, famob,
          new List<String>() { "anywhere in a _env we could find _name", "we've spotted some _env and that means we can find a _name",
              "if we sneak up to the _env we may be able to Feast Our Eyes Upon a wild baby _name",
              "we have _name all over the _env and it matched a lot because his  color matched a lot with the surroundings",
@@ -1102,7 +1237,7 @@ public class ShowPlants : MonoBehaviour
         famob.set(MAC.Idle, MSP.Flat);
         fame.set(MAC.WalkingAroundSub_r, MSP.Flat);
         pres.Add(new MPS("", MSC.Nice, MCA.HandFollowPlayer, fame, famob,
-            new List<String>() { " the models themselves turned out very good so I think they they deserve a grade _score ",
+            new List<String>() { " the models themselves turned out very good so I think they they deserve a grade 8 ",
                             "in this case she's quite small, because like she's small in the game",
                             "look at this she's a little bigger than just a block but turned out very good",
                               "for now the character will be nice anyway",
@@ -1189,10 +1324,6 @@ public class ShowPlants : MonoBehaviour
             //https://youtu.be/KYf70U6i6Ak?t=16
             "oh, wait, _enemy`s attacking _name",}));
 
-        // mob fight agian == mob start fight
-        pres.Add(new MPS("", MSC.Talk, MCA.FollowEmptyPlayerLookMob, fame, famob,
-    new List<String>() {
-            "_enemy is shot dead by our _name",}));
         pres.Add(new MPS("", MSC.EnemyDead, MCA.FollowEmptyPlayerLookMob, fame, famob,
             new List<String>() {
             "_enemy is shot dead by our _name",}));
@@ -1207,8 +1338,8 @@ public class ShowPlants : MonoBehaviour
         pres.Add(new MPS("", MSC.Grade, MCA.FollowEmptyPlayerLookMob, fame, famob,
             new List<String>() {
             "and we'll go to the next character. but before I want you guys to comment a grade for _name, " +
-                         "Below in my opinion definitely it's _score. out of 10 because he's very beautiful well",
-                           "but as I made more just for the sake of making I'll give a grade eight out of _score"}));
+                         "Below in my opinion definitely it's 8. out of 10 because he's very beautiful well",
+                           "but as I made more just for the sake of making I'll give a grade eight out of 8"}));
 
 
 

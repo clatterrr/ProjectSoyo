@@ -80,6 +80,7 @@ public class HumanoidGenerator : MonoBehaviour
         RightLeg,
         Eye,
         Black,
+        Green,
     }
 
     public enum FrameWork
@@ -462,6 +463,39 @@ public class HumanoidGenerator : MonoBehaviour
             return posSlice[select];
         }
     }
+
+    public struct AllMyShape
+    {
+        public List<ShapeName> names;
+        public List<ShuffleRule> orders;
+
+        public AllMyShape(int x)
+        {
+            this.names = new List<ShapeName>();
+            this.orders = new List<ShuffleRule>();
+        }
+
+        public void AddOrder(ShapeName name0, ShapeName name1, ShuffleRuleOrder order)
+        {
+            int index0 = -1;
+            int index1 = -1;
+            for(int i = 0; i < this.names.Count; i++)
+            {
+                if (names[i] == name0)index0 = i;
+                if (names[i] == name1) index1 = i;
+            }
+            if (index0 == -1 || index1 == -1) return;
+            orders.Add(new ShuffleRule(index0, index1, order));
+        }
+
+        public void Shuffle()
+        {
+            List<int> shuffled = ShuffleTheList(names.Count, orders);
+            List<ShapeName> names2 = new List<ShapeName>();
+            for (int i = 0; i < shuffled.Count; i++) names2.Add(names[shuffled[i]]);
+            names = names2;
+        }
+    }
     public static GameObject CreateHumaoid(string modelName, GameObject sourceModel, Texture2D sourceTexture, bool checkScene)
     {
         //https://news.4399.com/seer/zzph/
@@ -549,55 +583,23 @@ public class HumanoidGenerator : MonoBehaviour
         // List<ShapeName> bodyEnum = new List<ShapeName> { ShapeName.Tail, ShapeName.LeftArm, ShapeName.LeftLeg, ShapeName.LeftShoulder };
         List<ShapeName> headEnum = new List<ShapeName> { ShapeName.LeftEar, ShapeName.LeftEye };
         List<ShapeName> bodyEnum = new List<ShapeName> { ShapeName.Tail, ShapeName.LeftArm, ShapeName.LeftLeg, ShapeName.LeftShoulder };
-        ShuffleList(headEnum);
-        ShuffleList(bodyEnum);
 
-        int leftShoulderIndex = bodyEnum.IndexOf(ShapeName.LeftShoulder);
-        int leftArmIndex = bodyEnum.IndexOf(ShapeName.LeftArm);
-
-        if (leftShoulderIndex != -1 && leftArmIndex != -1 && leftShoulderIndex < leftArmIndex)
-        {
-            // 交换元素
-            bodyEnum[leftShoulderIndex] = ShapeName.LeftArm;
-            bodyEnum[leftArmIndex] = ShapeName.LeftShoulder;
-        }
-        int leftLegIndex = bodyEnum.IndexOf(ShapeName.LeftLeg);
-
-        // 如果找到了 LeftLeg，并且它不是最后一个元素
-        if (leftLegIndex != -1)
-        {
-            bodyEnum.Insert(leftLegIndex + 1, ShapeName.LeftToe);
-        }
-        else
-        {
-            bodyEnum.Add(ShapeName.LeftToe);
-        }
-
-
-
-        List<ShapeName> names = new List<ShapeName>() { ShapeName.Body, ShapeName.Head };
-        int r = Random.Range(0, 2);
-        if (r == 0)
-        {
-            for (int i = 0; i < headEnum.Count; i++) names.Add(headEnum[i]);
-            for (int i = 0; i < bodyEnum.Count; i++) names.Add(bodyEnum[i]);
-        }
-        else
-        {
-            for (int i = 0; i < bodyEnum.Count; i++) names.Add(bodyEnum[i]);
-            for (int i = 0; i < headEnum.Count; i++) names.Add(headEnum[i]);
-        }
 
         // todo : 组成身体的逻辑
-        // names = new List<ShapeName>() { ShapeName.Body };
-        names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShapeName.PH_Head,  ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue };
-       // names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head,  ShapeName.PH_LeftRootLeaf, ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue };
-       // names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_LeftRootLeaf,  ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf,  };
-        //names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShapeName.PH_Head, ShapeName.PH_BackLeaf,   ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_LeftEye };
-       // names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head, ShapeName.PH_LeftEye,  ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_BackLeaf, ShapeName.PH_LeftRootLeaf, };
-        for (int i = 0; i < names.Count; i++)
+        AllMyShape myShape = new AllMyShape(0);
+        myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShapeName.PH_Head,  ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue };
+        // myShape.AddOrder(ShapeName.PH_Stem, ShapeName.PH_Head, ShuffleRuleOrder.Pre);
+        // myShape.AddOrder(ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShuffleRuleOrder.Pre);
+        // myShape.AddOrder(ShapeName.PH_Mouth, ShapeName.PH_Lip, ShuffleRuleOrder.Pre);
+        // myShape.Shuffle();
+        // myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head,  ShapeName.PH_LeftRootLeaf, ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue };
+        // myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_LeftRootLeaf,  ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf,  };
+        //myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShapeName.PH_Head, ShapeName.PH_BackLeaf,   ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_LeftEye };
+        // myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head, ShapeName.PH_LeftEye,  ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_BackLeaf, ShapeName.PH_LeftRootLeaf, };
+        //myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head };
+        for (int i = 0; i < myShape.names.Count; i++)
         {
-            switch (names[i])
+            switch (myShape.names[i])
             {
                 case ShapeName.Body:
                     {
@@ -755,7 +757,8 @@ public class HumanoidGenerator : MonoBehaviour
                 case ShapeName.PH_Head:
                     {
                         // 2 x radius
-                        partSize = RandomSize(6, 8) * 2;
+                        partSize = RandomSize(7, 6) * 2;
+                        
                         bodySize = partSize;
                         ShapeDesc sd = new ShapeDesc(ShapeName.PH_Head, partSize, ShapeName.PH_Stem, FrameWork.TopCenter, FrameWork.BottomCenter);
                         sd.segmet = SpecialBuilds.SolidSphere;
@@ -790,7 +793,7 @@ public class HumanoidGenerator : MonoBehaviour
                     }
                 case ShapeName.PH_LeftRootLeaf:
                     {
-                        partSize = RandomSize(6, 10, 1, 3, 3, 5);
+                        partSize = RandomSize(6, 10, 1, 3, 6, 10);
                         ShapeDesc sd0 = new ShapeDesc(ShapeName.PH_LeftRootLeaf, partSize, ShapeName.PH_Stem, FrameWork.BottomeLeft, FrameWork.Right75);
                         ShapeDesc sd1 = new ShapeDesc(ShapeName.PH_RightRootLeaf, partSize, ShapeName.PH_Stem, FrameWork.BottomeRight, FrameWork.Left75);
                         sd0.segmet = SpecialBuilds.Curve;
@@ -814,6 +817,8 @@ public class HumanoidGenerator : MonoBehaviour
                         for (int k = 0; k < partSize.x; k++) { Debug.Log(" sd0 values2 = " + sd0.values2[k]); }
                         sd0.dir = ShapeDir.XP;
                         sd1.dir = ShapeDir.XP;
+                        sd0.materialName = ShapeMaterialName.Green;
+                        sd1.materialName = ShapeMaterialName.Green;
                         parts.Add(sd0);
                         parts.Add(sd1);
                         break;
@@ -1133,6 +1138,20 @@ public class HumanoidGenerator : MonoBehaviour
                         break;
 
                     }
+                    /*
+                case SpecialBuilds.MultipleHollow:
+                    {
+                        saveOnce = true;
+                        int radius = (int)(parts[i].size.x * 10 * 0.5);
+                        int basex = (int)(radius / Mathf.Sqrt(2) + 0.5f); // 5 -> 3.5 -> 4
+                        posSlice.Add(new Vector3(0, 0, 0));
+                        List<int> r2 = GetCircle(basex, radius);
+
+                        Reverse(posSlice, sizeSlice, rotateSlice);
+                        break;
+                    }
+                    */
+
                 case SpecialBuilds.Hollow:
                     {
 
@@ -1231,7 +1250,7 @@ public class HumanoidGenerator : MonoBehaviour
                     {
                         saveOnce = true;
 
-                        int radius = (int)(parts[i].size.x * 10 * 0.5);
+                        int radius = (int)(parts[i].size.x * 10 * 0.5 + 0.1);
                         int basex = (int)(radius / Mathf.Sqrt(2) - 0.5f); // 5 -> 3.5 -> 4
                         Debug.Log(" x = " + parts[i].size.x + " radius = " + radius + " basex = " + basex);
 
@@ -1427,7 +1446,6 @@ public class HumanoidGenerator : MonoBehaviour
 
 
             List<GameObject> actors = new List<GameObject>();
-            int startIndex = index;
             for (int j = 0; j < posSlice.Count; j++)
             {
                 GameObject actor = CreateCube();
@@ -1439,20 +1457,20 @@ public class HumanoidGenerator : MonoBehaviour
 
                 if (!saveOnce || (saveOnce && j == 0))
                 {
-
+                    string theIndex = DataTransfer.startIndex.ToString();
                     Material tempM = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, parts[i].materialName, size);
-                    SaveTextureToPNG((Texture2D)tempM.mainTexture, "Assets/Temp/" + modelName + "_" + index.ToString() + ".png");
-                    //AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mat");
-                    AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName + "_" + index.ToString() + ".mesh");
+                    SaveTextureToPNG((Texture2D)tempM.mainTexture, "Assets/Temp/" + modelName + "_" + theIndex + ".png");
+                    AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName + "_" + theIndex + ".mat");
+                    AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName + "_" + theIndex + ".mesh");
                 }
-
-                if (saveOnce) DataTransfer.indexToIndex.Add(startIndex);
-                else DataTransfer.indexToIndex.Add(index);
+                DataTransfer.indexToIndex.Add(DataTransfer.startIndex);
+                if (!saveOnce) { DataTransfer.startIndex++; }
 
                 actors.Add(actor);
                 index += 1;
             }
 
+            if (saveOnce) { DataTransfer.startIndex++; }
             if (isToe)
             {
                 for (int j = 0; j < parts.Count; j++)

@@ -212,7 +212,7 @@ public class Apply2 : MonoBehaviour
     }
     int[] GenerateComments()
     {
-        string prefab_name = "IronGolemPeaShooter";
+        string prefab_name = "DarkDragonPeaShooter";
 
         GameObject sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/zombie.prefab");
         Texture2D sourceTexture = LoadTexture("Assets/dragon.png");

@@ -164,6 +164,7 @@ public class TextureEditor
             case HumanoidGenerator.ShapeMaterialName.RightLeg: bodyPartNameString = "right_leg"; break;
             case HumanoidGenerator.ShapeMaterialName.Eye:return SpecialEyeMat(size);
             case HumanoidGenerator.ShapeMaterialName.Black: return ColorfulMat(size, Color.black);
+            case HumanoidGenerator.ShapeMaterialName.Green: return ColorfulMat(size, Color.green);
             default: bodyPartNameString = "body"; break;
         }
 

@@ -11,6 +11,7 @@ public class AnimationSystem : MonoBehaviour
     public enum Animation
     {
         Idle,
+        Idle2,
         Walk,
         Superise,
         Wait,
@@ -133,6 +134,11 @@ public class AnimationSystem : MonoBehaviour
                     SimpleAttackShoot();
                     break;
                 }
+            case Animation.Wait:
+                {
+                    SimpleIdleAnimation();
+                    break;
+                }
             default: break;
         }
 
@@ -238,13 +244,16 @@ public class AnimationSystem : MonoBehaviour
         if (frameCount < happyCycle)
         {
             float ration = frameCount / happyCycle;
-            transform.localScale = new Vector3(1, 400 * (1.1f - ration * 0.2f), 1) * baseScale.x;
+            Vector3 scale = new Vector3(1, (1.1f - ration * 0.2f), 1);
+
+            RecursiveFindAndModifyScale("all", gameObject.transform, scale);
         }
         else if (frameCount >= happyCycle && frameCount < happyCycle * 2)
         {
 
             float ration = (frameCount - happyCycle) / happyCycle;
-            transform.localScale = new Vector3(1, 400 * (0.9f + ration * 0.2f), 1) * baseScale.x;
+            Vector3 scale = new Vector3(1,  (0.9f + ration * 0.2f), 1) ;
+            RecursiveFindAndModifyScale("all", gameObject.transform, scale);
         }
         else if (frameCount >= happyCycle * 2)
         {
