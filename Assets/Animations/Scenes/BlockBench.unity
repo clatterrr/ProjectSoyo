@@ -445,8 +445,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableRandomModel: 1
-  enableVoice: 1
-  checkScene: 1
+  enableVoice: 0
+  checkScene: 0
   fastCheckScene: 0
 --- !u!4 &949920939
 Transform:

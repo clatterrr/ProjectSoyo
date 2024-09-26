@@ -1291,4 +1291,62 @@ public class Structure
         return list[randomIndex];
     }
 
+    public static List<int> GetCirlceFull(int baseX, int radius)
+    {
+        List<int> result = new List<int>();
+        for (int px = baseX; px < radius; px++)
+        {
+            int pz = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - (px + 0.5f) * (px + 0.5f)) + 0.5f);
+            result.Add(pz);
+        }
+        return result;
+    }
+
+    public struct CircleStruct
+    {
+        public int startPx;
+        public int contiPx;
+        public int length;
+        public CircleStruct(int startPx, int contiPx, int length)
+        {
+            this.startPx = startPx;
+            this.contiPx = contiPx;
+            this.length = length;
+        }
+    }
+
+    public static List<CircleStruct> GetCirlceFull2(int baseX, int radius)
+    {
+        List<CircleStruct> result = new List<CircleStruct>();
+        for (int px = baseX; px < radius; px++)
+        {
+            int pz = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - (px + 0.5f) * (px + 0.5f)) + 0.5f);
+            int startPx = px;
+            while (true)
+            {
+                int pzz = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - (px + 1.5f) * (px + 1.5f)) + 0.5f);
+                if (pz == pzz) px += 1;
+                else
+                {
+                    result.Add(new CircleStruct(startPx, px + 1 - startPx, pz));
+                    break;
+                }
+            }
+
+        }
+        return result;
+    }
+
+    public struct XZvalues
+    {
+        public float x;
+        public float z;
+        public XZvalues(float x, float z)
+        {
+            this.x = x;
+            this.z = z;
+        }
+
+    }
+
 }

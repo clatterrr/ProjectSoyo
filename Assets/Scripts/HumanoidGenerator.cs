@@ -8,7 +8,9 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Numerics;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -21,7 +23,9 @@ using static TextureEditor;
 using static UnityEditor.PlayerSettings;
 using static UnityEngine.GraphicsBuffer;
 using Color = UnityEngine.Color;
+using Quaternion = UnityEngine.Quaternion;
 using Random = UnityEngine.Random;
+using Vector3 = UnityEngine.Vector3;
 
 public class HumanoidGenerator : MonoBehaviour
 {
@@ -81,6 +85,7 @@ public class HumanoidGenerator : MonoBehaviour
         Eye,
         Black,
         Green,
+        Custom,
     }
 
     public enum FrameWork
@@ -322,7 +327,7 @@ public class HumanoidGenerator : MonoBehaviour
         Curve,
         Angle,
         RoundCirlceFourCirlce,
-        RoundCircle,
+        RoundSphere,
         HR_Body,
         Muscle,
     }
@@ -345,6 +350,7 @@ public class HumanoidGenerator : MonoBehaviour
         public Vector3 size;
         public ShapeName name;
         public ShapeMaterialName materialName;
+        public Color customColor;
         public int segment;
         public SpecialBuilds segmet;
         public int direction;
@@ -355,6 +361,7 @@ public class HumanoidGenerator : MonoBehaviour
         public ShapeDir dir;
         public List<float> values;
         public List<float> values2;
+        public List<XZvalues> xzvalues;
 
         public ShapeDesc(ShapeName shapeName, Vector3 size, ShapeName appendName, FrameWork appendWork, FrameWork myWork)
         {
@@ -382,6 +389,8 @@ public class HumanoidGenerator : MonoBehaviour
             values = new List<float>();
             values2 = new List<float>();
             materialName = ShapeMaterialName.Body;
+            customColor = Color.black;
+            xzvalues = new List<XZvalues>();
         }
 
         public void SetActors(List<GameObject> actors)
@@ -587,16 +596,17 @@ public class HumanoidGenerator : MonoBehaviour
 
         // todo : 组成身体的逻辑
         AllMyShape myShape = new AllMyShape(0);
-        myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShapeName.PH_Head,  ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue };
-        // myShape.AddOrder(ShapeName.PH_Stem, ShapeName.PH_Head, ShuffleRuleOrder.Pre);
-        // myShape.AddOrder(ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShuffleRuleOrder.Pre);
-        // myShape.AddOrder(ShapeName.PH_Mouth, ShapeName.PH_Lip, ShuffleRuleOrder.Pre);
-        // myShape.Shuffle();
-        // myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head,  ShapeName.PH_LeftRootLeaf, ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue };
-        // myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_LeftRootLeaf,  ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf,  };
-        //myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShapeName.PH_Head, ShapeName.PH_BackLeaf,   ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_LeftEye };
-        // myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head, ShapeName.PH_LeftEye,  ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_BackLeaf, ShapeName.PH_LeftRootLeaf, };
-        //myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head };
+        myShape.names = new List<ShapeName>() {  ShapeName.PH_Head };
+       // myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShapeName.PH_Head,  ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue };
+       // myShape.AddOrder(ShapeName.PH_Stem, ShapeName.PH_Head, ShuffleRuleOrder.Pre);
+       // myShape.AddOrder(ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShuffleRuleOrder.Pre);
+       // myShape.AddOrder(ShapeName.PH_Mouth, ShapeName.PH_Lip, ShuffleRuleOrder.Pre);
+       // myShape.Shuffle();
+       // myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head,  ShapeName.PH_LeftRootLeaf, ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue };
+       // myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head, ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_LeftRootLeaf,  ShapeName.PH_LeftEye, ShapeName.PH_BackLeaf,  };
+       //myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_LeftRootLeaf, ShapeName.PH_Head, ShapeName.PH_BackLeaf,   ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_LeftEye };
+       // myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head, ShapeName.PH_LeftEye,  ShapeName.PH_Mouth, ShapeName.PH_Lip, ShapeName.Tongue, ShapeName.PH_BackLeaf, ShapeName.PH_LeftRootLeaf, };
+       //myShape.names = new List<ShapeName>() { ShapeName.PH_Stem, ShapeName.PH_Head };
         for (int i = 0; i < myShape.names.Count; i++)
         {
             switch (myShape.names[i])
@@ -757,13 +767,14 @@ public class HumanoidGenerator : MonoBehaviour
                 case ShapeName.PH_Head:
                     {
                         // 2 x radius
-                        partSize = RandomSize(7, 6) * 2;
+                        partSize = RandomSize(4, 6) * 2;
                         
                         bodySize = partSize;
                         ShapeDesc sd = new ShapeDesc(ShapeName.PH_Head, partSize, ShapeName.PH_Stem, FrameWork.TopCenter, FrameWork.BottomCenter);
-                        sd.segmet = SpecialBuilds.SolidSphere;
-                        sd.segment = 1;
-                        sd.materialName = ShapeMaterialName.Head;
+                        sd.materialName = ShapeMaterialName.Custom;
+                        sd.segmet = SpecialBuilds.RoundSphere;
+                        sd.customColor = new Color(153 / 255.0f, 204 / 255.0f, 102 / 255.0f);
+                        sd.segment = 2;
                         parts.Add(sd);
                         break;
                     }
@@ -1048,29 +1059,37 @@ public class HumanoidGenerator : MonoBehaviour
                         }
                         break;
                     }
-                case SpecialBuilds.RoundCircle:
+                case SpecialBuilds.RoundSphere:
                     {
-                        /*
-                           
-                         / ---  \
-                         |      |
-                         \ --- /
-                         */
-                        //https://youtu.be/M2fBL0Z9aVw?t=720 怀疑用旋转的，还不如我用立方体的
-                        float radius = 0.1f;
-                        posSlice.Add(new Vector3(0, 0, 0));
-                        sizeSlice.Add(new Vector3(parts[i].size.x, parts[i].size.y, parts[i].size.z - radius - radius));
-                        posSlice.Add(new Vector3(0, 0, (parts[i].size.z + radius) / 2));
-                        sizeSlice.Add(new Vector3(parts[i].size.x - radius - radius, parts[i].size.y, radius));
-                        posSlice.Add(new Vector3(0, 0, -(parts[i].size.z + radius) / 2));
-                        sizeSlice.Add(new Vector3(parts[i].size.x - radius - radius, parts[i].size.y, radius));
-                        rotateSlice.AddRange(new Quaternion[] { Quaternion.identity, Quaternion.identity, Quaternion.identity, Quaternion.identity });
-
-                        Vector3 bp = new Vector3(parts[i].size.x / 2 - radius, 0, parts[i].size.z / 2 - radius);
-                        Vector3 bs = new Vector3(radius * 1.5f, parts[i].size.y, radius * 1.5f);
-                        posSlice.AddRange(new Vector3[] { new Vector3(bp.x, bp.y, bp.z), new Vector3(-bp.x, bp.y, bp.z), new Vector3(bp.x, bp.y, -bp.z), new Vector3(-bp.x, bp.y, -bp.z) });
-                        sizeSlice.AddRange(new Vector3[] { bs, bs, bs, bs });
-                        rotateSlice.AddRange(new Quaternion[] { Quaternion.Euler(0, 45, 0), Quaternion.Euler(0, 45, 0), Quaternion.Euler(0, 45, 0), Quaternion.Euler(0, 45, 0) });
+                        // parameters:
+                        // segments: radius
+                        saveOnce = true;
+                        int radius = (int)(parts[i].size.x * 10 + 0.1f);
+                        List<CircleStruct> circleLength = GetCirlceFull2(0, radius);
+                        float restLength = 1.0f;
+                        for (int xzi = 0; xzi < circleLength.Count; xzi++)
+                        {
+                            float currentRadius = circleLength[xzi].length; //list[xzi].z;
+                                if (Mathf.Abs(currentRadius) < 1e-3) break;
+                            if (xzi == circleLength.Count - 1) restLength = currentRadius;
+                            else restLength = currentRadius - circleLength[xzi + 1].length;
+                            restLength = Mathf.Max(restLength * 0.1f, 0.1f);
+                            float edgeLength = (float)(((currentRadius * 0.1f) + 0.05f) * 0.5176);
+                            if (edgeLength < 1e-3) break;
+                            for(int angleIndex = 0; angleIndex < 12; angleIndex++)
+                            {
+                                float angle = angleIndex * 30.0f;
+                                Quaternion rotation = Quaternion.Euler(0, angle, 0);
+                                Vector3 thePos = new Vector3(0, circleLength[xzi].contiPx * 0.05f + circleLength[xzi].startPx * 0.1f, currentRadius * 0.1f - 0.05f);
+                                thePos = rotation * thePos;
+                                posSlice.Add(thePos);
+                                sizeSlice.Add(new Vector3(edgeLength, circleLength[xzi].contiPx * 0.1f, restLength));
+                                rotateSlice.Add(rotation);
+                                posSlice.Add(new Vector3(thePos.x, -thePos.y, thePos.z));
+                                sizeSlice.Add(new Vector3(edgeLength, circleLength[xzi].contiPx * 0.1f, restLength));
+                                rotateSlice.Add(rotation);
+                            }
+                        }
                         break;
                     }
                 case SpecialBuilds.RoundCirlceFourCirlce:
@@ -1449,16 +1468,17 @@ public class HumanoidGenerator : MonoBehaviour
             for (int j = 0; j < posSlice.Count; j++)
             {
                 GameObject actor = CreateCube();
+                actor.transform.localRotation = rotateSlice[j];
                 actor.transform.localPosition = posSlice[j];
                 actor.transform.localScale = sizeSlice[j];
                 Uint3 size = new Uint3((uint)(sizeSlice[j].x * 10.0f), (uint)(sizeSlice[j].y * 10.0f), (uint)(Mathf.Abs(sizeSlice[j].z) * 10.0f));
                 actor.GetComponent<MeshFilter>().sharedMesh.SetUVs(0, ComputeUVs(size));
-                actor.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, parts[i].materialName, size);
+                actor.GetComponent<MeshRenderer>().material = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, parts[i].materialName, size, parts[i].customColor);
 
                 if (!saveOnce || (saveOnce && j == 0))
                 {
                     string theIndex = DataTransfer.startIndex.ToString();
-                    Material tempM = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, parts[i].materialName, size);
+                    Material tempM = ExpectMaterial(sourceTexture, sourceModel, parts[i].name, parts[i].materialName, size, parts[i].customColor);
                     SaveTextureToPNG((Texture2D)tempM.mainTexture, "Assets/Temp/" + modelName + "_" + theIndex + ".png");
                     AssetDatabase.CreateAsset(tempM, "Assets/Temp/" + modelName + "_" + theIndex + ".mat");
                     AssetDatabase.CreateAsset(actor.GetComponent<MeshFilter>().sharedMesh, "Assets/Temp/" + modelName + "_" + theIndex + ".mesh");
@@ -1516,8 +1536,6 @@ public class HumanoidGenerator : MonoBehaviour
                     actors[j].transform.position += target - now;
                 }
             }
-
-
 
             parts[i].SetActors(actors);
 

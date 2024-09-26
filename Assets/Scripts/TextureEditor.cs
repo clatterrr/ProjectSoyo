@@ -144,7 +144,7 @@ public class TextureEditor
     }
 
     public static Material ExpectMaterial(Texture2D sourceTexture, GameObject sourceModel, 
-        HumanoidGenerator.ShapeName bodyPartName, HumanoidGenerator.ShapeMaterialName matName, Uint3 size)
+        HumanoidGenerator.ShapeName bodyPartName, HumanoidGenerator.ShapeMaterialName matName, Uint3 size, Color color)
     {
 
 
@@ -165,6 +165,7 @@ public class TextureEditor
             case HumanoidGenerator.ShapeMaterialName.Eye:return SpecialEyeMat(size);
             case HumanoidGenerator.ShapeMaterialName.Black: return ColorfulMat(size, Color.black);
             case HumanoidGenerator.ShapeMaterialName.Green: return ColorfulMat(size, Color.green);
+            case HumanoidGenerator.ShapeMaterialName.Custom: return ColorfulMat(size, color);
             default: bodyPartNameString = "body"; break;
         }
 

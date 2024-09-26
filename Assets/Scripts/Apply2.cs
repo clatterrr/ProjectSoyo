@@ -43,7 +43,7 @@ public class Apply2 : MonoBehaviour
         public int strechMode;//0 center 1 edge
         public bool materialStartGray;
 
-        public ActivePart(string parentName, GameObject child, int activeStartFrame, int buildFrame, Vector3 size, int index)
+        public ActivePart(string parentName, GameObject child, int activeStartFrame, int buildFrame, int index)
         {
             this.name  = child.name;
             
@@ -51,7 +51,7 @@ public class Apply2 : MonoBehaviour
             this.parentName = parentName;
             this.index = index;
             this.buildFrame = buildFrame;
-            this.size = size;
+            this.size = child.transform.localScale ;
             pos = child.transform.localPosition;
             this.transform = child.transform;
             if(child.GetComponent<MeshRenderer>() != null)
@@ -508,9 +508,8 @@ public class Apply2 : MonoBehaviour
                         activeCount += build_time;
                     }
 
-                    Vector3 size = part.transform.GetChild(i).GetComponent<MeshRenderer>().bounds.size;
                     ActivePart ap = new ActivePart(part.transform.name,
-                    part.transform.GetChild(i).gameObject, activeCount - build_time, build_time, size, j);
+                    part.transform.GetChild(i).gameObject, activeCount - build_time, build_time, j);
                     if(subTypes[j] == SubtitleType.BaseColor) ap.materialStartGray = true;
                     activeParts.Add(ap);
                     GameObject emptyObject = new GameObject("MyEmptyObject");
