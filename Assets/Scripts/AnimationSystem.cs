@@ -8,7 +8,7 @@ using static UnityEditor.SceneView;
 
 public class AnimationSystem : MonoBehaviour
 {
-    public enum Animation
+    public enum theAnim
     {
         Idle,
         Idle2,
@@ -18,6 +18,12 @@ public class AnimationSystem : MonoBehaviour
         Happy,
         Dead,
         Attack_ShootPea,
+
+        //https://youtu.be/jCgRV9bRBt8?t=169
+        SelfTalk,
+
+        // Walk / Run
+        ChargeIn,
 
     }
 
@@ -31,8 +37,8 @@ public class AnimationSystem : MonoBehaviour
 
     public AnimationActor animActor;
 
-    public Animation anim;
-    public void SetAnimation(Animation anim)
+    public theAnim anim;
+    public void SetAnimation(theAnim anim)
     {
         this.anim = anim;
     }
@@ -119,24 +125,29 @@ public class AnimationSystem : MonoBehaviour
         frameCount++;
         switch (anim)
         {
-            case Animation.Walk:
+            case theAnim.Walk:
                 {
                     VoxelWalkAnimation();
                     break;
                 }
-            case Animation.Dead:
+            case theAnim.Dead:
                 {
                     SimpleDeadAnim();
                     break;
                 }
-            case Animation.Attack_ShootPea:
+            case theAnim.Attack_ShootPea:
                 {
                     SimpleAttackShoot();
                     break;
                 }
-            case Animation.Wait:
+            case theAnim.Wait:
                 {
                     SimpleIdleAnimation();
+                    break;
+                }
+            case theAnim.SelfTalk:
+                {
+                    VoxelNodTalkAnimation();
                     break;
                 }
             default: break;
@@ -232,11 +243,42 @@ public class AnimationSystem : MonoBehaviour
         }
     }
 
+    float targetDegree = 0.0f;
+    float startDegree = 0.0f;
     private void VoxelAttackAnimation()
     {
         
     }
 
+    private void VoxelTalkToSelfAnimation()
+    {
+        int cycle = 200;
+        //https://youtu.be/jCgRV9bRBt8?t=171
+        // ͷ
+        if (GlobalFrameCount % cycle == 0)
+        {
+            startDegree = targetDegree;
+            targetDegree = Random.Range(-30f, 30f);
+        }
+        float ratio = (GlobalFrameCount % cycle) / (cycle * 1.0f);
+        float currentDegree = Mathf.Lerp(startDegree, targetDegree, ratio);
+        RecursiveFindAndModify("head", gameObject.transform, Quaternion.Euler(0, currentDegree, 0), true);
+    }
+
+    private void VoxelNodTalkAnimation()
+    {
+        int cycle = 200;
+        //https://youtu.be/jCgRV9bRBt8?t=171
+        // ͷ
+        if (GlobalFrameCount % cycle == 0)
+        {
+            startDegree = targetDegree;
+            targetDegree = Random.Range(-30f, 30f);
+        }
+        float ratio = (GlobalFrameCount % cycle) / (cycle * 1.0f);
+        float currentDegree = Mathf.Lerp(startDegree, targetDegree, ratio);
+        RecursiveFindAndModify("head", gameObject.transform, Quaternion.Euler(0, 0, currentDegree), true);
+    }
     void SimpleIdleAnimation()
     {
         Vector3 baseScale = Vector3.zero;

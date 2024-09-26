@@ -10,6 +10,7 @@ using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static AnimationSystem;
 using static Structure;
 using static UnityEditor.SceneView;
 using Debug = UnityEngine.Debug;
@@ -195,7 +196,7 @@ public class ShowPlants : MonoBehaviour
         Vector3 pos = theMob.transform.position + new Vector3(Mathf.Cos(degree) * distance, 0, Mathf.Sin(degree) * distance);
 
         Vector3 playerPos = new Vector3(pos.x, 0.5f, pos.z);
-        actorSettings.Add(addActorMove(startFrame, endFrame, player, AnimationSystem.Animation.Wait, playerPos, playerPos, Quaternion.identity, Quaternion.identity));
+        actorSettings.Add(addActorMove(startFrame, endFrame, player, theAnim.Wait, playerPos, playerPos, Quaternion.identity, Quaternion.identity));
         actorSettings.Add(addActorMove(startFrame, endFrame, hand, false));
         CameraCloseLookMovement(startFrame, endFrame, player);
     }
@@ -369,7 +370,7 @@ public class ShowPlants : MonoBehaviour
         // ��һ��SimpleAnimation
         //
         theMob.AddComponent<AnimationSystem>();
-        theMob.GetComponent<AnimationSystem>().animActor = AnimationSystem.AnimationActor.Plants;
+        theMob.GetComponent<AnimationSystem>().animActor = AnimationActor.Plants;
         //LoadAnimation("D:\\GameDe\\GLTFmodl\\split_pea.animation.json");
 
         TraverseChildren(theMob.transform);
@@ -675,7 +676,7 @@ public class ShowPlants : MonoBehaviour
                 {
                     case MAC.Idle:
                         {
-                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Wait, GetPos(fa.sp0), GetPos(fa.sp1)));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, theAnim.Wait, GetPos(fa.sp0), GetPos(fa.sp1)));
                             break;
                         };
                     case MAC.LookingActor:
@@ -685,36 +686,36 @@ public class ShowPlants : MonoBehaviour
                         }
                     case MAC.Dead:
                         {
-                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Dead, GetPos(fa.sp0), GetPos(fa.sp1)));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, theAnim.Dead, GetPos(fa.sp0), GetPos(fa.sp1)));
                             break;
                         }
                     case MAC.Walk:
                         {
                             Vector3 offset = new Vector3(0, 0, 0);
                             if (!handIsPlayer) offset = new Vector3(0, -0.5f, 0);
-                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Walk, GetPos(fa.sp0) + offset, GetPos(fa.sp1) + offset));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, theAnim.Walk, GetPos(fa.sp0) + offset, GetPos(fa.sp1) + offset));
                             break;
                         }
                     case MAC.WalkInvisible:
                         {
-                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Walk, GetPos(fa.sp0), GetPos(fa.sp1)));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, theAnim.Walk, GetPos(fa.sp0), GetPos(fa.sp1)));
                             break;
                         }
                     case MAC.WalkingToMob:
                         {
-                            actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Walk, GetPos(fa.sp0), GetPos(fa.sp1)));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, theMob, theAnim.Walk, GetPos(fa.sp0), GetPos(fa.sp1)));
                             break;
                         }
                     case MAC.AttackEnemy:
                         {
-                            actorSettings.Add(addActorMove(startFrame, endFrame, theMob, AnimationSystem.Animation.Attack_ShootPea, GetPos(fa.sp0), GetPos(fa.sp1)));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, theMob, theAnim.Attack_ShootPea, GetPos(fa.sp0), GetPos(fa.sp1)));
                             break;
                         }
                     case MAC.WalkingAroundSub_r:
                         {
                             Vector3 pos0 = CirlcePos(5, -10) + theMob.transform.position;
                             Vector3 pos1 = CirlcePos(5, 10) + theMob.transform.position;
-                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, AnimationSystem.Animation.Walk, pos0, pos1));
+                            actorSettings.Add(addActorMove(startFrame, endFrame, mainActor, theAnim.Walk, pos0, pos1));
                             break;
                         }
                     default: { Debug.LogError(fa.ac.ToString() + " anim not implement"); break; }

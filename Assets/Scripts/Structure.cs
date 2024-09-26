@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using static AnimationSystem;
 using static UnityEditor.PlayerSettings;
 using Random = UnityEngine.Random;
 
@@ -226,7 +227,7 @@ public class Structure
     public struct AnimFrameKey
     {
         AnimPart animPart;
-        AnimationSystem.Animation anim; // 是否有动画从这帧开始
+        theAnim anim; // 是否有动画从这帧开始
         bool animStart; // 动画是开始还是结束 还有过渡呢，边跑步边受伤 动画结束后，是应该Idle 还是 转入下一个动画
         AnimObject animObject;
         public int frameStart;
@@ -237,33 +238,48 @@ public class Structure
         public Quaternion rotStart;
         public Quaternion rotEnd;
     }
+    public enum ActorType
+    {
+        Player,
+        Friend,
+        Enemy,
+
+        CameraFollow,
+        CameraLookat,
+
+        Stranger1,
+        Stranger2,
+        Camera,
+    }
     public struct ActorSettings
     {
         public int frameStart;
         public int frameEnd;
         public GameObject actor;
-        public AnimationSystem.Animation animation;
+        public theAnim animation;
         public Vector3 posStart;
         public Vector3 posEnd;
         public Quaternion rotationStart;
         public Quaternion rotationEnd;
         public GameObject lookat;
         public bool active;
+        public ActorType type;
         public ActorSettings(int frameStart, int frameEnd, GameObject actor, MinecraftFighter.Animation animation, Vector3 pos, Quaternion rotation, bool active, GameObject lookat)
         {
             this.frameStart = frameStart;
             this.frameEnd = frameEnd;
             this.actor = actor;
-            this.animation = AnimationSystem.Animation.Wait;
+            this.animation = theAnim.Wait;
             this.posStart = pos;
             this.posEnd = pos;
             this.rotationStart = rotation;
             this.rotationEnd = rotation;
             this.active = active;
             this.lookat = lookat;
+            type = ActorType.Player;
         }
 
-        public ActorSettings(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation, 
+        public ActorSettings(int frameStart, int frameEnd, GameObject actor, theAnim animation, 
             Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd, bool active, GameObject lookat)
         {
             this.frameStart = frameStart;
@@ -276,6 +292,7 @@ public class Structure
             this.rotationEnd = rotationEnd;
             this.active = active;
             this.lookat = lookat;
+            type    =ActorType.Player;
         }
 
         public bool Run(int frameCount)
@@ -323,25 +340,25 @@ public class Structure
         }
     }
 
-    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation,
+    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, theAnim animation,
             Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd)
     {
         return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, rotationStart, rotationEnd, true, null);
     }
 
-    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation,
+    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, theAnim animation,
         Vector3 posStart, Vector3 posEnd, bool active)
     {
         return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, Quaternion.identity, Quaternion.identity, active, null);
     }
 
-    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation,
+    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, theAnim animation,
         Vector3 posStart, Vector3 posEnd)
     {
         return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, Quaternion.identity, Quaternion.identity, true, null);
     }
 
-    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, AnimationSystem.Animation animation,
+    public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, theAnim animation,
     Vector3 posStart, Vector3 posEnd, GameObject lookat)
     {
         return new ActorSettings(frameStart, frameEnd, actor, animation, posStart, posEnd, Quaternion.identity, Quaternion.identity, true, lookat);
@@ -349,7 +366,7 @@ public class Structure
 
     public static ActorSettings addActorMove(int frameStart, int frameEnd, GameObject actor, bool active)
     {
-        return new ActorSettings(frameStart, frameEnd, actor, AnimationSystem.Animation.Wait, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity, active, null);
+        return new ActorSettings(frameStart, frameEnd, actor, theAnim.Wait, Vector3.zero, Vector3.zero, Quaternion.identity, Quaternion.identity, active, null);
     }
 
     public struct ObjectSettings

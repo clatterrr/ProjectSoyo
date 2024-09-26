@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
+using static AnimationSystem;
 using static Structure;
 public class Days100: MonoBehaviour
 {
@@ -98,7 +100,7 @@ public class Days100: MonoBehaviour
         }
     }
 
-    public static void init()
+    public void init2()
     {
         RandomScene scene0 = new RandomScene(1);
         scene0.add("came_out_pos0", Vector3.zero);
@@ -122,6 +124,8 @@ public class Days100: MonoBehaviour
 
     enum PreScene
     {
+        Test_Found,
+
         TalkRun,
         LookingActor,
         TalkHelp,
@@ -201,7 +205,8 @@ public class Days100: MonoBehaviour
     {
         None,
         HeroEntrance,
-        HeroTalkFriendInCage
+        HeroTalkFriendInCage,
+        EnemyEntrance,
     }
 
     struct CameraSettings
@@ -247,7 +252,8 @@ public class Days100: MonoBehaviour
     public enum SP
     {
         None,
-        HidenPlaace, // sometime not straight
+        HidenPlaace, // sometime not appear
+        PrePos,
         Cage, // head rotate large
         ChargeInStart,
         ChargeInEnd,
@@ -294,15 +300,7 @@ public class Days100: MonoBehaviour
     // 严格区分Enemy 和 I
     // 一句话中最多两个角色，
 
-    enum ActorType
-    {
-        Player,
-        Friend,
-        Enemy,
 
-        CameraFollow,
-        CameraLookat,
-    }
 
 
     private List<ActorSettings> actorSettings = new List<ActorSettings>();
@@ -312,11 +310,15 @@ public class Days100: MonoBehaviour
         public List<ActorType> types;
         public List<GameObject> actors;
         public List<bool> actives;
+        public List<Vector3> pos;
+        public List<theAnim> anim;
         public AllMyFellow(int count)
         {
             this.types = new List<ActorType>();
             this.actors = new List<GameObject>();
             this.actives = new List<bool>();
+            this.anim = new List<theAnim>();
+            this.pos = new List<Vector3>();
         }
 
         public void Add(ActorType type, string prefab_path)
@@ -333,6 +335,7 @@ public class Days100: MonoBehaviour
             {
                 if (types[i] == type)
                 {
+                    actives[i] = true;
                     return actors[i];
                 }
             }
@@ -346,12 +349,26 @@ public class Days100: MonoBehaviour
 
         public void SetFalse(int startFrame, int endFrame, List<ActorSettings> actorSettings)
         {
-            for (int i = 0; i < actives.Count; i++)
-            {
-                actorSettings.Add(addActorMove(startFrame, endFrame, actors[i], actives[i]));
-            }
+            for (int i = 0; i < actives.Count; i++) actorSettings.Add(addActorMove(startFrame, endFrame, actors[i], actives[i]));
         }
 
+
+        public void addMove(int frameStart, int frameEnd, ActorType actorType, theAnim animation, Vector3 pos)
+        {
+            //actorSettings.Add( new ActorSettings(frameStart, frameEnd, GetActor(actorType), animation, pos, pos, Quaternion.identity, Quaternion.identity, true, null));
+        }
+
+        public void setState(ActorType type, theAnim anim, Vector3 pos)
+        {
+            for (int i = 0; i < actors.Count; i++)
+            {
+                if (types[i] == type)
+                {
+                    this.anim[i] = anim;
+                    this.pos[i] = pos;
+                }
+            }
+        }
     }
 
     public Vector3 GetPos(SP sp)
@@ -359,19 +376,39 @@ public class Days100: MonoBehaviour
         return Vector3.zero;
     }
 
-    GameObject hero;
-    void Start()
+    public void SetHandActive(int frameStart, int frameEnd, bool active)
     {
 
-        AllMyFellow fellow = new AllMyFellow(0);
-        fellow.Add(ActorType.Friend, DataTransfer.messageToPass);
+    }
 
+    void fastMove(int startFrame, int endFrame, ActorType actor1 , theAnim anim, SP sp, ActorType actor2, AllMyFellow fellow)
+    {
+        actorSettings.Add(addActorMove(startFrame, endFrame, fellow.GetActor(actor1), theAnim.SelfTalk, GetPos(SP.Entrance), GetPos(SP.Entrance), fellow.GetActor(actor2)));
+    }
+
+    void fastMove2(int startFrame, int endFrame, ActorType actor1, theAnim anim, SP sp0, SP sp1, ActorType actor2)
+    {
+        actorSettings.Add(addActorMove(startFrame, endFrame, fellow.GetActor(actor1), anim, GetPos(sp0), GetPos(sp1), fellow.GetActor(actor2)));
+    }
+
+    AllMyFellow fellow = new AllMyFellow(0);
+    public GameObject hero;
+    void Start()
+    {
+        // GameObject 直接读取预制体
+
+       // fellow.Add(ActorType.Friend, DataTransfer.messageToPass);
+
+        
         List<PreSceneToScene> pscT = new List<PreSceneToScene>();
         pscT.Add(new PreSceneToScene(PreScene.Attack, new List<SC>() {SC.HeroEntrance }));
+        pscT.Add(new PreSceneToScene(PreScene.Test_Found, new List<SC>() { SC.HeroEntrance }));
+        
 
-        // generate comments
-
+        // pre scene 到 scene 的阶段，只规定摄像机要看谁，物体大致要做什么动作，不规定细节，细节靠随机
+        // todo : pre scene to scene
         List<PS> scenes = new List<PS>();
+       scenes.Add(new PS("", PreScene.Test_Found, new List<string>()));
         for(int scene_index = 0; scene_index < scenes.Count; scene_index++)
         {
             for(int i = 0; i < pscT.Count; i++)
@@ -393,7 +430,7 @@ public class Days100: MonoBehaviour
 
 
             // 给人物设置地点
-
+            
             fellow.SetAllActiveFalse();
             switch (scenes[scene_index].sc)
             {
@@ -402,22 +439,31 @@ public class Days100: MonoBehaviour
                     {
                         // idle 应该用PreScene
                         // 直接Idle 或者Walk 就行了
-                        //actorSettings.Add(new ActorSettings(0, 0, Plane, AnimationSystem.Animation.Idle, SP.Entrance,m))
+                        //actorSettings.Add(new ActorSettings(0, 0, Plane, theAnim.Idle, SP.Entrance,m))
                         // 位置是Idle, 但具体哪儿Idle 呢？ 要根据场景设置吗？但这个场景设置快变成摄像机设置了
-                        actorSettings.Add(addActorMove(0,0, hero, AnimationSystem.Animation.Idle, GetPos(SP.Entrance), GetPos(SP.Entrance), Camera.main));
+                        
+                        // 不需要False，不动就可以了。切场景的时候Clear 就行了
+                        actorSettings.Add(addActorMove(0,10, fellow.GetActor(ActorType.Player), theAnim.SelfTalk, GetPos(SP.Entrance), GetPos(SP.Entrance), Camera.main));
                         break;
                     }
+                case SC.EnemyEntrance:
+                    {
+                        SetHandActive(0, 10, false);
+                        // 这个时候默认不写 hero 的但是hero 仅仅是Idle，不active == false
+                        fastMove2(0,10, ActorType.Enemy, theAnim.ChargeIn, SP.ChargeInStart, SP.ChargeInEnd, ActorType.Camera);
+                           break;
+                    }
             }
-
+            //fellow.SetFalse(0, 0, actorSettings);
             // added good animation
 
-            for(int i = 0; i < 0; i++)
+            for (int i = 0; i < 0; i++)
             {
                 // Sort Anim
 
                 // for body anim
-                AnimationSystem.Animation currentAnim;
-                AnimationSystem.Animation nextAnim;
+                theAnim currentAnim;
+                theAnim nextAnim;
 
                 int startFrame = 0;
                 int endFrame = 0;
@@ -455,8 +501,26 @@ public class Days100: MonoBehaviour
                 // for head anim
 
             }
+            
 
-            fellow.SetFalse(0, 0, actorSettings);
+            //  
+        }
+    }
+
+    int globalFrameCount = 0;
+    private void FixedUpdate()
+    {
+        globalFrameCount += 1;
+        for (int i = 0; i < actorSettings.Count; i++)
+        {
+            ActorSettings set = actorSettings[i];
+            if (set.Run(globalFrameCount))
+            {
+                if(globalFrameCount == set.frameEnd)
+                {
+                    fellow.setState(set.type, set.animation, set.posEnd);
+                }
+            }
         }
     }
 
