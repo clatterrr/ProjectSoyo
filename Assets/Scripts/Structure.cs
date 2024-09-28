@@ -238,8 +238,12 @@ public class Structure
         public Quaternion rotStart;
         public Quaternion rotEnd;
     }
+
+    // Actor Type 可能是复数
     public enum ActorType
     {
+        None,
+
         Player,
         Friend,
         Enemy,
@@ -334,6 +338,38 @@ public class Structure
                 }
 
 
+                return true;
+            }
+            return false;
+        }
+
+        public bool RunWithHeight(int frameCount, Dictionary<Vector2Int, int> heights, ActorType type)
+        {
+            if (frameCount >= this.frameStart && frameCount < this.frameEnd)
+            {
+                if (actor.GetComponent<AnimationSystem>() != null)
+                {
+                    actor.GetComponent<AnimationSystem>().SetAnimation(animation);
+                    float ratio = (frameCount - this.frameStart) * 1.0f / (this.frameEnd - this.frameStart);
+                    Vector3 pos = Vector3.Lerp(posStart, posEnd, ratio);
+                    if(type == ActorType.CameraFollow || type == ActorType.CameraLookat) { }else
+                    pos.y = heights[new Vector2Int((int)(pos.x + 0.5f), (int)(pos.z + 0.5f))];
+                    // walk _customRoate
+                    if (lookat != null)
+                    {
+                        // 计算方向
+                        Vector3 direction = lookat.transform.position - actor.transform.position;
+                        direction.y = 0; 
+                        actor.GetComponent<AnimationSystem>().SetTransform(pos, Quaternion.LookRotation(direction));
+                    }
+                    else
+                    {
+
+                        Vector3 speed = posEnd - posStart;
+                        if (speed.magnitude < 0.01f) actor.GetComponent<AnimationSystem>().SetTransform(pos, Quaternion.identity);
+                        else actor.GetComponent<AnimationSystem>().SetTransform(pos, Quaternion.LookRotation(speed.normalized));
+                    }
+                }
                 return true;
             }
             return false;
@@ -720,6 +756,20 @@ public class Structure
         }
     }
 
+    public static void SetChildRotation(Transform parent, string targetName, Quaternion r, bool local)
+    {
+        if (parent.name == targetName)
+        {
+            if (local) parent.localRotation = r;
+            else parent.rotation = r;
+            return;
+        }
+        foreach (Transform child in parent)
+        {
+            SetChildRotation(child, targetName, r, local);
+        }
+    }
+
     public static void SetChildLocalPos(Transform parent, string targetName, Vector3 pos)
     {
         if (parent.name == targetName)
@@ -742,6 +792,43 @@ public class Structure
         foreach (Transform child in parent)
         {
             SetChildActive(child, targetName);
+        }
+    }
+
+
+    public static void SetChildHurt(Transform parent, bool hurt)
+    {
+        float rscale = 20;
+        if (parent.GetComponent<MeshRenderer>() != null)
+        {
+            Debug.Log(" hurt = " + hurt + " name = " + parent.name);
+            Texture2D originTexture = parent.GetComponent<MeshRenderer>().material.mainTexture as Texture2D;
+            if (originTexture != null) // 如果存在mainTexture
+            {
+                for (int x = 0; x < originTexture.width; x++)
+                {
+                    for (int y = 0; y < originTexture.height; y++)
+                    {
+                        Color pixelColor = originTexture.GetPixel(x, y);
+                        pixelColor.r = hurt ? Mathf.Clamp01(pixelColor.r + rscale) : Mathf.Clamp01(pixelColor.r - rscale); // 调整红色通道
+                        originTexture.SetPixel(x, y, pixelColor);
+                    }
+                }
+                originTexture.Apply();
+                parent.GetComponent<MeshRenderer>().material.mainTexture = originTexture;
+            }
+            else // 如果没有mainTexture
+            {
+                Material material = parent.GetComponent<MeshRenderer>().material;
+                Color materialColor = material.color;
+                materialColor.r = hurt ? Mathf.Clamp01(materialColor.r + rscale) : Mathf.Clamp01(materialColor.r - rscale); // 调整材质的红色通道
+                material.color = materialColor;
+            }
+            return;
+        }
+        foreach (Transform child in parent)
+        {
+            SetChildHurt(child, hurt);
         }
     }
 
@@ -1213,7 +1300,6 @@ public class Structure
 
     public enum ShuffleRuleOrder
     {
-
         MustPreOne,
         MustPostOne,
         Pre,

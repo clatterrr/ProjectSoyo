@@ -24,6 +24,13 @@ public class AnimationSystem : MonoBehaviour
 
         // Walk / Run
         ChargeIn,
+        Attack0, // One Hand
+        Attack1, // Two Hand
+        Attack2, // Jump
+        Hurt,
+
+        Chase,
+        RunAway,
 
     }
 
@@ -46,7 +53,7 @@ public class AnimationSystem : MonoBehaviour
     public void SetTransform(Vector3 t, Quaternion r)
     {
         transform.position = t;
-        transform.rotation = r;
+        SetChildRotation(transform, "All", r, false);
     }
     private string animationName = "";
 
@@ -110,8 +117,13 @@ public class AnimationSystem : MonoBehaviour
     }
 
     private GameObject pea_prefab;
+    private Texture2D originTexture;
+    private Texture2D hurtTexture;
     void Start()
     {
+        
+
+
         animActor = AnimationActor.Plants;
         string path = "Assets/Characters/Plants/Prefab/pea.prefab";
         pea_prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
@@ -119,6 +131,8 @@ public class AnimationSystem : MonoBehaviour
 
     // Update is called once per frame
     private int GlobalFrameCount = 0;
+
+
     void Update()
     {
         GlobalFrameCount++;
@@ -150,12 +164,38 @@ public class AnimationSystem : MonoBehaviour
                     VoxelNodTalkAnimation();
                     break;
                 }
+            case theAnim.Hurt:
+                {
+                    SimpleHurtAnimation();
+                    break;
+                }
+
+            case theAnim.Attack0:
+                {
+                    VoxelAttackAnimation();
+                    break;
+                }
             default: break;
         }
 
         //SimpleLookCamera();
        // VoxelWalkAnimation();
 
+    }
+
+    void SimpleHurtAnimation()
+    {
+        int hurtCycle = 200;
+        int localFrame = GlobalFrameCount % hurtCycle;
+        if(localFrame == 0)
+        {
+            SetChildHurt(transform, true);
+        }
+        else if (localFrame == hurtCycle / 2)
+        {
+
+            SetChildHurt(transform, false);
+        }
     }
 
     private int DeadCount = 0;
@@ -247,7 +287,18 @@ public class AnimationSystem : MonoBehaviour
     float startDegree = 0.0f;
     private void VoxelAttackAnimation()
     {
-        
+        int cycle = 200;
+        float handWaveRange = 60f;
+        //https://youtu.be/jCgRV9bRBt8?t=171
+        // ͷ
+        if (GlobalFrameCount % cycle == 0)
+        {
+            startDegree = targetDegree;
+            targetDegree = Random.Range(-handWaveRange, -handWaveRange*2);
+        }
+        float ratio = (GlobalFrameCount % cycle) / (cycle * 1.0f);
+        float currentDegree = Mathf.Lerp(startDegree, targetDegree, ratio);
+        RecursiveFindAndModify("left_arm", gameObject.transform, Quaternion.Euler(currentDegree, 0, 0), true);
     }
 
     private void VoxelTalkToSelfAnimation()

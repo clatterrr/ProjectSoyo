@@ -16,9 +16,10 @@ public class aaa : MonoBehaviour
             }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    /*
+ https://youtu.be/yqQuSPOua-0?t=21
+Days 1  EnemyChaseMe IRunAway IHavePower ICraftTools IamHungry IEatFarms VilagerStopMe VillagerTalkToMe ZombieAttackVillager IkillZombie VillagerSaveMe
+ 
+ 
+*/
 }

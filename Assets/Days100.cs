@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
@@ -141,6 +142,10 @@ public class Days100: MonoBehaviour
         EnemyChaseMe,
         Self_GrowUp,
 
+        Survival_IEatFarms,
+
+
+        Talk_FriendStopMe,
         Talk_EnemyThreaten,
         Talk_FriendsHappy,
         Talk_FriendThank,
@@ -166,6 +171,8 @@ public class Days100: MonoBehaviour
         Travel_FindTreasure,
         Travel_TakeTreasure,
         Travel_Search,
+        Travle_FindCaneAndMine,
+
 
         Fight_IRunaway,
         Fight_FriendHelp,
@@ -174,7 +181,7 @@ public class Days100: MonoBehaviour
         Fight_RunForTart,
         Fight_IWasHurt,
         Fight_Final,
-        Fight_EnemyChase,
+        Fight_EnemyChaseMe,
         Fight_DescribeEnemy,
         Fight_IThreatenBack,
         Fight_IBlockEnemy,
@@ -182,6 +189,10 @@ public class Days100: MonoBehaviour
 
         Build_FindWool,
         Build_Bed,
+        Build_CraftTools,
+        Build_House,
+        Build_LackOres,
+        
     }
 
     // 规定所有的物体移动和摄像机，随机旋转
@@ -207,6 +218,10 @@ public class Days100: MonoBehaviour
         HeroEntrance,
         HeroTalkFriendInCage,
         EnemyEntrance,
+        HeroFoundVillagersInDangerous,
+        OneTalkAnotherListen,
+        EnemyChaseFriendRun,
+        Attack,
     }
 
     struct CameraSettings
@@ -218,6 +233,33 @@ public class Days100: MonoBehaviour
         Vector3 followOffset1;
         GameObject lookat;
     }
+    public enum SP
+    {
+        None,
+        HidenPlaace, // sometime not appear
+        PrePos,
+        Cage, // head rotate large
+        ChargeInStart,
+        ChargeInEnd,
+        EnemyAttack,
+        EnemyDefend,
+        IAttack,
+        IDefend,
+        Entrance,
+
+        //https://youtu.be/jCgRV9bRBt8?t=341
+        WatchOverPlaceClose,
+        WatchOverPlaceFar,
+
+        TalkPlace0,
+        TalkPlace1,
+
+        RunAwayStart,
+        RunAwayEnd,
+        ChaseStart,
+        ChaseEnd,
+
+    }
 
     // follow empty and look some one
 
@@ -226,7 +268,12 @@ public class Days100: MonoBehaviour
     {
         LookBehind,
         StaticAtStart,
-        
+        //https://youtu.be/jCgRV9bRBt8?t=341
+        FollowCustomLookActorCloseToFar,
+        // follow 和 lookat 是同一个所以省略
+        FollowActorAhead,
+        LookAheadMainActor,
+
     }
 
     enum AC
@@ -249,20 +296,8 @@ public class Days100: MonoBehaviour
         I,
     }
 
-    public enum SP
-    {
-        None,
-        HidenPlaace, // sometime not appear
-        PrePos,
-        Cage, // head rotate large
-        ChargeInStart,
-        ChargeInEnd,
-        EnemyAttack,
-        EnemyDefend,
-        IAttack,
-        IDefend,
-        Entrance,
-    }
+
+
 
     // characters
     struct FA
@@ -295,6 +330,11 @@ public class Days100: MonoBehaviour
             this.contents = contents;
             showHand = false;
         }
+
+        public void SetCameraStory(List<CA> cas)
+        {
+            this.ca = RandomList(cas);
+        }
     }
 
     // 严格区分Enemy 和 I
@@ -305,12 +345,15 @@ public class Days100: MonoBehaviour
 
     private List<ActorSettings> actorSettings = new List<ActorSettings>();
     private List<CameraSetting> cameraSettings = new List<CameraSetting>();
+    private TerrianCreator terrainCreator;
     struct AllMyFellow
     {
         public List<ActorType> types;
         public List<GameObject> actors;
         public List<bool> actives;
         public List<Vector3> pos;
+        public List<SP> startSP;
+        public List<SP> endSP;
         public List<theAnim> anim;
         public AllMyFellow(int count)
         {
@@ -319,15 +362,32 @@ public class Days100: MonoBehaviour
             this.actives = new List<bool>();
             this.anim = new List<theAnim>();
             this.pos = new List<Vector3>();
+            this.startSP = new List<SP>();
+            this.endSP = new List<SP>();
         }
-
         public void Add(ActorType type, string prefab_path)
         {
-            GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path);
+            
+            if(type == ActorType.CameraFollow || type == ActorType.CameraLookat)
+            {
+                GameObject itsmygo = new GameObject(type.ToString());
+                itsmygo.AddComponent<AnimationSystem>();
+                actors.Add(itsmygo);
+            }
+            else
+            {
+                GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path);
+                actors.Add(Instantiate(selectedPrefab, new Vector3(0, 0, 0), Quaternion.identity));
+            }
+            
             actives.Add(false);
             types.Add(type);
-            actors.Add(Instantiate(selectedPrefab, new Vector3(0, 0, 0), Quaternion.identity));
+            anim.Add(theAnim.Wait);
+            pos.Add(Vector3.zero);
+            startSP.Add(SP.None);
+            endSP.Add(SP.None);
         }
+
 
         public GameObject GetActor(ActorType type)
         {
@@ -369,11 +429,33 @@ public class Days100: MonoBehaviour
                 }
             }
         }
+
+        public void setSP(ActorType type, SP sp0, SP sp1)
+        {
+            for (int i = 0; i < actors.Count; i++)
+            {
+                if (types[i] == type)
+                {
+                    this.startSP[i] = sp0;
+                    this.endSP[i] = sp1;
+                }
+            }
+        }
+
+        public List<SP> GetSP(ActorType type)
+        {
+            for (int i = 0; i < actors.Count; i++)
+            {
+                if (types[i] == type)return new List<SP>() { startSP[i], endSP[i] };
+            }
+            return new List<SP>() { SP.None, SP.None};
+        }
+
     }
 
-    public Vector3 GetPos(SP sp)
+    Vector3 GetPos(SP sp)
     {
-        return Vector3.zero;
+        return terrainCreator.CorretedHeights(sp);
     }
 
     public void SetHandActive(int frameStart, int frameEnd, bool active)
@@ -388,28 +470,232 @@ public class Days100: MonoBehaviour
 
     void fastMove2(int startFrame, int endFrame, ActorType actor1, theAnim anim, SP sp0, SP sp1, ActorType actor2)
     {
-        actorSettings.Add(addActorMove(startFrame, endFrame, fellow.GetActor(actor1), anim, GetPos(sp0), GetPos(sp1), fellow.GetActor(actor2)));
+        fellow.setSP(actor1, sp0, sp1);
+        actorSettings.Add(addActorMove(startFrame, endFrame, fellow.GetActor(actor1), anim, terrainCreator.GetSPPos(sp0), terrainCreator.GetSPPos(sp1), fellow.GetActor(actor2)));
     }
 
+    void fastMove2(int startFrame, int endFrame, ActorType actor1, theAnim anim, SP sp0, SP sp1)
+    {
+        actorSettings.Add(addActorMove(startFrame, endFrame, fellow.GetActor(actor1), anim, GetPos(sp0), GetPos(sp1), null));
+    }
+
+    void fastCamera(int startFrame, int endFrame, ActorType actor1, Vector3 pos0, Vector3 pos1)
+    {
+        ActorSettings newActor = addActorMove(startFrame, endFrame, fellow.GetActor(actor1), theAnim.Wait, pos0, pos1, null);
+        newActor.type = actor1;
+        actorSettings.Add(newActor);
+    }
+
+    // 每天有不同的事情
+
+    struct DaysSceneRatio
+    {
+        public PreScene prev;
+        public List<PreScene> addednexts;
+        public List<PreScene> nexts;
+        public DaysSceneRatio(PreScene prev, List<PreScene> nexts)
+        {
+            this.prev = prev;
+            addednexts = new List<PreScene>();
+            this.nexts = nexts;
+        }
+
+        public DaysSceneRatio(PreScene prev, List<PreScene> added, List<PreScene> nexts)
+        {
+            this.prev = prev;
+            this.addednexts = added;
+            this.nexts = nexts;
+        }
+
+        public List<PreScene> GetNext()
+        {
+            PreScene next = RandomList(this.nexts);
+            if (addednexts.Count == 0) return new List<PreScene> { next };
+            PreScene added = RandomList(this.addednexts);
+            int r = Random.Range(0, 2);
+            if(r == 0) return new List<PreScene> { next };
+            return new List<PreScene> { added,  next };
+        }
+    }
+
+    // consider status
+    enum BluePrint
+    {
+        FightWithBoss,
+        FightWithEnemy,
+        IGrowth,
+        ILackToolsAndCrafts,
+        ITravelToNewSpot_new,
+        IHungryAndHunting, // villager stops me 
+        FriendAppear,
+    }
+    enum StatusName
+    {
+        // 这个放pre scene 吗？很疑惑
+        // isTalkingToFriend + isEnemyAppear == EnemyAttackFriend and other house
+        // isTalkingToFriend + IDefeatEnemy == FriendThankMe
+        isTalkingToFriend, 
+        isHurt,
+        
+    }
+    enum SBool
+    {
+        T,
+        F,
+        N//不重要，维持原样
+    }
+    struct Status
+    {
+        public List<StatusName> names;
+        public List<SBool> sbools;
+
+        public Status(int x)
+        {
+            names = new List<StatusName>();
+            sbools = new List<SBool>();
+        }
+        public void AddOne(StatusName name, SBool sb)
+        {
+            names.Add(name);
+            sbools.Add(sb);
+        }
+        public void Clear()
+        {
+            names.Clear();
+            sbools.Clear();
+        }
+        public bool Match(Status status)
+        {
+            
+            for (int selfIndex = 0; selfIndex < names.Count; selfIndex++)
+            {
+                for(int otherIndex = 0;  otherIndex < status.names.Count; otherIndex++)
+                {
+                    if (this.names[selfIndex] == status.names[otherIndex])
+                    {
+                        if (this.sbools[selfIndex] == SBool.T && status.sbools[selfIndex] == SBool.T ||
+                            this.sbools[selfIndex] == SBool.F && status.sbools[selfIndex] == SBool.F)
+                        {
+
+                        }
+                        else { return false; }
+                    }
+                }
+            }
+            return true;
+        }
+        public Status Replace(Status status)
+        {
+            for (int selfIndex = 0; selfIndex < names.Count; selfIndex++)
+            {
+                for (int otherIndex = 0; otherIndex < status.names.Count; otherIndex++)
+                {
+                    if (this.names[selfIndex] == status.names[otherIndex])
+                    {
+                        if (status.sbools[selfIndex] != SBool.N) status.sbools[selfIndex] = this.sbools[otherIndex];
+                    }
+                }
+            }
+            return status;
+        }
+    }
+
+    struct BluePrintSelection
+    {
+        public BluePrint bluePrint;
+        public List<List<PreScene>> ppss;
+        // 必须满足的条件
+        public List<Status> MustMatchstatus;
+        // 将会强制改变的条件
+        public List<Status> OverrideStatus;
+
+        public List<PreScene> doneScens;
+
+        public BluePrintSelection(BluePrint baseprint)
+        {
+            bluePrint = baseprint;
+            MustMatchstatus = new List<Status>();
+            OverrideStatus = new List<Status>();
+            ppss = new List<List<PreScene>>();
+            doneScens = new List<PreScene> ();
+        }
+
+        public void AddSelection(List<PreScene> pss, Status statu0, Status statu1)
+        {
+            ppss.Add(pss);
+            OverrideStatus.Add(statu0);
+            MustMatchstatus.Add(statu1);
+        }
+
+        public Status RandomPreScene(Status currentStatus)
+        {
+            List<int> possibleIndex = new List<int>();
+            for(int i = 0; i < ppss.Count; i++) if (MustMatchstatus[i].Match(currentStatus)) possibleIndex.Add(i);
+            int sceneIndex = RandomList(possibleIndex);
+            doneScens =  ppss[sceneIndex];
+            return OverrideStatus[sceneIndex].Replace(currentStatus);
+
+        }
+    }
+
+
+
     AllMyFellow fellow = new AllMyFellow(0);
-    public GameObject hero;
+
+    List<BluePrintSelection> bluePrintSelections = new List<BluePrintSelection>();
+
+    private void addBP(BluePrint print)
+    {
+        bluePrintSelections.Add(new BluePrintSelection(print));
+    }
+
+    private void addBPDetail(List<PreScene> scene, Status matchStatus, Status overrideStatus)
+    {
+        BluePrintSelection bp = bluePrintSelections[bluePrintSelections.Count - 1];
+        bp.ppss.Add(scene); 
+        bp.MustMatchstatus.Add(matchStatus);
+        bp.OverrideStatus.Add(overrideStatus);
+        bluePrintSelections[bluePrintSelections.Count - 1] = bp;
+    }
+
+    private Status addBPDone(Status status)
+    {
+        return bluePrintSelections[bluePrintSelections.Count - 1].RandomPreScene(status);
+    }
     void Start()
     {
-        // GameObject 直接读取预制体
+        Status emptyStatus = new Status(0);
+        Status currentStatus = new Status(0);
 
-       // fellow.Add(ActorType.Friend, DataTransfer.messageToPass);
+        // real time blue print
+        addBP(BluePrint.FightWithBoss);
+        addBPDetail(new List<PreScene>() { PreScene.EnemyChaseMe, PreScene.Fight_IRunaway }, emptyStatus, emptyStatus);
+        addBPDetail(new List<PreScene>() { PreScene.EnemyChaseMe, PreScene.Fight_IWasHurt, PreScene.Fight_IRunaway }, emptyStatus, emptyStatus);
+        currentStatus = addBPDone(currentStatus);
+
+        // 现在有一大堆PreScene, PreScene 究竟是一句话比较好，还是多句话比较好？
+
+
+        // GameObject 直接读取预制体
+        terrainCreator = gameObject.GetComponent<TerrianCreator>();
+        fellow.Add(ActorType.Player, "Assets/zombie.prefab");
+        fellow.Add(ActorType.Friend, "Assets/zombie.prefab");
+        fellow.Add(ActorType.CameraFollow, "");
+        fellow.Add(ActorType.CameraLookat, "");
+
+        // 超级大纲，每天干什么
 
         
         List<PreSceneToScene> pscT = new List<PreSceneToScene>();
         pscT.Add(new PreSceneToScene(PreScene.Attack, new List<SC>() {SC.HeroEntrance }));
-        pscT.Add(new PreSceneToScene(PreScene.Test_Found, new List<SC>() { SC.HeroEntrance }));
+        pscT.Add(new PreSceneToScene(PreScene.Test_Found, new List<SC>() { SC.EnemyChaseFriendRun }));
         
 
         // pre scene 到 scene 的阶段，只规定摄像机要看谁，物体大致要做什么动作，不规定细节，细节靠随机
         // todo : pre scene to scene
         List<PS> scenes = new List<PS>();
-       scenes.Add(new PS("", PreScene.Test_Found, new List<string>()));
-        for(int scene_index = 0; scene_index < scenes.Count; scene_index++)
+        scenes.Add(new PS("", PreScene.Test_Found, new List<string>()));
+        for (int scene_index = 0; scene_index < scenes.Count; scene_index++)
         {
             for(int i = 0; i < pscT.Count; i++)
                 if(scenes[scene_index].psc == pscT[i].psc)
@@ -429,8 +715,13 @@ public class Days100: MonoBehaviour
                 }
 
 
+            //question: when to set main actor, set sub actor
             // 给人物设置地点
-            
+
+            ActorType mainActorType = ActorType.Player;
+            ActorType subActorType = ActorType.Friend;
+
+            // todo : swtich scene
             fellow.SetAllActiveFalse();
             switch (scenes[scene_index].sc)
             {
@@ -453,7 +744,79 @@ public class Days100: MonoBehaviour
                         fastMove2(0,10, ActorType.Enemy, theAnim.ChargeIn, SP.ChargeInStart, SP.ChargeInEnd, ActorType.Camera);
                            break;
                     }
+                case SC.HeroFoundVillagersInDangerous:
+                    {
+                        Debug.Log(" in dangerous ");
+                        PS ps = scenes[scene_index];
+                        ps.ca = RandomList(new List<CA>() { CA.FollowCustomLookActorCloseToFar });
+                        // 虽然摄像机是一直Follow And Lookat，但是也要设置Follow 和 Lookat的运动轨迹，这里应该是一个Random
+                        scenes[scene_index] = ps;
+
+                        SetHandActive(0, 10, false);
+
+                        // 这里的fast Move2 也要是个
+                        // 这个时候默认不写 hero 的但是hero 仅仅是Idle，不active == false
+                        fastMove2(0, 100, ActorType.Player, theAnim.Walk, SP.WatchOverPlaceFar, SP.WatchOverPlaceClose, ActorType.Camera);
+                        break;
+                    }
+                case SC.OneTalkAnotherListen: // 这个怎么循环呢？应该不用循环
+                    {
+                        PS ps = scenes[scene_index];
+                        ps.ca = RandomList(new List<CA>() { CA.LookAheadMainActor });
+                        // 虽然摄像机是一直Follow And Lookat，但是也要设置Follow 和 Lookat的运动轨迹，这里应该是一个Random
+                        scenes[scene_index] = ps;
+
+                        SetHandActive(0, 10, false);
+
+                        // 这里的fast Move2 也要是个
+                        // 这个时候默认不写 hero 的但是hero 仅仅是Idle，不active == false
+                        fastMove2(0, 100, mainActorType, theAnim.SelfTalk, SP.TalkPlace0, SP.TalkPlace0, subActorType);
+                        fastMove2(0, 100, subActorType, theAnim.Wait, SP.TalkPlace1, SP.TalkPlace1, mainActorType);
+                        break;
+                    }
+                case SC.Attack:
+                    {
+                        PS ps = scenes[scene_index];
+                        ps.ca = RandomList(new List<CA>() { CA.LookAheadMainActor });
+                        scenes[scene_index] = ps;
+                        SetHandActive(0, 10, false);
+                        fastMove2(0, 100, mainActorType, theAnim.Attack0, SP.TalkPlace0, SP.TalkPlace0, subActorType);
+                        fastMove2(0, 100, subActorType, theAnim.Hurt, SP.TalkPlace1, SP.TalkPlace1, mainActorType);
+                        break;
+                    }
+                case SC.EnemyChaseFriendRun:
+                    {
+                        PS ps = scenes[scene_index];
+                        ps.ca = RandomList(new List<CA>() { CA.LookAheadMainActor });
+                        scenes[scene_index] = ps;
+                        SetHandActive(0, 10, false);
+                        fastMove2(0, 100, mainActorType, theAnim.RunAway, SP.RunAwayStart, SP.RunAwayEnd);
+                        fastMove2(0, 100, subActorType, theAnim.Chase, SP.ChaseStart, SP.ChaseEnd, mainActorType);
+                        break;
+                    }
+                    //https://youtu.be/jCgRV9bRBt8?t=340
             }
+
+
+            //todo : camera settings
+            switch (scenes[scene_index].ca)
+            {
+                case CA.FollowCustomLookActorCloseToFar:
+                    {
+                        // 要做的，获取眼睛，手的位置
+                        List<SP> sps = fellow.GetSP(ActorType.Player);
+                        Vector3 playerForward = (GetPos(sps[1]) - GetPos(sps[0])).normalized;
+                        Vector3 startPos = GetPos(sps[0]) + playerForward * 2 + new Vector3(0, 2, 0);
+                        Vector3 endPos = GetPos(sps[1]) + playerForward * 10 + new Vector3(0, 8, 0);
+                        Debug.Log(" start pos = " + startPos + " end pos = " + endPos);
+                        fastCamera(0, 100, ActorType.CameraFollow, startPos, endPos);
+                        fastCamera(0, 100, ActorType.CameraLookat, GetPos(sps[0]), GetPos(sps[1]));
+
+                        break;
+
+                    }
+            }
+
             //fellow.SetFalse(0, 0, actorSettings);
             // added good animation
 
@@ -514,7 +877,7 @@ public class Days100: MonoBehaviour
         for (int i = 0; i < actorSettings.Count; i++)
         {
             ActorSettings set = actorSettings[i];
-            if (set.Run(globalFrameCount))
+            if (set.RunWithHeight(globalFrameCount, terrainCreator.GetHeights(), set.type))
             {
                 if(globalFrameCount == set.frameEnd)
                 {
@@ -522,6 +885,9 @@ public class Days100: MonoBehaviour
                 }
             }
         }
+        Camera.main.transform.position = fellow.GetActor(ActorType.CameraFollow).transform.position;
+        Camera.main.transform.LookAt(fellow.GetActor(ActorType.CameraLookat).transform.position);
+
     }
 
     static void Prepare()
@@ -684,6 +1050,7 @@ public class Days100: MonoBehaviour
           "_i used my teleportation abilities to sneak past _him and remain undetected",}),
 
 
+
             new PS("", PreScene.Talk_FriendEncourage, new List<string>(){
           "_theme assure _him that _he will be able to in time", "you have a long way to go but you are on your way"}),
 
@@ -758,11 +1125,13 @@ public class Days100: MonoBehaviour
             new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
           "_theme is real. we will it be saved",}),
 
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
+            // 你这个不得规定，主角是谁？在干啥？地点在哪儿？
+            // 要在这儿规定吗
+            new PS("", PreScene.Build_CraftTools, new List<string>(){
+          "i needed to upgrade my tools so i mined cobblestone",}),
 
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
+            new PS("", PreScene.Build_House, new List<string>(){
+          "i needed a home of my own",}),
 
             new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
           "_theme is real. we will it be saved",}),
@@ -796,3 +1165,4 @@ public class Days100: MonoBehaviour
         };
     }
 }
+
