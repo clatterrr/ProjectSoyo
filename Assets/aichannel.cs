@@ -105,6 +105,8 @@ public class aichannel : MonoBehaviour
         "that take us into the first step of my process which is coming up a good idea",
         };
 
+    string[] notgood = { " but good idea is not everything" };
+ 
     // https://youtu.be/vsYxKViDZSQ?t=48
 
     string[] niche = { "we can see that they have an average RPM of about $5 in case you don't know RPM stands for Revenue per Mila" };
@@ -115,3 +117,11 @@ public class aichannel : MonoBehaviour
     string[] courses = { "i invested thousands of dollars into courses and my own projects" };
     string[] mess = { " there are tons of channels are doing mess", "you probabaly seen the guru how easy it is to do", "they usually drive around in an expensive cars and  they try to sell on the lifesytle rather than the actual process000" };
 }
+
+/*
+ 
+https://youtu.be/kylpxijjvPg?t=170
+
+ThinkImportant, WhatIsImport, IfNotThinkThenBad, SimpleThink, WrongThinkThenBad, GoodDoWell, BadDoNotWell (add data)
+ 
+ */
