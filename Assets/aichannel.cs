@@ -1,22 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using static Structure;
 public class aichannel : MonoBehaviour
 {
-    // Start is called before the first frame
-    // 
-    public TextMeshPro textMeshPro;
-
-    enum ActorType2D
-    {
-        Icon,
-    }
 
     struct ActorFrame
     {
-
+        public Effect effect;
         public int startFrame;
         public int endFrame;
         public Vector2 startPos;
@@ -24,8 +17,9 @@ public class aichannel : MonoBehaviour
         public float startRot;
         public float endRot;
 
-        public ActorFrame(int startFrame, int endFrame, Vector2 startPos, Vector2 endPos, float startRot, float endRot)
+        public ActorFrame(Effect effect, int startFrame, int endFrame, Vector2 startPos, Vector2 endPos, float startRot, float endRot)
         {
+            this.effect = effect;
             this.startFrame = startFrame;
             this.endFrame = endFrame;
             this.startPos = startPos;
@@ -37,25 +31,23 @@ public class aichannel : MonoBehaviour
     struct ActorDesc
     {
         public GameObject actor;
-        public ActorType2D type;
-        public string typeName;
+        public MaterialType type;
         public List<ActorFrame> frames;
 
-        public ActorDesc(ActorType2D type, string typeName, GameObject actor)
+        public ActorDesc(MaterialType type,  GameObject actor)
         {
             this.actor = actor;
             this.type = type;
-            this.typeName = typeName;
             frames = new List<ActorFrame>();
         }
 
-        public void Add(int startFrame, int endFrame, Vector2 pos)
+        public void Add(Effect effect,int startFrame, int endFrame, Vector2 pos)
         {
-            frames.Add(new ActorFrame(startFrame, endFrame, pos, pos, 0,0));
+            frames.Add(new ActorFrame(effect, startFrame, endFrame, pos, pos, 0,0));
         }
-        public void Add(int startFrame, int endFrame, Vector2 pos0, Vector2 pos1)
+        public void Add(Effect effect, int startFrame, int endFrame, Vector2 pos0, Vector2 pos1)
         {
-            frames.Add(new ActorFrame(startFrame, endFrame, pos0, pos1, 0, 0));
+            frames.Add(new ActorFrame(effect, startFrame, endFrame, pos0, pos1, 0, 0));
         }
 
     }
@@ -80,21 +72,6 @@ public class aichannel : MonoBehaviour
         FocusToStep, // 聚焦于图表上的一点
     }
 
-    string[] icon_string = { "youtube", "instgram", "shopify", "tiktok", "shorts" };
-    public void processContent(string content)
-    {
-        // rule1: contain app names, show icons
-        for(int i = 0; i < icon_string.Length; i++)
-        {
-            if (content.ToLower().Contains(icon_string[i]))
-            {
-
-                addDesc(ActorType2D.Icon, "youtube", 0, 0, Vector2.zero);
-            }
-        }
-
-    }
-
     private float screenWidth;
     private float screenHeight;
 
@@ -106,13 +83,13 @@ public class aichannel : MonoBehaviour
 
     private List<ActorDesc> actorDesc = new List<ActorDesc>();
 
-    void addDesc(ActorType2D type, string name, int startFrame, int endFrame, Vector2 pos)
+    void addDesc(MaterialType type, Effect effect, string name, int startFrame, int endFrame, Vector2 pos)
     {
         for(int i = 0; i < actorDesc.Count; i++)
         {
-            if(actorDesc[i].type == type && actorDesc[i].typeName == name)
+            if(actorDesc[i].type == type)
             {
-                actorDesc[i].Add(startFrame, endFrame, pos);
+                actorDesc[i].Add(effect, startFrame, endFrame, pos);
                 break;
             }
         }
@@ -207,8 +184,21 @@ public class aichannel : MonoBehaviour
         }
     }
 
-    enum ShowType
+    // 基本都是图片
+    enum MaterialType
     {
+
+        IconYoutube,
+        IconShopify,
+        IconChatgpt,
+        IconTiktok,
+        IconYoutubeShorts,
+        IconCapcut,
+
+        Icon,
+        Income,
+        Avatar,
+
         Account, // 主页，也就是频道名词
         ScrollDown1, // 从详情页到浏览页
         ScroolDown2, // 更深入的浏览页
@@ -217,41 +207,151 @@ public class aichannel : MonoBehaviour
         MainContent, // 所有账户的战士
         Pricing, // 定价,
 
+        // https://www.youtube.com/watch?v=OIKYzuxKVyk
+        SucceedProduct,
+        FailedProduct,
+        CommentOnProduct,
 
     }
 
-    struct Show
-    {
-        public ShowType showType;
-        public List<Effect> effect;
-        public List<string> keywords;
-        public Show(ShowType type, List<Effect> effects, List<string> words)
-        {
-            showType = type;
-            effect = effects;
-            keywords = words;
-
-        }
-    }
 
     enum Effect
     {
         FromCornerToCenter,
+        FullScreen,
+        Icon,
     }
 
-    List<Show> shows = new List<Show>();
+
+
+    struct KeyWord
+    {
+        public MaterialType MaterialType;
+        public SpecialWord sp;
+        public string word;
+        public Effect effect;
+        public KeyWord(MaterialType type, SpecialWord word, string theword, Effect effect)
+        {
+            this.MaterialType = type;
+            this.sp = word;
+            this.word = theword;
+            this.effect = effect;
+        }
+    }
+
+    List<KeyWord> keyWords = new List<KeyWord>();
+
+    public TextMeshPro tmp;
 
     //https://www.youtube.com/watch?v=FlizQ57zPAw 要的素材就两种，一种是搜索浏览，要整体，以及分别点开。第二种是个人主页，整体，简介信息，以及分别点开
+
+    struct ShowWord
+    {
+        public string word;
+        public int startFrame;
+        public int continueFrame;
+
+        public ShowWord(string word, int startFrame, int continueFrame)
+        {
+            this.word = word;
+            this.startFrame = startFrame;
+            this.continueFrame = continueFrame;
+        }
+    }
+    void addShowWord(Effect effect, string word, int startFrame, int continueFrame)
+    {
+        words.Add(new ShowWord(word, startFrame, continueFrame));
+        for(int i = 0; i < keyWords.Count; i++)
+        {
+            if (word.ToLower().Contains(keyWords[i].word))
+            {
+                for(int j = 0; j < actorDesc.Count; j++)
+                {
+                    if(actorDesc[j].type == MaterialType.Icon)
+                    {
+                        actorDesc[j].frames.Add(new ActorFrame(effect, startFrame, startFrame + continueFrame, Vector2.zero, Vector2.zero, 0, 0 ));
+                    }
+                }
+            }
+        }
+    }
+
+    void addMove(MaterialType type, Effect effect, int startFrame, int endFrame, Vector2 spos, Vector2 epos, float sangle, float eangle)
+    {
+        for(int i = 0; i < actorDesc.Count; i++)
+        {
+            if(actorDesc[i].type == type)
+            {
+                actorDesc[i].frames.Add(new ActorFrame(effect, startFrame, endFrame, spos, epos, sangle, eangle));
+            }
+        }
+    }
+
+
+    List<ShowWord> words = new List<ShowWord>();
+
+
     void Start()
     {
+        
+        actorDesc.Add(new ActorDesc(MaterialType.IconYoutube, CreateCubeWithImage("Assets/AutoImages/youtube.png")));
+
+        string specialFolderName = "Assets/AutoImages/";
+        
+        actorDesc.Add(new ActorDesc(MaterialType.Account,  CreateCubeWithImage(specialFolderName + "accountMainPage.png")));
+
+        // 什么样的keyword 应该有什么样的小反应。大反应是直接更换背景图
+        keyWords.Add(new KeyWord(MaterialType.IconYoutube, SpecialWord.platform, "youtube", Effect.Icon));
+        keyWords.Add(new KeyWord(MaterialType.Account, SpecialWord.platform, "youtube", Effect.FullScreen));
+
 
 
         Random.InitState(123);
-
+        updateStr();
         AddSelectMain(BluePrint.ThisChannleSucceed);
+        AddSelect(new List<Sblue>() { Sblue.ThisChannelMakesMoney });
+        Done();
+
+        string realContents = "";
+        for (int i0 = 0; i0 < contents.Count; i0++)
+        {
+            for(int i1 = 0; i1 < contents[i0].smallBluePrint.Count; i1++)
+            {
+                Sblue sb = contents[i0].smallBluePrint[i1];
+                Debug.Log("contents count = " + sb.ToString());
+                for (int i2 = 0; i2 < sstrs.Count; i2++)
+                {
+                    if(sstrs[i2].sbp == sb)
+                    {
+                        int r = Random.Range(0, sstrs[i2].contents.Count);
+                        realContents += sstrs[i2].contents[r] + "\n";
+                    }
+                }
+
+                switch (sb)
+                {
+                    case Sblue.ThisChannelMakesMoney:
+                        {
+                            addMove(MaterialType.Income, Effect.FromCornerToCenter, 0, 100, Vector2.zero, Vector2.zero, 0, 0);
+                            break;
+                        }
+                    default: break;
+                }
+            }
+        }
+        Debug.Log(realContents);
+        realContents = "let`s start by doing this on youtube";
+
+        string[] splited = realContents.Split(' ');
+        for(int i = 0; i < splited.Length; i++)
+        {
+
+            addShowWord(splited[i], i * 40, 40);
+        }
+
+
         
 
-        textMeshPro.text = "start this";
         ASC asc = ASC.ScrollDownPages;
         switch (asc)
         {
@@ -280,16 +380,43 @@ public class aichannel : MonoBehaviour
         }
     }
 
+
+    int globalFrameCount = 0;
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        
+        for(int i = 0; i < words.Count; i++)
+        {
+            if(globalFrameCount >= words[i].startFrame && globalFrameCount < words[i].startFrame + words[i].continueFrame)
+            {
+                tmp.text = words[i].word;
+            }
+        }
+
+        for(int i = 0; i < actorDesc.Count; i++)
+        {
+            for(int j = 0; j < actorDesc[i].frames.Count; j++)
+            {
+                ActorFrame af = actorDesc[i].frames[j];
+                if(globalFrameCount >= af.startFrame && globalFrameCount < af.endFrame)
+                {
+                    float ratio = (globalFrameCount - af.startFrame) * 1.0f / (af.endFrame - af.startFrame);
+                    Vector2 targetPos = Vector2.Lerp(af.startPos, af.endPos, ratio);
+                    float targetAngle = Mathf.Lerp(af.startRot, af.endRot, ratio);
+                    actorDesc[i].actor.transform.position = new Vector3(targetPos.x, targetPos.y, 0);
+                    actorDesc[i].actor.transform.rotation = Quaternion.Euler(0, 0, targetAngle);
+                }
+            }
+        }
+
+        globalFrameCount++;
     }
 
     // six sigma https://youtu.be/4EDYfSl-fmc?t=50
     // https://youtu.be/vhGG2XDwAuE?t=90
     // 这种，时间，效率之类的很容易工业自动化
     // https://www.youtube.com/watch?v=SaZttbQUjLI 抽象方法
+    // https://www.youtube.com/@escaping.ordinary/videos
     // 一般具体方法：就是标题
     // 特别具体方法：就是要点什么按钮
 
@@ -342,7 +469,9 @@ public class aichannel : MonoBehaviour
         sstrs.Add(new SSTR(Sblue.ThisChannelMakesMoney, new List<string>() { "it took 24 hours to make _bigmoney($260,000) with this _channelName(Instagram page)",
                     "my brand new Instagram account has grown from zero to over 250,000 followers in just 3 months",
                     "the account gets millions of views on almost every post",
+                    "okay so there is a new way that people are earning $832 per week",
                     "and the best part is I've made over $10,000 from it so far",
+                    "month one $88,500 month2 $113,000 and month six $ 29,90 per month",
             "I grew one of my Instagram pages to over 100,000 followers only using Ai and was able to make over $12,000 in passive income since starting this business",
         "and no I'm I'm not talking about YouTube ad Revenue I'm talking about the potential of making money with zero Instagram followers ",
             "sounds too good to be true right well using the exact strategy I grew one of my pages to over 100,000 followers and I'm already making consistent passive income",
@@ -351,7 +480,8 @@ public class aichannel : MonoBehaviour
         "these types of nature reels are going viral nowadays all over the Internet especially on Instagram this faceless Instagram account has gained over 400,000 subscribers in just a few months and is making thousands of dollars every month"}));
         sstrs.Add(new SSTR(Sblue.TheyWasInvitedToTheShow, new List<string>() { "the owner of this account literally got invited on _showName(Shark Tank) yeah the show" }));
 
-        sstrs.Add(new SSTR(Sblue.WhyISucceed, new List<string>() { "and the way I did that was by focusing on these motivational AI videos" }));
+        sstrs.Add(new SSTR(Sblue.WhyISucceed, new List<string>() { "and the way I did that was by focusing on these motivational AI videos",
+        "by combining free AI tools with canva"}));
 
 
         sstrs.Add(new SSTR(Sblue.HeHasALotRevenue, new List<string>() { "for how well she profited from this Instagram page again $260,000 24 hours from a page that has just 270 posts and 188,000 followers she made over $3 million in Revenue in a single year since launching it" }));
@@ -418,6 +548,7 @@ public class aichannel : MonoBehaviour
         sstrs.Add(new SSTR(Sblue.ItEasy, new List<string>() {
             "as you can see this literally took me less than 60 seconds and you can do the same thing and make a post that gets over 100,000 likes just look at some of these viral posts from the top creators on Instagram all of them can be made in canva in less than 5 minutes",
         "and when it comes to my account that grew from 0 to 250,000 followers you can actually make videos like this inside of canva as well it does take a lot longer than this",
+        "nd seriously I think that the strategy is so simple that it's actually genius yep so here is what they are doing",
         "and if you're wondering how I monetize these reals was by selling digital products related to my Niche this is a much easier and faster way to earn money as it bypasses requirements like the YouTube Partner program or Tik Tok creativity program"}));
 
 
@@ -441,6 +572,11 @@ public class aichannel : MonoBehaviour
         sstrs.Add(new SSTR(Sblue.Special_Consistent, new List<string>() {
             "but of course for this formula to work you must stay consistent in uploading downtown uploads two videos a day which is why they get so many views so even if not every video goes viral the momentum from consistent uploading will automatically grow the channel" }));
 
+
+        /*
+         The next step is to capture attention, but not just any attention—don’t aim for going viral. Instead, focus on crafting content that resonates with your ideal customer. Begin by sharing helpful insights, whether it’s through tweets, reels, YouTube videos, shorts, or LinkedIn posts. The key is to offer value that's relevant to your audience, as this will help position you as an expert in your field. When people recognize that you genuinely know your stuff, they’ll be more inclined to trust you, which can lead to future sales. You'll need to consistently do this over time.
+         
+         */
     }
 
     //https://youtu.be/vsYxKViDZSQ?t=8
