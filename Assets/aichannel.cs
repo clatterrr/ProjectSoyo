@@ -1,23 +1,35 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
 using static Structure;
+using Random = UnityEngine.Random;
+
 public class aichannel : MonoBehaviour
 {
 
     struct ActorFrame
     {
-        public Effect effect;
+        public ActorEffect effect;
         public int startFrame;
         public int endFrame;
         public Vector2 startPos;
         public Vector2 endPos;
         public float startRot;
         public float endRot;
+        public float startScale;
+        public float endScale;
+        public float startValue;
+        public float endValue;
 
-        public ActorFrame(Effect effect, int startFrame, int endFrame, Vector2 startPos, Vector2 endPos, float startRot, float endRot)
+        public WordEffect wordEffect;
+        public string word;
+
+        public ActorFrame(ActorEffect effect, int startFrame, int endFrame, Vector2 startPos, Vector2 endPos, 
+            float startRot, float endRot, float startScale, float endScale)
         {
             this.effect = effect;
             this.startFrame = startFrame;
@@ -26,11 +38,36 @@ public class aichannel : MonoBehaviour
             this.endPos = endPos;
             this.startRot = startRot;
             this.endRot = endRot;
+            this.startScale = startScale;
+            this.endScale = endScale;
+            startValue = 0;
+            endValue = 0;
+            this.word = "";
+            this.wordEffect = WordEffect.None;
+        }
+
+        public ActorFrame(ActorEffect effect, WordEffect wordEffect, string words, int startFrame, int endFrame, Vector2 startPos, Vector2 endPos,
+    float startRot, float endRot, float startScale, float endScale, float startValue, float endValue)
+        {
+            this.effect = effect;
+            this.startFrame = startFrame;
+            this.endFrame = endFrame;
+            this.startPos = startPos;
+            this.endPos = endPos;
+            this.startRot = startRot;
+            this.endRot = endRot;
+            this.startScale = startScale;
+            this.endScale = endScale;
+            this.word = words ;
+            this.wordEffect = wordEffect;
+            this.startValue = startValue;
+            this.endValue = endValue;
         }
     }
     struct ActorDesc
     {
         public GameObject actor;
+        public Vector3 baseScale;
         public MaterialType type;
         public List<ActorFrame> frames;
 
@@ -39,38 +76,15 @@ public class aichannel : MonoBehaviour
             this.actor = actor;
             this.type = type;
             frames = new List<ActorFrame>();
+            if (type != MaterialType.Word)
+                baseScale = actor.transform.localScale;
+            else baseScale = Vector3.one;
         }
 
-        public void Add(Effect effect,int startFrame, int endFrame, Vector2 pos)
-        {
-            frames.Add(new ActorFrame(effect, startFrame, endFrame, pos, pos, 0,0));
-        }
-        public void Add(Effect effect, int startFrame, int endFrame, Vector2 pos0, Vector2 pos1)
-        {
-            frames.Add(new ActorFrame(effect, startFrame, endFrame, pos0, pos1, 0, 0));
-        }
 
     }
 
 
-    enum ClipType
-    {
-        SingleVideoCover,
-        Incoming,
-        Speaker,
-    }
-
-    enum ASC
-    {
-        ScrollDownPages,
-        ShowStatitics, // 频道的详情页
-        Graph, // 步骤拆分
-        Button, // 按钮
-        Mouse, // 鼠标
-        Memes,
-        GuRu,
-        FocusToStep, // 聚焦于图表上的一点
-    }
 
     private float screenWidth;
     private float screenHeight;
@@ -82,18 +96,6 @@ public class aichannel : MonoBehaviour
     private Vector2 screenCenter;
 
     private List<ActorDesc> actorDesc = new List<ActorDesc>();
-
-    void addDesc(MaterialType type, Effect effect, string name, int startFrame, int endFrame, Vector2 pos)
-    {
-        for(int i = 0; i < actorDesc.Count; i++)
-        {
-            if(actorDesc[i].type == type)
-            {
-                actorDesc[i].Add(effect, startFrame, endFrame, pos);
-                break;
-            }
-        }
-    }
 
     struct ProblemSet
     {
@@ -187,6 +189,7 @@ public class aichannel : MonoBehaviour
     // 基本都是图片
     enum MaterialType
     {
+        Word,
 
         IconYoutube,
         IconShopify,
@@ -195,6 +198,9 @@ public class aichannel : MonoBehaviour
         IconYoutubeShorts,
         IconCapcut,
 
+        Clock,
+        Grid,
+
         Icon,
         Income,
         Avatar,
@@ -202,6 +208,7 @@ public class aichannel : MonoBehaviour
         Account, // 主页，也就是频道名词
         ScrollDown1, // 从详情页到浏览页
         ScroolDown2, // 更深入的浏览页
+        VideoList,
 
         MainPage, // 网站主页
         MainContent, // 所有账户的战士
@@ -215,27 +222,61 @@ public class aichannel : MonoBehaviour
     }
 
 
-    enum Effect
+    enum ActorEffect
     {
         FromCornerToCenter,
         FullScreen,
         Icon,
+
+        Custom,
+
+        FastLeftToRight,
+
+        AnyFast,
     }
 
+    enum AreaEffect
+    {
+        TwoLeftRight,
+        TwoUpDown,
+        OneStack,
+    }
+    enum WordEffect
+    {
+        FromCornerToCenter,
+        FullScreen,
+        Icon,
+        //https://youtu.be/_uY-mpc1cQI?t=1
+        SideShrinkToCenter,
 
-
+        LittleRotate,
+        Value,
+        None,
+        
+    }
     struct KeyWord
     {
         public MaterialType MaterialType;
         public SpecialWord sp;
         public string word;
-        public Effect effect;
-        public KeyWord(MaterialType type, SpecialWord word, string theword, Effect effect)
+        public WordEffect wordEffect;
+        public ActorEffect actorEffect;
+        public KeyWord(MaterialType type, SpecialWord word, string theword, WordEffect effect)
         {
             this.MaterialType = type;
             this.sp = word;
             this.word = theword;
-            this.effect = effect;
+            this.wordEffect = effect;
+            this.actorEffect = ActorEffect.Icon;
+        }
+
+        public KeyWord(MaterialType type, SpecialWord word, string theword, ActorEffect effect)
+        {
+            this.MaterialType = type;
+            this.sp = word;
+            this.word = theword;
+            this.wordEffect = WordEffect.Icon;
+            this.actorEffect = effect;
         }
     }
 
@@ -244,139 +285,212 @@ public class aichannel : MonoBehaviour
     public TextMeshPro tmp;
 
     //https://www.youtube.com/watch?v=FlizQ57zPAw 要的素材就两种，一种是搜索浏览，要整体，以及分别点开。第二种是个人主页，整体，简介信息，以及分别点开
-
-    struct ShowWord
-    {
-        public string word;
-        public int startFrame;
-        public int continueFrame;
-
-        public ShowWord(string word, int startFrame, int continueFrame)
-        {
-            this.word = word;
-            this.startFrame = startFrame;
-            this.continueFrame = continueFrame;
-        }
-    }
-    void addShowWord(Effect effect, string word, int startFrame, int continueFrame)
-    {
-        words.Add(new ShowWord(word, startFrame, continueFrame));
-        for(int i = 0; i < keyWords.Count; i++)
-        {
-            if (word.ToLower().Contains(keyWords[i].word))
-            {
-                for(int j = 0; j < actorDesc.Count; j++)
-                {
-                    if(actorDesc[j].type == MaterialType.Icon)
-                    {
-                        actorDesc[j].frames.Add(new ActorFrame(effect, startFrame, startFrame + continueFrame, Vector2.zero, Vector2.zero, 0, 0 ));
-                    }
-                }
-            }
-        }
-    }
-
-    void addMove(MaterialType type, Effect effect, int startFrame, int endFrame, Vector2 spos, Vector2 epos, float sangle, float eangle)
+    void addActorMove(MaterialType type, ActorEffect effect, int startFrame, int endFrame, Vector2 spos, Vector2 epos, float sangle, float eangle, float sscale, float escale)
     {
         for(int i = 0; i < actorDesc.Count; i++)
         {
             if(actorDesc[i].type == type)
             {
-                actorDesc[i].frames.Add(new ActorFrame(effect, startFrame, endFrame, spos, epos, sangle, eangle));
+                if(type == MaterialType.Word)
+                {
+                    actorDesc[i].frames.Add(new ActorFrame(effect, startFrame, endFrame, spos, epos, sangle, eangle, sscale, escale));
+                }
+                else
+                {
+                    actorDesc[i].frames.Add(new ActorFrame(effect, startFrame, endFrame, spos, epos, sangle, eangle, sscale, escale));
+                }
+                
             }
         }
     }
 
+    List<Vector2> ComputeAreaEffect(AreaEffect theAreaEffects, int effectIndex, Vector2 oriPos)
+    {
+        Vector2 startPos = oriPos;
+        Vector2 endPos = oriPos;
+        Vector2 rot = Vector2.zero;
+        Vector2 scale = Vector2.one;
+        switch (theAreaEffects)
+        {
+            case AreaEffect.TwoLeftRight:
+                {
+                    if (effectIndex % 2 == 0)
+                    {
+                        startPos = new Vector2(-16, 0) + oriPos;
+                        endPos = new Vector2(-4, 0) + oriPos;
+                    }
+                    else
+                    {
+                        startPos = new Vector2(16, 0) + oriPos;
+                        endPos = new Vector2(4, 0) + oriPos;
+                    }
 
-    List<ShowWord> words = new List<ShowWord>();
+                    break;
+                }
+            case AreaEffect.TwoUpDown:
+                {
+                    if (effectIndex % 2 == 0)
+                    {
+                        startPos = new Vector2(0, -16) + oriPos;
+                        endPos = new Vector2(0, -4) + oriPos;
+                    }
+                    else
+                    {
+                        startPos = new Vector2(0, 16) + oriPos;
+                        endPos = new Vector2(0, 4) + oriPos;
+                    }
 
+                    break;
+                }
+            case AreaEffect.OneStack:
+                {
+                    scale = new Vector2(4, 1);
+                    break;
+                }
+            default: break;
+        }
+        return new List<Vector2>() { startPos, endPos, rot, scale };
+    }
+
+
+    public bool enableVoice;
 
     void Start()
     {
         
         actorDesc.Add(new ActorDesc(MaterialType.IconYoutube, CreateCubeWithImage("Assets/AutoImages/youtube.png")));
+        actorDesc.Add(new ActorDesc(MaterialType.Avatar, CreateCubeWithImage("Assets/AutoImages/Avatar.png")));
+        actorDesc.Add(new ActorDesc(MaterialType.Clock, CreateCubeWithImage("Assets/AutoImages/clock.gif")));
+        actorDesc.Add(new ActorDesc(MaterialType.Grid, CreateCubeWithImage("Assets/AutoImages/grid.png")));
+        actorDesc.Add(new ActorDesc(MaterialType.Word, null));
 
         string specialFolderName = "Assets/AutoImages/";
-        
         actorDesc.Add(new ActorDesc(MaterialType.Account,  CreateCubeWithImage(specialFolderName + "accountMainPage.png")));
+        actorDesc.Add(new ActorDesc(MaterialType.VideoList, CreateCubeWithImage(specialFolderName + "VideoList.png")));
 
         // 什么样的keyword 应该有什么样的小反应。大反应是直接更换背景图
-        keyWords.Add(new KeyWord(MaterialType.IconYoutube, SpecialWord.platform, "youtube", Effect.Icon));
-        keyWords.Add(new KeyWord(MaterialType.Account, SpecialWord.platform, "youtube", Effect.FullScreen));
+        // 到底是word 还是 actor
+        keyWords.Add(new KeyWord(MaterialType.IconYoutube, SpecialWord.platform, "youtube", WordEffect.Icon));
+        keyWords.Add(new KeyWord(MaterialType.Avatar, SpecialWord.platform, "you", ActorEffect.Icon));
+        keyWords.Add(new KeyWord(MaterialType.Avatar, SpecialWord.platform, "your", ActorEffect.Icon));
+        keyWords.Add(new KeyWord(MaterialType.Clock, SpecialWord.platform, "time", ActorEffect.Icon));
+        keyWords.Add(new KeyWord(MaterialType.VideoList, SpecialWord.platform, "video", ActorEffect.Icon));
+        keyWords.Add(new KeyWord(MaterialType.VideoList, SpecialWord.platform, "videos", ActorEffect.Icon));
+        // keyWords.Add(new KeyWord(MaterialType.Account, SpecialWord.platform, "youtube", WordEffect.FullScreen));
+
+
+        //keyWords.Add(new KeyWord(MaterialType.Avatar, SpecialWord.platform, "youtube", Effect.FullScreen));
 
 
 
         Random.InitState(123);
         updateStr();
         AddSelectMain(BluePrint.ThisChannleSucceed);
-        AddSelect(new List<Sblue>() { Sblue.ThisChannelMakesMoney });
+        AddSelect(new List<Sblue>() { Sblue.YouCanSucceed });
         Done();
 
-        string realContents = "";
+
+        List<string> realContents = new List<string>();
         for (int i0 = 0; i0 < contents.Count; i0++)
         {
             for(int i1 = 0; i1 < contents[i0].smallBluePrint.Count; i1++)
             {
                 Sblue sb = contents[i0].smallBluePrint[i1];
-                Debug.Log("contents count = " + sb.ToString());
                 for (int i2 = 0; i2 < sstrs.Count; i2++)
                 {
                     if(sstrs[i2].sbp == sb)
                     {
                         int r = Random.Range(0, sstrs[i2].contents.Count);
-                        realContents += sstrs[i2].contents[r] + "\n";
+                        Debug.Log(sstrs[i2].contents[r]);
+                        realContents.Add(sstrs[i2].contents[r]);
+                        break;
                     }
                 }
 
-                switch (sb)
+            }
+        }
+        int textLength = 600;
+        if (!enableVoice)
+        {
+            int strIndex = 0;
+            int singleIndex = 0;
+            for(int stri = 0; stri < contents.Count; stri++)
+            {
+                for(int sbp = 0; sbp < contents[stri].smallBluePrint.Count; sbp++)
                 {
-                    case Sblue.ThisChannelMakesMoney:
+                    BluePrint bp = contents[stri].blueprint;
+                    Sblue sb = contents[stri].smallBluePrint[sbp];
+                    string str = realContents[strIndex];
+                    int startFrame = strIndex * textLength;
+                    int endFrame = strIndex * textLength + textLength;
+
+                    string pattern = @"\[(.*?)\]";
+                    MatchCollection matches = Regex.Matches(str, pattern);
+
+                    List<AreaEffect> areaEffects = new List<AreaEffect>() {AreaEffect.TwoUpDown };
+                    AreaEffect theAreaEffects = areaEffects[Random.Range(0, areaEffects.Count - 1)];
+
+                    List<WordEffect> wordEffects = new List<WordEffect>() { WordEffect.LittleRotate };
+                    WordEffect theWordEffects = wordEffects[Random.Range(0, wordEffects.Count - 1)];
+
+                    // 计算字符串的总单词数（用来计算每个单词的时间片段）
+                    string[] splited = str.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    int durationForEachWord = textLength / splited.Length;
+                    List<string> wordsInBracket = new List<string>();
+                    string bracket = "";
+                    int effectIndex = 0;
+                    for (int i = 0; i < splited.Length; i++)
+                    {
+
+                        // the keywords
+                        bracket = "";
+                        wordsInBracket.Clear();
+                        int theStart = startFrame + i * durationForEachWord;
+                        if (splited[i].Contains("["))
                         {
-                            addMove(MaterialType.Income, Effect.FromCornerToCenter, 0, 100, Vector2.zero, Vector2.zero, 0, 0);
-                            break;
+                            while (!splited[i].Contains("]"))
+                            {
+                                wordsInBracket.Add(splited[i].Replace("[", ""));
+                                bracket += splited[i].Replace("[", "") + " ";
+                                i++;
+                            }
+                            wordsInBracket.Add(splited[i].Replace("]", ""));
+                            bracket += splited[i].Replace("]", "") + " ";
+                            List<Vector2> lv = ComputeAreaEffect(theAreaEffects, effectIndex, Vector2.zero);
+
+                            for (int k = 0; k < actorDesc.Count; k++) if (actorDesc[k].type == MaterialType.Word)
+                                {
+                                    actorDesc[k].frames.Add(new ActorFrame(ActorEffect.Custom, WordEffect.Value, bracket,
+                                        theStart, theStart + wordsInBracket.Count * 4 * durationForEachWord, lv[0], lv[1], 0, 0, 1, 1, 1000, 6000));
+                                }
+                                    
+                            effectIndex++;
                         }
-                    default: break;
+
+
+                        // find keywords
+                        for (int k = 0; k < keyWords.Count; k++)
+                        {
+                            if (splited[i].ToLower() == keyWords[k].word.ToLower())
+                            {
+                                List<Vector2> lv = ComputeAreaEffect(theAreaEffects, effectIndex, Vector2.zero);
+                                addActorMove(keyWords[k].MaterialType, ActorEffect.Icon, theStart, theStart + 4 * durationForEachWord, lv[0], lv[1], lv[2].x, lv[2].y, lv[3].x, lv[3].y);
+                                effectIndex++;
+                            }
+                        }
+
+                    }
+
+                    strIndex++;
                 }
             }
         }
-        Debug.Log(realContents);
-        realContents = "let`s start by doing this on youtube";
 
-        string[] splited = realContents.Split(' ');
-        for(int i = 0; i < splited.Length; i++)
+        Debug.Log("length = " + actorDesc[4].frames.Count);
+        for(int i = 0; i < actorDesc[4].frames.Count; i++)
         {
-
-            addShowWord(splited[i], i * 40, 40);
-        }
-
-
-        
-
-        ASC asc = ASC.ScrollDownPages;
-        switch (asc)
-        {
-            case ASC.ScrollDownPages:
-                {
-                    // python control screen down
-                    break;
-                }
-        }
-
-        Effect ef = Effect.FromCornerToCenter;
-        switch (ef)
-        {
-            case Effect.FromCornerToCenter:
-                {
-                    float lerp_value = 0.5f;
-                 //   settings.Add(new ActorSettings2D(null, 0, 0, screenRightTop, Vector2.Lerp(screenLeftTop, screenCenter, lerp_value), 0, 0));
-
-                 //   settings.Add(new ActorSettings2D(null, 0, 0, screenRightTop, Vector2.Lerp(screenLeftTop, screenCenter, lerp_value), 0, 0));
-
-                //    settings.Add(new ActorSettings2D(null, 0, 0, screenRightTop, Vector2.Lerp(screenLeftTop, screenCenter, lerp_value), 0, 0));
-
-                //    settings.Add(new ActorSettings2D(null, 0, 0, screenRightTop, Vector2.Lerp(screenLeftTop, screenCenter, lerp_value), 0, 0));
-                    break;
-                }
+            ActorFrame af = actorDesc[4].frames[i];
+            Debug.Log("wrod =" + af.word);
         }
     }
 
@@ -385,28 +499,102 @@ public class aichannel : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        for(int i = 0; i < words.Count; i++)
-        {
-            if(globalFrameCount >= words[i].startFrame && globalFrameCount < words[i].startFrame + words[i].continueFrame)
-            {
-                tmp.text = words[i].word;
-            }
-        }
-
         for(int i = 0; i < actorDesc.Count; i++)
         {
+            bool findFrame = false;
             for(int j = 0; j < actorDesc[i].frames.Count; j++)
             {
                 ActorFrame af = actorDesc[i].frames[j];
-                if(globalFrameCount >= af.startFrame && globalFrameCount < af.endFrame)
+                if (globalFrameCount >= af.startFrame && globalFrameCount < af.endFrame)
                 {
-                    float ratio = (globalFrameCount - af.startFrame) * 1.0f / (af.endFrame - af.startFrame);
+                    float c = af.endFrame - af.startFrame;
+                    float a = globalFrameCount - af.startFrame;
+                    float ratio = 0;
+                    if (a < c * 0.25f) ratio = 0;
+                    else if (a > c * 0.75f) ratio = 1;
+                    else
+                    {
+                        ratio = (a - c * 0.25f) / (c * 0.5f);
+                    }
+
                     Vector2 targetPos = Vector2.Lerp(af.startPos, af.endPos, ratio);
                     float targetAngle = Mathf.Lerp(af.startRot, af.endRot, ratio);
-                    actorDesc[i].actor.transform.position = new Vector3(targetPos.x, targetPos.y, 0);
-                    actorDesc[i].actor.transform.rotation = Quaternion.Euler(0, 0, targetAngle);
+                    float targetScale = Mathf.Lerp(af.startScale, af.endScale, ratio);
+
+                    switch (af.effect)
+                    {
+                        case ActorEffect.Custom: 
+                            {
+                                // Calculate offset vector (normal to the line connecting startPos and endPos)
+                                Vector2 dir = (af.endPos - af.startPos).normalized;  // Direction vector from start to end
+                                Vector2 normal = new Vector2(-dir.y, dir.x);         // Perpendicular (tangent is 0)
+
+                                // Offset is 1/3 the distance between start and end positions
+                                float offsetDistance = Vector2.Distance(af.startPos, af.endPos) / 3.0f;
+                                Vector2 controlPos = af.startPos + (af.endPos - af.startPos) * 0.5f + normal * offsetDistance;
+
+                                // Quadratic Bézier interpolation for position
+                                targetPos = Mathf.Pow(1 - ratio, 2) * af.startPos
+                                                    + 2 * (1 - ratio) * ratio * controlPos
+                                                    + Mathf.Pow(ratio, 2) * af.endPos;
+
+                                // Quadratic Bézier interpolation for rotation (no offset for rotation)
+                                targetAngle = Mathf.Pow(1 - ratio, 2) * af.startRot
+                                                    + 2 * (1 - ratio) * ratio * ((af.startRot + af.endRot) / 2)  // Midpoint control for smooth transition
+                                                    + Mathf.Pow(ratio, 2) * af.endRot;
+                                break;
+                            }
+                        default: break;
+                    }
+
+                    if(actorDesc[i].type == MaterialType.Word)
+                    {
+                        switch (af.wordEffect)
+                        {
+                            case WordEffect.FromCornerToCenter: break;
+                            case WordEffect.SideShrinkToCenter:
+                                {
+                                    float startSize = 80;
+                                    float endSize = 20;
+                                    tmp.fontSize = Mathf.Lerp(startSize, endSize, ratio);
+                                    float startCharSpace = 10;
+                                    float endCharSpaace = 0;
+                                    tmp.characterSpacing = Mathf.Lerp(startCharSpace, endCharSpaace, ratio);
+
+                                    break;
+                                }
+                            case WordEffect.LittleRotate:
+                                {
+                                    tmp.fontSize = 20;
+                                    tmp.characterSpacing = 0;
+                                    tmp.transform.rotation = Quaternion.Euler(0, 0, Mathf.Sin(ratio * 20) * 10);
+                                    break;
+                                }
+                            default: break;
+                        }
+
+                        tmp.text = af.word;
+                        tmp.transform.position = new Vector3(targetPos.x, targetPos.y, 0);
+                    }
+                    else
+                    {
+                        actorDesc[i].actor.transform.position = new Vector3(targetPos.x, targetPos.y, 0);
+                        actorDesc[i].actor.transform.rotation = Quaternion.Euler(0, targetAngle, 180);
+                        actorDesc[i].actor.transform.localScale = actorDesc[i].baseScale * targetScale;
+                    }
+
+                    findFrame = true;
+                    break;
                 }
             }
+
+
+            if (!findFrame)
+            {
+                if (actorDesc[i].type == MaterialType.Word) tmp.text = "";
+                else actorDesc[i].actor.transform.position = new Vector3(1000, 1000, 1000);
+            }
+            
         }
 
         globalFrameCount++;
@@ -424,6 +612,7 @@ public class aichannel : MonoBehaviour
     enum Sblue
     {
         ThisChannelMakesMoney,
+        YouCanSucceed,
         WhyISucceed,
         TheyWasInvitedToTheShow,
         HeHasALotRevenue,
@@ -479,6 +668,7 @@ public class aichannel : MonoBehaviour
         "so considering that the average RPM for celebrity news channels is between $125 and $4 this channel could be making anywhere from $750 to $2,400 per month and that's just the minimum I'm confident they're making much more",
         "these types of nature reels are going viral nowadays all over the Internet especially on Instagram this faceless Instagram account has gained over 400,000 subscribers in just a few months and is making thousands of dollars every month"}));
         sstrs.Add(new SSTR(Sblue.TheyWasInvitedToTheShow, new List<string>() { "the owner of this account literally got invited on _showName(Shark Tank) yeah the show" }));
+        sstrs.Add(new SSTR(Sblue.YouCanSucceed, new List<string>() { "[what if] I told you that you could monetize time your YouTube shorts in just [one day]" }));
 
         sstrs.Add(new SSTR(Sblue.WhyISucceed, new List<string>() { "and the way I did that was by focusing on these motivational AI videos",
         "by combining free AI tools with canva"}));
