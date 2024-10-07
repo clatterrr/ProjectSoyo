@@ -190,6 +190,8 @@ public class aichannel : MonoBehaviour
     enum MaterialType
     {
         Word,
+        Gear,
+        Light,
 
         IconYoutube,
         IconShopify,
@@ -237,6 +239,7 @@ public class aichannel : MonoBehaviour
 
     enum AreaEffect
     {
+        TwoLeftRightCamera,
         TwoLeftRight,
         TwoUpDown,
         OneStack,
@@ -251,6 +254,7 @@ public class aichannel : MonoBehaviour
 
         LittleRotate,
         Value,
+        EachWordTarget,
         None,
         
     }
@@ -282,7 +286,7 @@ public class aichannel : MonoBehaviour
 
     List<KeyWord> keyWords = new List<KeyWord>();
 
-    public TextMeshPro tmp;
+    private List<GameObject> tmp;
 
     //https://www.youtube.com/watch?v=FlizQ57zPAw 要的素材就两种，一种是搜索浏览，要整体，以及分别点开。第二种是个人主页，整体，简介信息，以及分别点开
     void addActorMove(MaterialType type, ActorEffect effect, int startFrame, int endFrame, Vector2 spos, Vector2 epos, float sangle, float eangle, float sscale, float escale)
@@ -304,8 +308,9 @@ public class aichannel : MonoBehaviour
         }
     }
 
-    List<Vector2> ComputeAreaEffect(AreaEffect theAreaEffects, int effectIndex, Vector2 oriPos)
+    List<Vector2> ComputeAreaEffect(AreaEffect theAreaEffects, int effectIndex, Vector2 oriPos, int startFrame, int endFrame, string str)
     {
+        Debug.Log("start = " + startFrame + " str = " + str);
         Vector2 startPos = oriPos;
         Vector2 endPos = oriPos;
         Vector2 rot = Vector2.zero;
@@ -323,6 +328,24 @@ public class aichannel : MonoBehaviour
                     {
                         startPos = new Vector2(16, 0) + oriPos;
                         endPos = new Vector2(4, 0) + oriPos;
+                    }
+
+                    break;
+                }
+            case AreaEffect.TwoLeftRightCamera:
+                {
+
+                    if (effectIndex % 2 == 0)
+                    {
+                        startPos = new Vector2(-16, 0) + oriPos;
+                        endPos = new Vector2(-4, 0) + oriPos;
+                        cameraSettings.Add(new CameraSetting(startFrame, endFrame, endPos));
+                    }
+                    else
+                    {
+                        startPos = new Vector2(16, 0) + oriPos;
+                        endPos = new Vector2(4, 0) + oriPos;
+                        cameraSettings.Add(new CameraSetting(startFrame, endFrame, endPos));
                     }
 
                     break;
@@ -354,18 +377,30 @@ public class aichannel : MonoBehaviour
 
 
     public bool enableVoice;
+    List<CameraSetting> cameraSettings = new List<CameraSetting>();
 
+    //todo: start
     void Start()
     {
-        
+
+        tmp = new List<GameObject>();
+        for (int i = 0; i < 10; i++)
+        {
+            tmp.Add(new GameObject("Word_" + i));
+            tmp[i].AddComponent<TextMeshPro>();
+        }
+
+        GameObject clock = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/AutoImages/alarm_0.prefab");
         actorDesc.Add(new ActorDesc(MaterialType.IconYoutube, CreateCubeWithImage("Assets/AutoImages/youtube.png")));
         actorDesc.Add(new ActorDesc(MaterialType.Avatar, CreateCubeWithImage("Assets/AutoImages/Avatar.png")));
-        actorDesc.Add(new ActorDesc(MaterialType.Clock, CreateCubeWithImage("Assets/AutoImages/clock.gif")));
+        actorDesc.Add(new ActorDesc(MaterialType.Clock, Instantiate(clock, Vector3.zero, Quaternion.identity)));
         actorDesc.Add(new ActorDesc(MaterialType.Grid, CreateCubeWithImage("Assets/AutoImages/grid.png")));
+        actorDesc.Add(new ActorDesc(MaterialType.Gear, CreateCubeWithImage("Assets/AutoImages/gear.png")));
+        actorDesc.Add(new ActorDesc(MaterialType.Light, CreateCubeWithImage("Assets/AutoImages/light.png")));
         actorDesc.Add(new ActorDesc(MaterialType.Word, null));
 
         string specialFolderName = "Assets/AutoImages/";
-        actorDesc.Add(new ActorDesc(MaterialType.Account,  CreateCubeWithImage(specialFolderName + "accountMainPage.png")));
+        actorDesc.Add(new ActorDesc(MaterialType.Account, CreateCubeWithImage(specialFolderName + "accountMainPage.png")));
         actorDesc.Add(new ActorDesc(MaterialType.VideoList, CreateCubeWithImage(specialFolderName + "VideoList.png")));
 
         // 什么样的keyword 应该有什么样的小反应。大反应是直接更换背景图
@@ -393,12 +428,12 @@ public class aichannel : MonoBehaviour
         List<string> realContents = new List<string>();
         for (int i0 = 0; i0 < contents.Count; i0++)
         {
-            for(int i1 = 0; i1 < contents[i0].smallBluePrint.Count; i1++)
+            for (int i1 = 0; i1 < contents[i0].smallBluePrint.Count; i1++)
             {
                 Sblue sb = contents[i0].smallBluePrint[i1];
                 for (int i2 = 0; i2 < sstrs.Count; i2++)
                 {
-                    if(sstrs[i2].sbp == sb)
+                    if (sstrs[i2].sbp == sb)
                     {
                         int r = Random.Range(0, sstrs[i2].contents.Count);
                         Debug.Log(sstrs[i2].contents[r]);
@@ -414,9 +449,9 @@ public class aichannel : MonoBehaviour
         {
             int strIndex = 0;
             int singleIndex = 0;
-            for(int stri = 0; stri < contents.Count; stri++)
+            for (int stri = 0; stri < contents.Count; stri++)
             {
-                for(int sbp = 0; sbp < contents[stri].smallBluePrint.Count; sbp++)
+                for (int sbp = 0; sbp < contents[stri].smallBluePrint.Count; sbp++)
                 {
                     BluePrint bp = contents[stri].blueprint;
                     Sblue sb = contents[stri].smallBluePrint[sbp];
@@ -427,10 +462,10 @@ public class aichannel : MonoBehaviour
                     string pattern = @"\[(.*?)\]";
                     MatchCollection matches = Regex.Matches(str, pattern);
 
-                    List<AreaEffect> areaEffects = new List<AreaEffect>() {AreaEffect.TwoUpDown };
+                    List<AreaEffect> areaEffects = new List<AreaEffect>() { AreaEffect.TwoLeftRightCamera };
                     AreaEffect theAreaEffects = areaEffects[Random.Range(0, areaEffects.Count - 1)];
 
-                    List<WordEffect> wordEffects = new List<WordEffect>() { WordEffect.LittleRotate };
+                    List<WordEffect> wordEffects = new List<WordEffect>() { WordEffect.EachWordTarget };
                     WordEffect theWordEffects = wordEffects[Random.Range(0, wordEffects.Count - 1)];
 
                     // 计算字符串的总单词数（用来计算每个单词的时间片段）
@@ -456,25 +491,24 @@ public class aichannel : MonoBehaviour
                             }
                             wordsInBracket.Add(splited[i].Replace("]", ""));
                             bracket += splited[i].Replace("]", "") + " ";
-                            List<Vector2> lv = ComputeAreaEffect(theAreaEffects, effectIndex, Vector2.zero);
+                            List<Vector2> lv = ComputeAreaEffect(theAreaEffects, effectIndex, Vector2.zero, theStart, theStart + wordsInBracket.Count * 4 * durationForEachWord, bracket);
 
                             for (int k = 0; k < actorDesc.Count; k++) if (actorDesc[k].type == MaterialType.Word)
                                 {
-                                    actorDesc[k].frames.Add(new ActorFrame(ActorEffect.Custom, WordEffect.Value, bracket,
+                                    actorDesc[k].frames.Add(new ActorFrame(ActorEffect.Custom, theWordEffects, bracket,
                                         theStart, theStart + wordsInBracket.Count * 4 * durationForEachWord, lv[0], lv[1], 0, 0, 1, 1, 1000, 6000));
                                 }
-                                    
+
                             effectIndex++;
                         }
-
 
                         // find keywords
                         for (int k = 0; k < keyWords.Count; k++)
                         {
                             if (splited[i].ToLower() == keyWords[k].word.ToLower())
                             {
-                                List<Vector2> lv = ComputeAreaEffect(theAreaEffects, effectIndex, Vector2.zero);
-                                addActorMove(keyWords[k].MaterialType, ActorEffect.Icon, theStart, theStart + 4 * durationForEachWord, lv[0], lv[1], lv[2].x, lv[2].y, lv[3].x, lv[3].y);
+                                List<Vector2> lv = ComputeAreaEffect(theAreaEffects, effectIndex, Vector2.zero, theStart, theStart +  durationForEachWord, splited[i].ToLower());
+                                addActorMove(keyWords[k].MaterialType, ActorEffect.Icon, theStart, theStart +  durationForEachWord, lv[0], lv[1], lv[2].x, lv[2].y, lv[3].x, lv[3].y);
                                 effectIndex++;
                             }
                         }
@@ -486,119 +520,196 @@ public class aichannel : MonoBehaviour
             }
         }
 
-        Debug.Log("length = " + actorDesc[4].frames.Count);
-        for(int i = 0; i < actorDesc[4].frames.Count; i++)
+        
+        for (int i = 0; i < cameraSettings.Count - 1; i++)
         {
-            ActorFrame af = actorDesc[4].frames[i];
-            Debug.Log("wrod =" + af.word);
+
+            if (cameraSettings[i].frameEnd < cameraSettings[i + 1].frameStart - 1)
+            {
+               // cameraSettings.Insert(i, new CameraSetting(cameraSettings[i].frameEnd + 1, cameraSettings[i + 1].frameStart, Vector3.zero, null, Vector3.zero, false));
+            }
+            else
+            {
+                
+            }
+            CameraSetting cs = cameraSettings[i];
+            cs.frameEnd = cameraSettings[i + 1].frameStart;
+            cameraSettings[i] = cs;
+        }
+        
+        for (int i = 0; i < cameraSettings.Count - 1; i++)
+        {
+            Debug.Log(" i = " + i + " start + " + cameraSettings[i].frameStart + " end = " + cameraSettings[i].frameEnd + " pos = " + cameraSettings[i].posOffsetEnd);
         }
     }
 
-
-    int globalFrameCount = 0;
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        for(int i = 0; i < actorDesc.Count; i++)
+        int globalFrameCount = 0;
+        // Update is called once per frame
+        // todo: update
+        void FixedUpdate()
         {
-            bool findFrame = false;
-            for(int j = 0; j < actorDesc[i].frames.Count; j++)
+            int gapFrames = 10;
+            for (int i = 0; i < cameraSettings.Count; i++)
             {
-                ActorFrame af = actorDesc[i].frames[j];
-                if (globalFrameCount >= af.startFrame && globalFrameCount < af.endFrame)
+                CameraSetting cs = cameraSettings[i];
+                if (globalFrameCount >= cs.frameStart && globalFrameCount < cs.frameEnd)
                 {
-                    float c = af.endFrame - af.startFrame;
-                    float a = globalFrameCount - af.startFrame;
-                    float ratio = 0;
-                    if (a < c * 0.25f) ratio = 0;
-                    else if (a > c * 0.75f) ratio = 1;
-                    else
+                    Vector3 targePos = cs.posOffsetEnd;
+                    if (globalFrameCount - cs.frameStart < gapFrames)
                     {
-                        ratio = (a - c * 0.25f) / (c * 0.5f);
-                    }
-
-                    Vector2 targetPos = Vector2.Lerp(af.startPos, af.endPos, ratio);
-                    float targetAngle = Mathf.Lerp(af.startRot, af.endRot, ratio);
-                    float targetScale = Mathf.Lerp(af.startScale, af.endScale, ratio);
-
-                    switch (af.effect)
-                    {
-                        case ActorEffect.Custom: 
-                            {
-                                // Calculate offset vector (normal to the line connecting startPos and endPos)
-                                Vector2 dir = (af.endPos - af.startPos).normalized;  // Direction vector from start to end
-                                Vector2 normal = new Vector2(-dir.y, dir.x);         // Perpendicular (tangent is 0)
-
-                                // Offset is 1/3 the distance between start and end positions
-                                float offsetDistance = Vector2.Distance(af.startPos, af.endPos) / 3.0f;
-                                Vector2 controlPos = af.startPos + (af.endPos - af.startPos) * 0.5f + normal * offsetDistance;
-
-                                // Quadratic Bézier interpolation for position
-                                targetPos = Mathf.Pow(1 - ratio, 2) * af.startPos
-                                                    + 2 * (1 - ratio) * ratio * controlPos
-                                                    + Mathf.Pow(ratio, 2) * af.endPos;
-
-                                // Quadratic Bézier interpolation for rotation (no offset for rotation)
-                                targetAngle = Mathf.Pow(1 - ratio, 2) * af.startRot
-                                                    + 2 * (1 - ratio) * ratio * ((af.startRot + af.endRot) / 2)  // Midpoint control for smooth transition
-                                                    + Mathf.Pow(ratio, 2) * af.endRot;
-                                break;
-                            }
-                        default: break;
-                    }
-
-                    if(actorDesc[i].type == MaterialType.Word)
-                    {
-                        switch (af.wordEffect)
+                        if (i > 0)
                         {
-                            case WordEffect.FromCornerToCenter: break;
-                            case WordEffect.SideShrinkToCenter:
-                                {
-                                    float startSize = 80;
-                                    float endSize = 20;
-                                    tmp.fontSize = Mathf.Lerp(startSize, endSize, ratio);
-                                    float startCharSpace = 10;
-                                    float endCharSpaace = 0;
-                                    tmp.characterSpacing = Mathf.Lerp(startCharSpace, endCharSpaace, ratio);
+                            float ratio = (globalFrameCount - cs.frameStart + gapFrames) * 1.0f / (2.0f * gapFrames);
+                            targePos = Vector3.Lerp(cameraSettings[i - 1].posOffsetEnd, cs.posOffsetEnd, ratio);
+                        }
+                    }
+                    else if (cs.frameEnd - globalFrameCount < gapFrames)
+                    {
+                        if (i < cameraSettings.Count - 1)
+                        {
+                            float ratio = 0.5f - (cs.frameEnd - globalFrameCount) * 1.0f / (2.0f * gapFrames);
+                            targePos = Vector3.Lerp(cs.posOffsetEnd, cameraSettings[i + 1].posOffsetEnd, ratio);
+                        }
+                    }
+                    Camera.main.transform.rotation = Quaternion.Euler(0, 0, 0);
+                    Camera.main.transform.position = new Vector3(targePos.x, targePos.y, -10);
+                }
+            }
 
-                                    break;
-                                }
-                            case WordEffect.LittleRotate:
+            for (int i = 0; i < actorDesc.Count; i++)
+            {
+                bool findFrame = false;
+                for (int j = 0; j < actorDesc[i].frames.Count; j++)
+                {
+                    ActorFrame af = actorDesc[i].frames[j];
+                    if (globalFrameCount >= af.startFrame && globalFrameCount < af.endFrame)
+                    {
+                        float c = af.endFrame - af.startFrame;
+                        float a = globalFrameCount - af.startFrame;
+                        float ratio = 0;
+                        if (a < c * 0.25f) ratio = 0;
+                        else if (a > c * 0.75f) ratio = 1;
+                        else
+                        {
+                            ratio = (a - c * 0.25f) / (c * 0.5f);
+                        }
+
+                        Vector2 targetPos = Vector2.Lerp(af.startPos, af.endPos, ratio);
+                        float targetAngle = Mathf.Lerp(af.startRot, af.endRot, ratio);
+                        float targetScale = Mathf.Lerp(af.startScale, af.endScale, ratio);
+
+                        switch (af.effect)
+                        {
+                            case ActorEffect.Custom:
                                 {
-                                    tmp.fontSize = 20;
-                                    tmp.characterSpacing = 0;
-                                    tmp.transform.rotation = Quaternion.Euler(0, 0, Mathf.Sin(ratio * 20) * 10);
+                                    // Calculate offset vector (normal to the line connecting startPos and endPos)
+                                    Vector2 dir = (af.endPos - af.startPos).normalized;  // Direction vector from start to end
+                                    Vector2 normal = new Vector2(-dir.y, dir.x);         // Perpendicular (tangent is 0)
+
+                                    // Offset is 1/3 the distance between start and end positions
+                                    float offsetDistance = Vector2.Distance(af.startPos, af.endPos) / 3.0f;
+                                    Vector2 controlPos = af.startPos + (af.endPos - af.startPos) * 0.5f + normal * offsetDistance;
+
+                                    // Quadratic Bézier interpolation for position
+                                    targetPos = Mathf.Pow(1 - ratio, 2) * af.startPos
+                                                        + 2 * (1 - ratio) * ratio * controlPos
+                                                        + Mathf.Pow(ratio, 2) * af.endPos;
+
+                                    // Quadratic Bézier interpolation for rotation (no offset for rotation)
+                                    targetAngle = Mathf.Pow(1 - ratio, 2) * af.startRot
+                                                        + 2 * (1 - ratio) * ratio * ((af.startRot + af.endRot) / 2)  // Midpoint control for smooth transition
+                                                        + Mathf.Pow(ratio, 2) * af.endRot;
                                     break;
                                 }
                             default: break;
                         }
 
-                        tmp.text = af.word;
-                        tmp.transform.position = new Vector3(targetPos.x, targetPos.y, 0);
-                    }
-                    else
-                    {
-                        actorDesc[i].actor.transform.position = new Vector3(targetPos.x, targetPos.y, 0);
-                        actorDesc[i].actor.transform.rotation = Quaternion.Euler(0, targetAngle, 180);
-                        actorDesc[i].actor.transform.localScale = actorDesc[i].baseScale * targetScale;
-                    }
+                        if (actorDesc[i].type == MaterialType.Word)
+                        {
+                            string theword = af.word;
+                            string[] splited = theword.Split(" ");
 
-                    findFrame = true;
-                    break;
+                            switch (af.wordEffect)
+                            {
+                                case WordEffect.FromCornerToCenter: break;
+                                case WordEffect.SideShrinkToCenter:
+                                    {
+                                        float startSize = 80;
+                                        float endSize = 20;
+
+                                        float startCharSpace = 10;
+                                        float endCharSpaace = 0;
+                                        tmp[0].GetComponent<TextMeshPro>().characterSpacing = Mathf.Lerp(startCharSpace, endCharSpaace, ratio);
+                                        tmp[0].GetComponent<TextMeshPro>().fontSize = Mathf.Lerp(startSize, endSize, ratio);
+
+
+                                        break;
+                                    }
+                                case WordEffect.LittleRotate:
+                                    {
+                                        tmp[0].GetComponent<TextMeshPro>().fontSize = 20;
+                                        tmp[0].GetComponent<TextMeshPro>().characterSpacing = 0;
+                                        tmp[0].GetComponent<TextMeshPro>().transform.rotation = Quaternion.Euler(0, 0, Mathf.Sin(ratio * 20) * 10);
+                                        break;
+                                    }
+                                case WordEffect.EachWordTarget:
+                                    {
+                                        tmp[0].GetComponent<TextMeshPro>().fontSize = 20;
+                                        tmp[0].GetComponent<TextMeshPro>().characterSpacing = 0;
+                                        tmp[0].GetComponent<TextMeshPro>().transform.rotation = Quaternion.Euler(0, 0, Mathf.Sin(ratio * 20) * 10);
+
+                                        float bFrame = af.startFrame + (af.endFrame - af.startFrame) / 4f;
+                                        float cFrame = (af.endFrame - af.startFrame) / 2f;
+                                        float sFrame = cFrame / splited.Length;
+                                        theword = "";
+                                        for (int k = 0; k < splited.Length; k++)
+                                        {
+                                            tmp[k].GetComponent<TextMeshPro>().fontSize = 20;
+                                            tmp[k].GetComponent<TextMeshPro>().characterSpacing = 0;
+                                            tmp[k].GetComponent<TextMeshPro>().transform.rotation = Quaternion.Euler(0, 0, 0);
+
+                                            float sstartFrame = bFrame + k * sFrame;
+                                            float localRatio;
+                                            if (globalFrameCount < sstartFrame) localRatio = 0;
+                                            else if (globalFrameCount >= sstartFrame + sFrame) localRatio = 1;
+                                            else localRatio = (globalFrameCount - sstartFrame) / sFrame;
+
+                                            float voffset = Mathf.Lerp(-50f, 0f, localRatio);
+                                            theword = theword + "<voffset=" + voffset.ToString() + ">" + splited[k] + " ";
+                                        }
+                                        break;
+                                    }
+                                case WordEffect.Value:
+                                    {
+                                        float targetValue = Mathf.Lerp(af.startValue, af.endValue, ratio);
+                                        theword = af.word.Replace("_money", targetValue.ToString());
+                                        break;
+                                    }
+                                default: break;
+                            }
+                            tmp[0].GetComponent<TextMeshPro>().text = theword;
+                            //tmp[0].gameObject.transform.position = new Vector3(targetPos.x, targetPos.y, 0);
+                        }
+                        else
+                        {
+                            actorDesc[i].actor.transform.position = new Vector3(targetPos.x, targetPos.y, 0);
+                            actorDesc[i].actor.transform.rotation = Quaternion.Euler(0, targetAngle, 180);
+                            actorDesc[i].actor.transform.localScale = actorDesc[i].baseScale * targetScale;
+                        }
+
+                        findFrame = true;
+                        break;
+                    }
                 }
-            }
 
 
-            if (!findFrame)
-            {
-                if (actorDesc[i].type == MaterialType.Word) tmp.text = "";
-                else actorDesc[i].actor.transform.position = new Vector3(1000, 1000, 1000);
+                if (!findFrame && actorDesc[i].type != MaterialType.Word) actorDesc[i].actor.transform.position = new Vector3(1000, 1000, 1000);
+
             }
-            
+
+            globalFrameCount++;
         }
-
-        globalFrameCount++;
-    }
+    
 
     // six sigma https://youtu.be/4EDYfSl-fmc?t=50
     // https://youtu.be/vhGG2XDwAuE?t=90
@@ -619,7 +730,7 @@ public class aichannel : MonoBehaviour
         DataIsMore,
         IfNotThinkThenBad,
         GoodDoWell,
-        YouShouldLearn,
+        YouSeeYouSucceed,
         TheyAllSucceed,
         WhatIamTellingYou,
         WeMustUnderStandHe,
@@ -650,6 +761,11 @@ public class aichannel : MonoBehaviour
         Special_Topic,
         Special_GPT,
         Special_Consistent,
+        Special_Branding,
+        Special_Hooking,
+        Special_Script,
+
+        Tool_Canva,//https://youtu.be/at_3hqBaDgI?t=292
 
     }
     void updateStr()
@@ -658,9 +774,11 @@ public class aichannel : MonoBehaviour
         sstrs.Add(new SSTR(Sblue.ThisChannelMakesMoney, new List<string>() { "it took 24 hours to make _bigmoney($260,000) with this _channelName(Instagram page)",
                     "my brand new Instagram account has grown from zero to over 250,000 followers in just 3 months",
                     "the account gets millions of views on almost every post",
+                    "all right guys listen up in the last few months this spaceless YouTube channel has raked in over $60,000 just from uploading these simple animal facts videos and get this all these videos are sponsored",
                     "okay so there is a new way that people are earning $832 per week",
                     "and the best part is I've made over $10,000 from it so far",
                     "month one $88,500 month2 $113,000 and month six $ 29,90 per month",
+                    "crazy right now if we take a closer look at this channel you'll see that almost all the videos have close to 1 million views and the most popular ones have over 30 million views these videos are still making money today that's insane passive income like seriously freaking insane",
             "I grew one of my Instagram pages to over 100,000 followers only using Ai and was able to make over $12,000 in passive income since starting this business",
         "and no I'm I'm not talking about YouTube ad Revenue I'm talking about the potential of making money with zero Instagram followers ",
             "sounds too good to be true right well using the exact strategy I grew one of my pages to over 100,000 followers and I'm already making consistent passive income",
@@ -676,8 +794,11 @@ public class aichannel : MonoBehaviour
 
         sstrs.Add(new SSTR(Sblue.HeHasALotRevenue, new List<string>() { "for how well she profited from this Instagram page again $260,000 24 hours from a page that has just 270 posts and 188,000 followers she made over $3 million in Revenue in a single year since launching it" }));
         sstrs.Add(new SSTR(Sblue.DataIsMore, new List<string>() { "and by the way all these stats are from November of 2023 so she very well might have already doubled that" }));
-        sstrs.Add(new SSTR(Sblue.YouShouldLearn, new List<string>() { "if you are still sleeping on _platformName(faceless Instagram Pages) then I don't know what you're doing", 
+        sstrs.Add(new SSTR(Sblue.YouSeeYouSucceed, new List<string>() { "if you are still sleeping on _platformName(faceless Instagram Pages) then I don't know what you're doing", 
             "but as a beginner the hard part is learning to do those things better than everyone else",
+            "people usually pay thousands of dollars for this information by buying courses and they still don't reveal what I'm going to reveal to you today but don't worry I'm going to give it to you for free",
+            "I'm also going to reveal one last trick at the end of the video that I've learned from running multiple faceless YouTube channels this tip will ow you to actually make money from your first video onwards yes it's true the last trick I'm going to share with you will blow your mind and it's going to allow you to monetize your animal facts faceless YouTube channel from the first video onwards",
+            "but guess what if you have the patience to watch this video Until the End you'll have the knowledge needed to start your own animal faceless YouTube automation business just like the channel",
         "but please forget this for now because if you skip this video you won't be able to generate similar images with these prompts your results will not be the same you need to know some tricks also you won't be able to learn how to make money with a similar account and you will miss some valuable information to make at least $5,000 per month with these videos so please don't skip the last part"}));
         sstrs.Add(new SSTR(Sblue.TheyAllSucceed, new List<string>() { "there are several accounts using this exact same strategy that she's using to make millions today" }));
         sstrs.Add(new SSTR(Sblue.WhatIamTellingYou, new List<string>() { "I'm going to reverse engineer this entire business model for you and show you how you can replicate this success for free",
@@ -690,6 +811,7 @@ public class aichannel : MonoBehaviour
         "and this side of the business is what we are going to explore in today's video showing you the process step by step from the idea to the first dollar",
         "nd I'm going to start by showing you how to create these motivational stoic videos",// 联动
         "don't tell anyone I'm going to teach you that step by step",
+        "so in this video I'm going to show you exactly how you can also start your own similar animal facts faceless YouTube channel using Ai and don't worry you'll get super high quality videos with my step-by-step neverbe seen strategy even with AI",
         "I will show everything with proof of how they are making thousands of dollars with this account the best part of this Niche is that you can make a similar video in just a few minutes without spending much time on a script and voiceover ",
         "and my mission is to show you how to easily start a similar Channel with the help of AI",
         "I will show you how people make thousands of dollars using Ai and Google Trend I will also share with you a special technique for scaling this idea and making more money",
@@ -717,7 +839,8 @@ public class aichannel : MonoBehaviour
         "before we get into my workflow creation process you should understand how your favorite creators are tricking you into watching their videos and you can do all of these things"}));
         sstrs.Add(new SSTR(Sblue.OtherGuruNotDoWell, new List<string>() { "coming up with good video ideas can be really tough",
             "as you can see the algorithm realized that this post wasn't getting the same level of attention and that it would be pointless for them to continue showing it to more and more people and this second situation is what I see happen to most people on Instagram they spend so much time creating content that isn't optimized for the algorithm which leads to them getting no views and then wondering what went wrong",
-        "and I'm sure you've seen countless videos about the monetizable shorts but the sad truth is that not a single person has been able to monetize these videos to their maximum potential"}));
+        "and I'm sure you've seen countless videos about the monetizable shorts but the sad truth is that not a single person has been able to monetize these videos to their maximum potential",
+        "I know what you're probably thinking there's already a few animal facts tutorials out on YouTube but here's the thing these so-called gurus are not transparent with you nobody shows you real step-by-step methods or how to create your first faceless YouTube business instead these clowns are just focused on their own views"}));
 
         sstrs.Add(new SSTR(Sblue.ItIsHard, new List<string>() { "coming up with good video ideas can be really tough" }));
 
@@ -742,8 +865,20 @@ public class aichannel : MonoBehaviour
         "and if you're wondering how I monetize these reals was by selling digital products related to my Niche this is a much easier and faster way to earn money as it bypasses requirements like the YouTube Partner program or Tik Tok creativity program"}));
 
 
+        // xxx 不容易，但是我会教你最容易的方法(抽象)
+        // 意识流，高效指南
+        //
+        // 最容易的方法是(具体)
+
+
         sstrs.Add(new SSTR(Sblue.Special_Caption, new List<string>() {
             "first use keywords in your captions strategically because captions tie into a concept called SEO or search engine optimization",
+            "here's where it gets interesting naming your channel can be a pain in the ass " +
+            "but don't worry we're using chat GPT to make this super easy open chat GPT " +
+            "and type something like give me 10 cool names for an animal facts YouTube channel boom " +
+            "you got a list of potential names and seconds " +
+            "for example we're taking inspiration from our competitor zrank we might get names like wild Whispers creature Chronicles animal Antics 101 and nature nuggets " +
+            "pick a name that resonates with you and sounds catchy as hell remember the name should be memorable and reflect the kind of content you're going to produce",
         "so the proven formula is simple if we find trending topics with high search volume and turn them into engaging videos we will start building an audience and eventually make money"}));
         sstrs.Add(new SSTR(Sblue.Special_SEO, new List<string>() {
             "if you aren't familiar with how SEO works on Instagram just think about searching something on Google when you search how to hard boil eggs on Google tons tons of articles are going to pop up explaining how to do it those articles likely have the keywords hard boil eggs or how to in them" }));
@@ -761,11 +896,24 @@ public class aichannel : MonoBehaviour
 
         sstrs.Add(new SSTR(Sblue.Special_Consistent, new List<string>() {
             "but of course for this formula to work you must stay consistent in uploading downtown uploads two videos a day which is why they get so many views so even if not every video goes viral the momentum from consistent uploading will automatically grow the channel" }));
+        sstrs.Add(new SSTR(Sblue.Special_Branding, new List<string>() {
+            "When you give a TED Talk, you’re marketing. When you ask your boss for a raise, you’re marketing. When you raise money for the local playground, you’re marketing. And yes, when you’re trying to grow your division at work, that’s marketing too. For a long time, during the days when marketing and advertising were the same thing, marketing was reserved for vice presidents with a budget." ,
+        "Marketers don’t use consumers to solve their company’s problem; they use marketing to solve other people’s problems. They have the empathy to know that those they seek to serve don’t want what the marketer wants, don’t believe what they believe, and don’t care about what they care about. They probably never will."}));
+        sstrs.Add(new SSTR(Sblue.Special_Script, new List<string>() {
+            "all right everyone listen up a good script can make make or break your video it's what keeps the viewers hooked engaged and coming back for more if your script sucks no one's sticking around no matter how flashy the visuals are so let's dive into how to write the perfect script for your animal facts video"}));
 
+        sstrs.Add(new SSTR(Sblue.Special_Hooking, new List<string>() {
+            "a script is the backbone of your video it ensures your content structured engaging and flows well hypertension means viewers watch your video longer which signals to YouTube that your content's worth promoting more promotion means more views and more views mean more money simple as"}));
 
         /*
          The next step is to capture attention, but not just any attention—don’t aim for going viral. Instead, focus on crafting content that resonates with your ideal customer. Begin by sharing helpful insights, whether it’s through tweets, reels, YouTube videos, shorts, or LinkedIn posts. The key is to offer value that's relevant to your audience, as this will help position you as an expert in your field. When people recognize that you genuinely know your stuff, they’ll be more inclined to trust you, which can lead to future sales. You'll need to consistently do this over time.
          
+
+        We tell stories. Stories that resonate and hold up over time. Stories that are true, because we made them true with our actions and our products and our services.
+
+We make connections. Humans are lonely, and they want to be seen and known. People want to be part of something. It’s safer that way, and often more fun.
+
+We create experiences. Using a product, engaging with a service. Making a donation, going to a rally, calling customer service. Each of these actions is part of the story; each builds a little bit of our connection. As marketers, we can offer these experiences with intent, doing them on purpose.
          */
     }
 
