@@ -1,0 +1,3158 @@
+fileFormatVersion: 2
+guid: a4fd12d7638bb114883fe766baab3e46
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 11
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: 4
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Server
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: alarm_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 11606
+        width: 573
+        height: 574
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 680a4a91739a0d8419e6a9cd77656c12
+      internalID: -180212909
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_1
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 11606
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 79793822279e970428a672e04d149baa
+      internalID: -700212081
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_2
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 11606
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4cac83d05656de646a454c0d56ecb581
+      internalID: 473194714
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_3
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 11606
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 563517e0811a5dd4cbf12dcd9cb540df
+      internalID: -1922150708
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_4
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 11606
+        width: 544
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cd58bc66217cd764394ffc47bba36e46
+      internalID: -608684278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_5
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 11606
+        width: 546
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a499b1d8088bbdf438a3b640910dd5ff
+      internalID: -358115428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_6
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 11606
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b782663ac88c69748ae78db04902fc83
+      internalID: -280967257
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_7
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 11029
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3d476d553a930b24da1e0e7a4b66c1d8
+      internalID: -1401752799
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_8
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 11029
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eebc7b590645cf540b977acf24eaf5cf
+      internalID: -1760792140
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_9
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 11029
+        width: 547
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9740be24f3c27b642b6c7432f3bf8909
+      internalID: -1304268577
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_10
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 11029
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f19a4549515a4664caea9104a7103ad9
+      internalID: 1260320768
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_11
+      rect:
+        serializedVersion: 2
+        x: 2351
+        y: 11029
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed268163aa715f14d84cab2277b5a618
+      internalID: 365955658
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_12
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 11029
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8577e68ddadf5bb4cbc8e3a09960e65b
+      internalID: -240161520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_13
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 11029
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: af41158c8bbf29b4db9ff2eba92f58f0
+      internalID: -929928919
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_14
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 10447
+        width: 546
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 197a6e85fa608ec44be0fdaa1d238647
+      internalID: -777040713
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_15
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 10447
+        width: 541
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ebb52d549156d0a478d11d3ec4e3c4ff
+      internalID: 840521320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_16
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 10447
+        width: 547
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d08b1d98b0bc30b49880d6957520ba78
+      internalID: 223791168
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_17
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 10447
+        width: 541
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f72d337043d961a4299828fe689cdb8d
+      internalID: 1185246835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_18
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 10447
+        width: 544
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9c0672c592887db42b90cea23e377c04
+      internalID: -1627961051
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_19
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 10447
+        width: 546
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b4ab780c484c0ff4a9cb758c9ae089ee
+      internalID: -1291901576
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_20
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 10447
+        width: 541
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 18dd4cc2fdbc3524d844bf2b391f77ec
+      internalID: 925160168
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_21
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 9870
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b9c3ec0fe6a93344db02fa16fd079243
+      internalID: 1494096031
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_22
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 9870
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 335cfd66604135f449cf38a42218c073
+      internalID: 775684247
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_23
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 9870
+        width: 547
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a3ec61ff567208545849fba1056b1fa1
+      internalID: 481316230
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_24
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 9870
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4e253527fb58e0a41874fcbf5ece252b
+      internalID: 764122803
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_25
+      rect:
+        serializedVersion: 2
+        x: 2351
+        y: 9870
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9a61ad1ccae1e5f44b44c32c303ea07c
+      internalID: -594926946
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_26
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 9870
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 281de08b7cbf07e45b18d78388029abf
+      internalID: -1902222956
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_27
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 9870
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c9b6d90aacff9c4c9dd1142c9208869
+      internalID: 1167734631
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_28
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 9287
+        width: 546
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0fa5bf8dde7715a45a993356e8cd40d4
+      internalID: -144346654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_29
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 9287
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 02ded58e91bf9304988e7db04399e55e
+      internalID: -716646584
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_30
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 9287
+        width: 547
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6d6fee069869afc44a3829167417c7de
+      internalID: -537428540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_31
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 9287
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 88ddf5caa4912b1488f36f3e4cf1d9cd
+      internalID: -1937196594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_32
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 9287
+        width: 544
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 200f0b827dd02b04f862957067d61ec3
+      internalID: 528020056
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_33
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 9287
+        width: 546
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bbbee4ed94a0e0e4e8b5a9de9f93a9c0
+      internalID: 797762057
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_34
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 9287
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 19d0be8a010b4784cae2f61a81bea844
+      internalID: -984814567
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_35
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 8710
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8b991734bedb66e4d893572807c8e1e7
+      internalID: 1889323298
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_36
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 8710
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2b52628c6020290448fe1ff607364907
+      internalID: 1608223816
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_37
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 8710
+        width: 547
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 42a5b61226f895a419d652dd5ddae8af
+      internalID: -1434370634
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_38
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 8710
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7ecdfcd0f870f4546a89a15d99aab623
+      internalID: -636087549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_39
+      rect:
+        serializedVersion: 2
+        x: 2351
+        y: 8710
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 50a9aca23979b9c4ea37643067b6f321
+      internalID: -1860210238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_40
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 8710
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e35280d93edfd8448b87c058990ef3a0
+      internalID: -415843844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_41
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 8710
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: da800bdc3a1c5dc4dbccfc304da0e6ba
+      internalID: -323423097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_42
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 8127
+        width: 546
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4c7605d799287a346b6bcd711c9fbe97
+      internalID: -917193998
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_43
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 8127
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 463f47e1e562f89478d089bb3a1db88a
+      internalID: -271729758
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_44
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 8127
+        width: 547
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 84773ddc11405c84e94fd3c98c00b870
+      internalID: -380637577
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_45
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 8127
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3f646fc11a2c833469c01c5ccc4bd23c
+      internalID: 1780398980
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_46
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 8127
+        width: 544
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ec505108dff9d5a41b5327176c44aa6a
+      internalID: 794425312
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_47
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 8127
+        width: 546
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c99d14c92b3ff16439b9ba4f2c30a7e2
+      internalID: -1864647917
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_48
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 8127
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6fed1ff3dad818146ad994cbea683548
+      internalID: -1952020877
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_49
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 7550
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a7429bb12d68ba8489ca7e72b87ec4f8
+      internalID: 1341244691
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_50
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 7550
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7c1226745f5711d4aaf530aaacaa7dc9
+      internalID: 1380233414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_51
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 7550
+        width: 547
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e53c3a72bce06b44cb1375b670aa307f
+      internalID: 555156502
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_52
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 7550
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e8a05c25c53f1744f93024cccc85a679
+      internalID: -1734162795
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_53
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 7550
+        width: 544
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9f62af213ba4fc944afb1ec7a001e054
+      internalID: 415558392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_54
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 7550
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b55c098684e564043907ed95cfdfa4d5
+      internalID: 1634833892
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_55
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 7550
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b5c93897a5b86e6439292fc24695a4bb
+      internalID: -549518322
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_56
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 6967
+        width: 546
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3685bcd3d5d0f5241a005f96142031e1
+      internalID: 644004310
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_57
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 6967
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c7e3ace9caa4f494a8b5854dac3dd336
+      internalID: -748841688
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_58
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 6967
+        width: 547
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0626f6084ecd77a48b2216b7af22fa56
+      internalID: 404873702
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_59
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 6967
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fca417be1351dc94abd0cae47730b270
+      internalID: 1230207751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_60
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 6967
+        width: 544
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5f83704420b600747ba7eb4c2e5485a4
+      internalID: 17232642
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_61
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 6967
+        width: 546
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1caf2ca6ba1cd9c48ad8dc39f66ed6e8
+      internalID: -918838239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_62
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 6967
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9bff3227e1a55e243af0b35bb09ebde2
+      internalID: 1325464039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_63
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 6390
+        width: 546
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9fd8752fa56b30646bedf07f383163d5
+      internalID: 2125291906
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_64
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 6390
+        width: 541
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 92e0c8218618a94408d5df0c547a85be
+      internalID: -1874138432
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_65
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 6390
+        width: 547
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a2fbdab73439e2e48a6bba0486a555b2
+      internalID: -1713391895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_66
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 6390
+        width: 541
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d4b59fac04432704d87cdb65317faed9
+      internalID: 1872641067
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_67
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 6390
+        width: 544
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 162797f877143ba4f98cf572b0ba77dc
+      internalID: 1685331426
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_68
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 6390
+        width: 546
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e8d4d5607f904f0498d3cef16e6d9c27
+      internalID: 152499986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_69
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 6390
+        width: 541
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 501eb2ebad95dc64d85694d3637ef1ee
+      internalID: -2017145572
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_70
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 5808
+        width: 546
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1dcd11883e6970c4ab7b5f176ad80c40
+      internalID: -1552252150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_71
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 5808
+        width: 541
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 123890f20faa84842b6d393625211f84
+      internalID: 419640157
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_72
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 5808
+        width: 547
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2ada52b1a86a4e46a25966894181b1c
+      internalID: 1008090719
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_73
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 5808
+        width: 541
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: db75b05d3ca5f4f4fab9c00692dc5c2b
+      internalID: 528164144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_74
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 5808
+        width: 544
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1d854960d19f607408ddbc85fc392178
+      internalID: 79716687
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_75
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 5808
+        width: 546
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5d9bf74c48efe034f95fe4e73496144d
+      internalID: -1546469323
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_76
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 5808
+        width: 541
+        height: 546
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 29a7b084b99e1ee40bb6a1543377d6e0
+      internalID: -440434150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_77
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 5231
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7eb037a04ae65f34889e6b21dba144cb
+      internalID: -1489424542
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_78
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 5231
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e5c78eec1dbac0a4c9593a404e72e13f
+      internalID: -81699153
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_79
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 5231
+        width: 547
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 18085f9280f71d64db09c32ae5cbf3c0
+      internalID: 1400120850
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_80
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 5231
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4e91a80502a9b0340bf080d24e40e48f
+      internalID: -1688296096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_81
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 5231
+        width: 544
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 619ca26a8295e0c469ff8c777c4281cc
+      internalID: 669128911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_82
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 5231
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 90d6508ecf345b340950a2d917138dd7
+      internalID: 1618479824
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_83
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 5231
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3577e5899a7dab749876924e140c88cd
+      internalID: 1650028546
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_84
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 4648
+        width: 546
+        height: 544
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 74ad1ccd2e70bf64e81515b2e33c84a6
+      internalID: -185735663
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_85
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 4648
+        width: 541
+        height: 544
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0734d7a9f1ba01a409ae93699a75d92c
+      internalID: -959391874
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_86
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 4648
+        width: 547
+        height: 544
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 11e5d1b9b78c3d64eb06a77af02f7d66
+      internalID: 558744607
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_87
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 4648
+        width: 541
+        height: 544
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 46d950964defe4b479628b18c08a99bc
+      internalID: 891611111
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_88
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 4648
+        width: 544
+        height: 544
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cdcc25f9612010d42b8828f7383e69ab
+      internalID: -997091133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_89
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 4648
+        width: 546
+        height: 544
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ec4b7160d2041da4ab93606f2efd4a87
+      internalID: 788158211
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_90
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 4648
+        width: 541
+        height: 544
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 170c648c7a5fdd648bab6461cd39bce3
+      internalID: 407913918
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_91
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 4071
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa38bb0e1a9cf7a4e8915723a0bdf084
+      internalID: 497153695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_92
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 4071
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 20cb6565adc1ace4a9f0a5acdf434c55
+      internalID: 907762287
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_93
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 4071
+        width: 547
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b580c810b9f070945869879dc32617ac
+      internalID: 1594520001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_94
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 4071
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 581b0533c6e138f4d91542028ba0a1de
+      internalID: 2096404476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_95
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 4071
+        width: 544
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d52c17935dc7e4c44b27cde67bb45e15
+      internalID: 1070915359
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_96
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 4071
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5a758194e6d2c0645b8b38114a6a8b2b
+      internalID: -1072312230
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_97
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 4071
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0598d05f533981b44aa737797a16b297
+      internalID: -694221018
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_98
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 3488
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: acb2200121164274ca82c5e3b269559b
+      internalID: 434585255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_99
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 3488
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 11c2ab00b7a076d4796b652b75d017a3
+      internalID: -1046165774
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_100
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 3488
+        width: 547
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d537326071756b647b99e981ce4f4bab
+      internalID: -1020934655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_101
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 3488
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0bb22925c4a11e0458c21d9ad971a8ba
+      internalID: -95419800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_102
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 3488
+        width: 544
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dd4ac5a8c2788d645a8d124be70d3f70
+      internalID: 1054707546
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_103
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 3488
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 14ae5a4064f25414e8344375a25013e6
+      internalID: -2095079001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_104
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 3488
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7e62068e16b67954cb3f7d5aef068765
+      internalID: -2007740248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_105
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 2907
+        width: 546
+        height: 545
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a1b15a767ca43084286a6f1058ef71d6
+      internalID: -259285134
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_106
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 2907
+        width: 541
+        height: 545
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 27fbcb39624de2a41a94644207e85a50
+      internalID: 833209161
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_107
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 2907
+        width: 547
+        height: 545
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1072dee6bbad7db43b3ea772aaa2c37f
+      internalID: -449977213
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_108
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 2907
+        width: 541
+        height: 545
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 99beb76616aae8140a9e1b0883aef413
+      internalID: -309152292
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_109
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 2907
+        width: 544
+        height: 545
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 94ea69567ba72524bb9f03543990cdd9
+      internalID: 1555930046
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_110
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 2907
+        width: 546
+        height: 545
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 030cb983e7ee9574ca451df8f3d763b8
+      internalID: 975109229
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_111
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 2907
+        width: 541
+        height: 545
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eb6bf5933535f524b961524864b601bc
+      internalID: 1884380964
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_112
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 2328
+        width: 546
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0ce3a02106d726a4a8390ffac592099a
+      internalID: -1864741378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_113
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 2328
+        width: 541
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 272d45812073a304bb9feb7ba5860e48
+      internalID: -253257299
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_114
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 2328
+        width: 547
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c193f9d5b2b104a4dbe8501b488e5651
+      internalID: 1111470314
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_115
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 2328
+        width: 541
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dcc47c29a1dd8664fb1d6d67f4d17a12
+      internalID: 1802610439
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_116
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 2328
+        width: 544
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f85225e56e2fbd84181e78ed27c45d49
+      internalID: 279474962
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_117
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 2328
+        width: 546
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 61c4b72ea26384144979636ee3b72af3
+      internalID: -197880242
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_118
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 2328
+        width: 541
+        height: 542
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 00b5f3671d8d2624d979ad1b60537bba
+      internalID: -1290380410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_119
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 1746
+        width: 546
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 675e43377e0c3524189f01d599f04a9e
+      internalID: -1653768467
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_120
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 1746
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 26cdf86fce24ff74585c0c5dbe2f6e11
+      internalID: -1170988876
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_121
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 1746
+        width: 547
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6dc02e3faf85fc844843c3c92e9a7f01
+      internalID: 1137699826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_122
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 1746
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f4f63d1ce62b30f4d8a157badc66c322
+      internalID: -713111303
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_123
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 1746
+        width: 544
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ea39b528ca335e54da22b262fee93dc8
+      internalID: 1834583676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_124
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 1746
+        width: 546
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6e03ccf4bd2e79b498b203fa5a06bf0a
+      internalID: -1491691459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_125
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 1746
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a2e438c20df122046a807fec05ada0e7
+      internalID: 335880876
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_126
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 1169
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 36004018ddda3e54b827dac8446be8f2
+      internalID: -1167857279
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_127
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 1169
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2bd41c51654ae5c43bb85a8eb23bad0a
+      internalID: 1990613816
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_128
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 1169
+        width: 547
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ebd290ecc13059b41a10fdd29d3c5e59
+      internalID: 937788398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_129
+      rect:
+        serializedVersion: 2
+        x: 1768
+        y: 1169
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3b82140f06da7cd4783bbc032675572c
+      internalID: 722293374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_130
+      rect:
+        serializedVersion: 2
+        x: 2348
+        y: 1169
+        width: 544
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e5a183f43606bdf4f9cdc39ed826543e
+      internalID: 1193940971
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_131
+      rect:
+        serializedVersion: 2
+        x: 2928
+        y: 1169
+        width: 546
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 814cefa4e0eaade4c88736fc9d14a159
+      internalID: 1281833555
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_132
+      rect:
+        serializedVersion: 2
+        x: 3510
+        y: 1169
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2b665b584eda84248976c705c78e8b7e
+      internalID: 519822154
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_133
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 586
+        width: 546
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 56cf67e26c9f1d145a8780b86cc1bc5b
+      internalID: 1527021120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_134
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 586
+        width: 541
+        height: 547
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0cd8113fab9619042b85f66feb174dc1
+      internalID: -670160066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_135
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 538
+        width: 537
+        height: 574
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 07fdc794a10512542b2d91ebebbcd8d3
+      internalID: 21746286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_136
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 573
+        height: 586
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fc3e8f8e2757a33448a72b3dcb3fccf0
+      internalID: 889084761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: alarm_137
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 9
+        width: 541
+        height: 541
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b18cccde94b435d42a93da8ae2e6b19e
+      internalID: -725652958
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 8733ec74b7b9e4f47872640725dc59f8
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      alarm_13: -929928919
+      alarm_26: -1902222956
+      alarm_12: -240161520
+      alarm_59: 1230207751
+      alarm_10: 1260320768
+      alarm_86: 558744607
+      alarm_90: 407913918
+      alarm_94: 2096404476
+      alarm_111: 1884380964
+      alarm_49: 1341244691
+      alarm_89: 788158211
+      alarm_100: -1020934655
+      alarm_74: 79716687
+      alarm_64: -1874138432
+      alarm_128: 937788398
+      alarm_85: -959391874
+      alarm_44: -380637577
+      alarm_54: 1634833892
+      alarm_16: 223791168
+      alarm_103: -2095079001
+      alarm_6: -280967257
+      alarm_81: 669128911
+      alarm_48: -1952020877
+      alarm_9: -1304268577
+      alarm_53: 415558392
+      alarm_46: 794425312
+      alarm_67: 1685331426
+      alarm_127: 1990613816
+      alarm_2: 473194714
+      alarm_33: 797762057
+      alarm_57: -748841688
+      alarm_134: -670160066
+      alarm_108: -309152292
+      alarm_22: 775684247
+      alarm_61: -918838239
+      alarm_62: 1325464039
+      alarm_41: -323423097
+      alarm_98: 434585255
+      alarm_35: 1889323298
+      alarm_39: -1860210238
+      alarm_77: -1489424542
+      alarm_122: -713111303
+      alarm_20: 925160168
+      alarm_120: -1170988876
+      alarm_109: 1555930046
+      alarm_15: 840521320
+      alarm_21: 1494096031
+      alarm_5: -358115428
+      alarm_93: 1594520001
+      alarm_113: -253257299
+      alarm_11: 365955658
+      alarm_137: -725652958
+      alarm_37: -1434370634
+      alarm_124: -1491691459
+      alarm_132: 519822154
+      alarm_71: 419640157
+      alarm_117: -197880242
+      alarm_50: 1380233414
+      alarm_23: 481316230
+      alarm_7: -1401752799
+      alarm_76: -440434150
+      alarm_83: 1650028546
+      alarm_91: 497153695
+      alarm_99: -1046165774
+      alarm_118: -1290380410
+      alarm_32: 528020056
+      alarm_3: -1922150708
+      alarm_126: -1167857279
+      alarm_43: -271729758
+      alarm_27: 1167734631
+      alarm_95: 1070915359
+      alarm_125: 335880876
+      alarm_106: 833209161
+      alarm_70: -1552252150
+      alarm_116: 279474962
+      alarm_0: -180212909
+      alarm_40: -415843844
+      alarm_17: 1185246835
+      alarm_45: 1780398980
+      alarm_131: 1281833555
+      alarm_51: 555156502
+      alarm_66: 1872641067
+      alarm_87: 891611111
+      alarm_80: -1688296096
+      alarm_56: 644004310
+      alarm_102: 1054707546
+      alarm_84: -185735663
+      alarm_30: -537428540
+      alarm_104: -2007740248
+      alarm_60: 17232642
+      alarm_105: -259285134
+      alarm_52: -1734162795
+      alarm_107: -449977213
+      alarm_29: -716646584
+      alarm_101: -95419800
+      alarm_4: -608684278
+      alarm_36: 1608223816
+      alarm_1: -700212081
+      alarm_31: -1937196594
+      alarm_55: -549518322
+      alarm_73: 528164144
+      alarm_129: 722293374
+      alarm_38: -636087549
+      alarm_47: -1864647917
+      alarm_14: -777040713
+      alarm_42: -917193998
+      alarm_135: 21746286
+      alarm_58: 404873702
+      alarm_133: 1527021120
+      alarm_75: -1546469323
+      alarm_19: -1291901576
+      alarm_123: 1834583676
+      alarm_92: 907762287
+      alarm_79: 1400120850
+      alarm_110: 975109229
+      alarm_18: -1627961051
+      alarm_112: -1864741378
+      alarm_63: 2125291906
+      alarm_130: 1193940971
+      alarm_68: 152499986
+      alarm_136: 889084761
+      alarm_78: -81699153
+      alarm_96: -1072312230
+      alarm_121: 1137699826
+      alarm_65: -1713391895
+      alarm_82: 1618479824
+      alarm_69: -2017145572
+      alarm_97: -694221018
+      alarm_88: -997091133
+      alarm_24: 764122803
+      alarm_119: -1653768467
+      alarm_115: 1802610439
+      alarm_25: -594926946
+      alarm_114: 1111470314
+      alarm_72: 1008090719
+      alarm_8: -1760792140
+      alarm_28: -144346654
+      alarm_34: -984814567
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

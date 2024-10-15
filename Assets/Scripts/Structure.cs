@@ -13,7 +13,7 @@ public class Structure
 {
     public static class DataTransfer
     {
-        
+
         public static string messageToPass;
         public static string prefabName;
         public static GameObject actor;
@@ -38,7 +38,7 @@ public class Structure
             this.y = y;
         }
 
-        public Uint2(int width, int height) 
+        public Uint2(int width, int height)
         {
             this.x = (uint)width;
             this.y = (uint)height;
@@ -120,7 +120,19 @@ public class Structure
         public Vector3 posOffsetEnd;
         public bool detectDead;
 
-        public CameraSetting(int frameStart, int frameEnd,  Vector3 posOffset, GameObject lookat, Vector3 lookatOffset, bool detectDead)
+        public CameraSetting(int frameStart, int frameEnd, Vector3 posOffset)
+        {
+            this.frameStart = frameStart;
+            this.frameEnd = frameEnd;
+            this.lookatOffset = Vector3.zero;
+            this.posOffsetStart = posOffset;
+            this.posOffsetEnd = posOffset;
+            this.lookat = null;
+            this.detectDead = false;
+            this.follow = null;
+        }
+
+        public CameraSetting(int frameStart, int frameEnd, Vector3 posOffset, GameObject lookat, Vector3 lookatOffset, bool detectDead)
         {
             this.frameStart = frameStart;
             this.frameEnd = frameEnd;
@@ -132,10 +144,10 @@ public class Structure
             this.follow = null;
         }
 
-        public CameraSetting(int frameStart, int frameEnd,  Vector3 posOffset, Vector3 posOffset2, GameObject lookat, Vector3 lookatOffset)
+        public CameraSetting(int frameStart, int frameEnd, Vector3 posOffset, Vector3 posOffset2, GameObject lookat, Vector3 lookatOffset)
         {
             this.frameStart = frameStart;
-            this.frameEnd = frameEnd; 
+            this.frameEnd = frameEnd;
             this.lookatOffset = lookatOffset;
             this.posOffsetStart = posOffset;
             this.posOffsetEnd = posOffset2;
@@ -158,7 +170,7 @@ public class Structure
 
         public bool Run(int frameCount)
         {
-            if(frameCount >= frameStart && frameCount < frameEnd)
+            if (frameCount >= frameStart && frameCount < frameEnd)
             {
                 float ratio = (frameCount - frameStart) * 1.0f / (frameEnd - frameStart);
                 Vector3 realPosOffset = Vector3.Lerp(posOffsetStart, posOffsetEnd, ratio);
@@ -183,13 +195,13 @@ public class Structure
         }
     }
 
-    public static CameraSetting addCameraMove(int frameStart, int frameEnd, Vector3 pos,  GameObject lookat, Vector3 lookatOffset)
+    public static CameraSetting addCameraMove(int frameStart, int frameEnd, Vector3 pos, GameObject lookat, Vector3 lookatOffset)
     {
 
         return new CameraSetting(frameStart, frameEnd, pos, pos, lookat, lookatOffset);
     }
 
-    public static CameraSetting addCameraMove(int frameStart, int frameEnd,  Vector3 pos, Vector3 pos2, GameObject lookat, Vector3 lookatOffset)
+    public static CameraSetting addCameraMove(int frameStart, int frameEnd, Vector3 pos, Vector3 pos2, GameObject lookat, Vector3 lookatOffset)
     {
 
         return new CameraSetting(frameStart, frameEnd, pos, pos2, lookat, lookatOffset);
@@ -234,7 +246,7 @@ public class Structure
         public int frameEnd;
         public Vector3 posStart;
         public Vector3 posEnd;
-       // public RotationStrategy rotationStrategy;
+        // public RotationStrategy rotationStrategy;
         public Quaternion rotStart;
         public Quaternion rotEnd;
     }
@@ -283,7 +295,7 @@ public class Structure
             type = ActorType.Player;
         }
 
-        public ActorSettings(int frameStart, int frameEnd, GameObject actor, theAnim animation, 
+        public ActorSettings(int frameStart, int frameEnd, GameObject actor, theAnim animation,
             Vector3 posStart, Vector3 posEnd, Quaternion rotationStart, Quaternion rotationEnd, bool active, GameObject lookat)
         {
             this.frameStart = frameStart;
@@ -296,14 +308,14 @@ public class Structure
             this.rotationEnd = rotationEnd;
             this.active = active;
             this.lookat = lookat;
-            type    =ActorType.Player;
+            type = ActorType.Player;
         }
 
         public bool Run(int frameCount)
         {
             if (frameCount >= this.frameStart && frameCount < this.frameEnd)
             {
-                if(this.active == false)
+                if (this.active == false)
                 {
                     this.actor.gameObject.SetActive(false);
                     return true;
@@ -313,16 +325,16 @@ public class Structure
 
                     this.actor.gameObject.SetActive(true);
                 }
-                if(actor.GetComponent<AnimationSystem>() != null)
+                if (actor.GetComponent<AnimationSystem>() != null)
                 {
-                    actor.GetComponent<AnimationSystem>().SetAnimation(animation); 
+                    actor.GetComponent<AnimationSystem>().SetAnimation(animation);
                     float ratio = (frameCount - this.frameStart) * 1.0f / (this.frameEnd - this.frameStart);
                     Vector3 pos = Vector3.Lerp(posStart, posEnd, ratio);
 
                     // walk _customRoate
 
                     Vector3 speed = posEnd - posStart;
-                    if(speed.magnitude < 0.01f)
+                    if (speed.magnitude < 0.01f)
                     {
 
                         actor.GetComponent<AnimationSystem>().SetTransform(pos, Quaternion.identity);
@@ -352,14 +364,15 @@ public class Structure
                     actor.GetComponent<AnimationSystem>().SetAnimation(animation);
                     float ratio = (frameCount - this.frameStart) * 1.0f / (this.frameEnd - this.frameStart);
                     Vector3 pos = Vector3.Lerp(posStart, posEnd, ratio);
-                    if(type == ActorType.CameraFollow || type == ActorType.CameraLookat) { }else
-                    pos.y = heights[new Vector2Int((int)(pos.x + 0.5f), (int)(pos.z + 0.5f))];
+                    if (type == ActorType.CameraFollow || type == ActorType.CameraLookat) { }
+                    else
+                        pos.y = heights[new Vector2Int((int)(pos.x + 0.5f), (int)(pos.z + 0.5f))];
                     // walk _customRoate
                     if (lookat != null)
                     {
                         // 计算方向
                         Vector3 direction = lookat.transform.position - actor.transform.position;
-                        direction.y = 0; 
+                        direction.y = 0;
                         actor.GetComponent<AnimationSystem>().SetTransform(pos, Quaternion.LookRotation(direction));
                     }
                     else
@@ -454,7 +467,7 @@ public class Structure
 
     public static void TranslateChild(Transform parent, string targetName, Vector3 pos)
     {
-        
+
 
         if (parent.name == targetName || targetName == "Main")
         {
@@ -500,7 +513,7 @@ public class Structure
         // 递归遍历所有子物体
         foreach (Transform child in current)
         {
-            RecursiveFindAndModify(targetName, child, rotation, local); 
+            RecursiveFindAndModify(targetName, child, rotation, local);
         }
     }
 
@@ -520,7 +533,7 @@ public class Structure
 
             // 计算当前旋转和目标旋转之间的角度差
             float angleDifference = Quaternion.Angle(Quaternion.identity, targetRotation);
-           // Debug.Log("name " + targetName + " angles = " + angleDifference);
+            // Debug.Log("name " + targetName + " angles = " + angleDifference);
             // 限制旋转角度
             if (angleDifference > 60)
             {
@@ -626,7 +639,7 @@ public class Structure
         public string score;
         public string featureDesc;
         public string featurePart;
-       
+
 
         public SubReplacer(string name, string env, string enemy, string attack_weapon, string score, string desc, string part)
         {
@@ -853,7 +866,7 @@ public class Structure
         foreach (Transform child in current)
         {
             float v = FindModelOffset(child);
-            if(v != 0)
+            if (v != 0)
             {
                 return v;
             }
@@ -880,7 +893,7 @@ public class Structure
     {
         if (parent.name == "All")
         {
-           // parent.transform.rotation = r;
+            // parent.transform.rotation = r;
             return;
         }
         foreach (Transform child in parent)
@@ -889,7 +902,7 @@ public class Structure
         }
     }
 
-    public static void SetMeshRenderer(Transform parent,  bool active)
+    public static void SetMeshRenderer(Transform parent, bool active)
     {
         if (parent.GetComponent<MeshRenderer>() != null)
         {
@@ -1135,7 +1148,7 @@ public class Structure
                     {
                         float r = (now_time - part.rot_time[j]) * 1.0f / (part.rot_time[j + 1] - part.rot_time[j]);
                         Quaternion rot = Quaternion.Lerp(part.rot[j], part.rot[j + 1], r);
-                       // RotateChild(theMob.transform, part.name, rot * GetBasicRot(part.name));
+                        // RotateChild(theMob.transform, part.name, rot * GetBasicRot(part.name));
                         break;
                     }
                 }
@@ -1150,7 +1163,7 @@ public class Structure
                     {
                         float r = (now_time - part.pos_time[j]) * 1.0f / (part.pos_time[j + 1] - part.pos_time[j]);
                         Vector3 pos = Vector3.Lerp(part.pos[j], part.pos[j + 1], r);
-                      //  TranslateChild(theMob.transform, part.name, GetBasicPos(part.name) + pos * 0.08f);
+                        //  TranslateChild(theMob.transform, part.name, GetBasicPos(part.name) + pos * 0.08f);
                         break;
                     }
                 }
@@ -1450,6 +1463,51 @@ public class Structure
             this.z = z;
         }
 
+    }
+
+    public static GameObject CreateCubeWithImage(string texturePath)
+    {
+        Texture2D texture = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+        // 1. 创建一个材质，并将导入的Texture附加到材质上
+        Material material = new Material(Shader.Find("Standard"));
+        // 设置渲染模式为透明
+        material.SetFloat("_Mode", 3); // 3 = Transparent 模式
+        material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        material.SetInt("_ZWrite", 0);
+        material.DisableKeyword("_ALPHATEST_ON");
+        material.EnableKeyword("_ALPHABLEND_ON");
+        material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        material.renderQueue = 3000;
+        material.mainTexture = texture;
+
+
+        // 2. 创建一个Cube，并将材质应用到Cube上
+        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cube.GetComponent<Renderer>().material = material;
+        // Disable both shadow casting and receiving
+        cube.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        cube.GetComponent<Renderer>().receiveShadows = false;
+
+        // 3. 调整Cube的大小和位置以适应整个2D屏幕
+        Camera camera = Camera.main;
+        if (camera != null)
+        {
+            // 获取屏幕尺寸在世界空间中的大小
+            float screenHeight = camera.orthographicSize * 2;
+            float screenWidth = screenHeight * camera.aspect;
+
+            // 设置Cube大小为屏幕大小，并根据图片的宽高比例进行缩放
+            float imageAspect = (float)texture.width / texture.height;
+            cube.transform.localScale = new Vector3(screenHeight * imageAspect, screenHeight, 0.01f);
+            cube.transform.rotation = Quaternion.Euler(0, 0, 180);
+
+            // 设置Cube的位置，使它位于相机前面并正好覆盖屏幕
+            cube.transform.position = new Vector3(1000, 1000, 1000); // new Vector3(camera.transform.position.x, camera.transform.position.y, camera.transform.position.z + camera.nearClipPlane + 1);
+        }
+
+        // 4. 返回创建的Cube的GameObject
+        return cube;
     }
 
 }
