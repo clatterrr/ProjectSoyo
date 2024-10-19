@@ -1,9 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using static Structure;
 using Random = UnityEngine.Random;
@@ -216,25 +219,7 @@ public class aichannel : MonoBehaviour
         FinalEffort,
     }
 
-    enum SSblue
-    {
-        ThisChannelMakesMoney_Intro,
-        ThisChannelMakesMoney_ThisChannel,
-        ThisChannelMakesMoney_HasFollowers,
-        ThisChannelMakesMoney_WithTech,
-        ThisChannelMakesMoney_MakeMoney,
-        ThisChannelMakesMoney_InShortTimes,
 
-        YouCanDoIt_Intro,
-        YouCanDoIt_YouCanDo,
-        YouCandoIt_WithEasy,
-
-        IReveal_Intro,
-        IReveal_IReveal,
-        IReveal_Abstract,
-        IReveal_Detailed,
-        IReveal_InTheVideo,
-    }
 
     // six sigma https://youtu.be/4EDYfSl-fmc?t=50
     // https://youtu.be/vhGG2XDwAuE?t=90
@@ -878,10 +863,113 @@ public class aichannel : MonoBehaviour
         globalFrameCount++;
     }
 
+    struct Tech
+    {
+        public List<string> names;
+        public List<string> ables;
+        public Tech(string[] names, string[] ables)
+        {
+            this.names = new List<string>();
+            for(int i = 0; i < names.Length; i++)
+            {
+                this.names.Add(names[i]);   
+            }
+            this.ables = new List<string>();
+            for(int i= 0;  i < ables.Length; i++)
+            {
+                this.ables.Add(ables[i]);
+            }
+            
+        }
+    }
 
+    List<Tech> techList = new List<Tech>();
+    enum SSblue
+    {
+        ThisChannelMakesMoney_Intro,
+        ThisChannelMakesMoney_ThisChannel,
+        ThisChannelMakesMoney_HasFollowers,
+        ThisChannelMakesMoney_WithTech,
+        ThisChannelMakesMoney_MakeMoney,
+        ThisChannelMakesMoney_InShortTimes,
 
+        ResearchChannel_ThisChannel,
+        ResearchChannel_IsAbout,
+        ResearchChannel_IsGood,
+
+        YouCanDoIt_Intro,
+        YouCanDoIt_YouCanDo,
+        YouCandoIt_WithEasy,
+
+        IReveal_Intro,
+        IReveal_IReveal,
+        IReveal_Abstract,
+        IReveal_Detailed,
+        IReveal_InTheVideo,
+
+        GuruDoBad_Intro,
+        GuruDoBad_ManyGuru,
+        GuruDoBad_TakeMoney,
+        GuruDoBad_DoBad,
+        GuruDoBad_IDoGood,
+
+        ThisIsPowerful_ThisStrategy,
+        ThisIsPowerful_CanSucceed,
+        ThisIsPowerful_InAnyCase,
+        ThisIsPowerful_FreeEasy,
+        ThisIsPowerful_PeopleDontKnow,
+
+        // Detect Youtube Channel With Detail
+
+        Special_NowItistime,
+        Special_TheGoal,
+        Special_KeyIsImportant,
+        Special_OtherIsGood,
+        Special_ThisIsBad,
+        Special_ThanAllBad,
+        Special_MostPeopleNotRealize,
+        Special_MostPeopleDoBad,
+        Special_WantProvenMethod,
+        Special_UseProvenMethod,
+        Special_FindKey,
+        Special_ButHow,
+        Special_PleaseStoppingDoBad,
+        Special_PleaseDoGood,
+
+        AnysisVideo_WatchVideo,
+        AnysisVideo_InShortTime,
+        AnysisVideo_HasFollowersView,
+        AnysisVideo_MakeMoney,
+        AnysisVideo_ThinkAboutIt,
+        AnysisVideo_SomeGood,
+        AnysisVideo_ButAllBad,
+        AnysisVideo_ButHow,
+        AnysisVideo_ViewrLeave,
+
+        Tool_Any_Use,
+        Tool_Any_UseDetailed,
+        Tool_Any_UseDifferent,    
+        Tool_Any_Result,
+        Tool_Any_AllPlatform,
+        Tool_Any_IUseThisPlatform,
+
+        Topic_NicheShouldBeGood,
+        Topic_AVG,
+
+        Tool_Full,
+
+        Research_SearchTrends,
+        Research_YouShouldEnjoy,
+        Research_ISearchSoMuch,
+        Research_ISummary,
+
+        Misc_NoOneTellingYou,
+
+    }
     void updateStr()
     {
+        techList.Add(new Tech(new string[] { "monetization strategy" }, new string[]{"monetize your YouTube channel", "monetize your first video on a brand new YouTube channel" }));
+
         theSentences.Add(new SSSTR(SSblue.ThisChannelMakesMoney_Intro, new List<string>() { "all right guys listen up", "crazy right" }));
         theSentences.Add(new SSSTR(SSblue.ThisChannelMakesMoney_ThisChannel, new List<string>() { "my brand new youtube channel", "this spaceless YouTube channel" }));
         theSentences.Add(new SSSTR(SSblue.ThisChannelMakesMoney_HasFollowers, new List<string>() { "has grown from zero to over 250,000 followers", "in just 3 months" }));
@@ -893,9 +981,12 @@ public class aichannel : MonoBehaviour
         theSentences.Add(new SSSTR(SSblue.YouCanDoIt_YouCanDo, new List<string>() { "you could start making money on YouTube" }));
         theSentences.Add(new SSSTR(SSblue.YouCandoIt_WithEasy, new List<string>() { "from your very first video", "Even if you have zero subscribers" }));
 
-        theSentences.Add(new SSSTR(SSblue.IReveal_Intro, new List<string>() { "in fact", "and that is exactly what" }));
+        theSentences.Add(new SSSTR(SSblue.IReveal_Intro, new List<string>() {
+            " I know it sounds unbelievable but stick with me",
+            "in fact", "and that is exactly what" }));
         theSentences.Add(new SSSTR(SSblue.IReveal_IReveal, new List<string>() { 
             "I'm going to be showing you", "I'm going to show you", "i will show you",
+            " I'll show you exactly",
             "I'm about to break down exactly",
             "I'm going to reveal a little known strategy that",
             "and my mission is to show you",
@@ -906,6 +997,7 @@ public class aichannel : MonoBehaviour
             "how you can create an entire clothing business line just like this one", 
             "how you can replicate this success for free", 
             "how I made money from it",
+            "how it's done step by step",
             "how to scale this idea and making more money",
             "how you could walk through my entire process",
             "and give you the entire framework" }));
@@ -916,9 +1008,366 @@ public class aichannel : MonoBehaviour
         theSentences.Add(new SSSTR(SSblue.IReveal_InTheVideo, new List<string>() { "for the rest of this video", "in this video", "by the end of this video " }));
 
 
+        theSentences.Add(new SSSTR(SSblue.GuruDoBad_Intro, new List<string>() { "I know what you're probably thinking", "and I'm sure you've seen" }));
+        theSentences.Add(new SSSTR(SSblue.GuruDoBad_ManyGuru, new List<string>() { "there are so many so-called gurus",
+            "countless videos about the monetizable shorts",
+            "there's already a few animal facts tutorials out on YouTube", }));
+        theSentences.Add(new SSSTR(SSblue.GuruDoBad_TakeMoney, new List<string>() { "charge thousands of dollars to teach" }));
+        theSentences.Add(new SSSTR(SSblue.GuruDoBad_DoBad, new List<string>() {
+            "nobody else is talking about because it's that powerful and they don't want you to know using the same strategy",
+            "but the sad truth is that not a single person has been able to monetize these videos to their maximum potential" }));
+        theSentences.Add(new SSSTR(SSblue.GuruDoBad_IDoGood, new List<string>() { " but you're about to learn it for free" }));
+
+        theSentences.Add(new SSSTR(SSblue.ThisIsPowerful_ThisStrategy, new List<string>() {
+            "_StrategyName is a powerful strategy",
+            "this unique monetization strategy Works" }));
+        theSentences.Add(new SSSTR(SSblue.ThisIsPowerful_CanSucceed, new List<string>() { "that can help you _DoThing", "but it can be incredibly effective when done right" }));
+        theSentences.Add(new SSSTR(SSblue.ThisIsPowerful_InAnyCase, new List<string>() { "regardless of how many subscribers you have zero 10 100", "even if you're just starting out" }));
+        theSentences.Add(new SSSTR(SSblue.ThisIsPowerful_FreeEasy, new List<string>() { "the best part is you don't need to invest a single penny to get started" }));
+        theSentences.Add(new SSSTR(SSblue.ThisIsPowerful_PeopleDontKnow, new List<string>() { "it's a technique that not many people know about" }));
+
+
+        // topic title cover scripts
+        // NowItIsTime -> IsImportant -> ThisChannelDoGood -> WhyDetail -> ThinkAboutIt
+        // https://youtu.be/ZmZ2Yqc7RLY?t=176
+        // NowItisTime -> TheGoal -> ThinkAbout -> _ isImportant  -> topic explain -> the goal 
+        theSentences.Add(new SSSTR(SSblue.Special_NowItistime, new List<string>() { 
+            "we need to start working on our videos and the first step is of course finding a _Name",
+            "let's talk about content creat ation",
+            }));
+        theSentences.Add(new SSSTR(SSblue.Special_TheGoal, new List<string>() {
+            "to maximize your growth on YouTube shorts",
+            "your primary goal as a YouTube shorts Creator is to craft content that captivates your audience from start to finish",
+            }));
+        theSentences.Add(new SSSTR(SSblue.Special_KeyIsImportant, new List<string>() { 
+            "your _name is literally 90% of the reason whether your video goes viral or not",
+            "it's about having the right strategy from day one",
+            "this is definitely the most important part of the video",
+            " forget likes and comments Focus solely on one key metric",
+            "aside from topic your script is what will make or break your video",
+            "the topic of a video is the difference between 100 and 1 million views regardless of your script writing voice over and editing"
+            "this is a super important step you need to master if you want your shorts to go viral",
+            "so this is the most important part to have a good _name",
+            "the most important thing is the structure of your video how you present the story",
+            "a good _name is really important if your account has less than 10,000 followers",
+            "a good topic is the core of all viral videos" }));
+        theSentences.Add(new SSSTR(SSblue.Special_OtherIsGood, new List<string>() { 
+            "you can have the most visually appealing video on all of YouTube",
+            "lots of creators will start the video with some crazy hook to trick the viewer into watching it",
+            "you can have the greatest editing in the world",
+            "if you can consistently create shorts people actually want to watch your channel will blow up" }));
+        theSentences.Add(new SSSTR(SSblue.Special_ThisIsBad, new List<string>() { 
+            " but if it's on a topic no one cares about ",
+            "if your hook is not interesting enough",
+            "but if you have a shitty script",
+            "and without it your video ",
+            "neglect this and all work you put into your videos is a complete waste of time",
+            "and then the video has nothing to do with it",
+            "most YouTube automation channels that are similar to mine tell you to use chat GPT",
+            "many channels create some random script with chat GPT and expect their video to go viral",
+            "they create videos on topics they think other people are interested in" }));
+        theSentences.Add(new SSSTR(SSblue.Special_ThanAllBad, new List<string>() { 
+            "it won't get any views",
+            "it doesn't matter",
+            "trust me I've tried it you'll end up getting no views",
+            "which is just not how it works",
+            "the viewer will just scroll past it",
+            "won't get any views",
+            "when they're really not" }));
+        theSentences.Add(new SSSTR(SSblue.Special_MostPeopleNotRealize, new List<string>() { "and this is where where I see a lot of channels go wrong" }));
+        theSentences.Add(new SSSTR(SSblue.Special_MostPeopleDoBad, new List<string>() { "what if I told you that" }));
+
+        // we want proven method -> we of course use proven method
+
+        theSentences.Add(new SSSTR(SSblue.Special_WantProvenMethod, new List<string>() { "again here we also want to go with a proven concept" }));
+        theSentences.Add(new SSSTR(SSblue.Special_UseProvenMethod, new List<string>() { "and with the AI tools that are available today we can actually create scripts based on a proven Concept in literally less than 5 minutes" }));
+        theSentences.Add(new SSSTR(SSblue.Special_FindKey, new List<string>() { "what if I told you that" }));
+        theSentences.Add(new SSSTR(SSblue.Special_ButHow, new List<string>() { "but how do you know what editing style you should go for" }));
+        theSentences.Add(new SSSTR(SSblue.Special_PleaseStoppingDoBad, new List<string>() { "what if I told you that" }));
+        theSentences.Add(new SSSTR(SSblue.Special_PleaseDoGood, new List<string>() { "think of your core audience you're trying to Target who they are and what do they actually want to watch" }));
+
+
+        theSentences.Add(new SSSTR(SSblue.Misc_NoOneTellingYou, new List<string>() { "where I I've learned one very important secret that none of the gurus are telling you" }));
+
+        // AnysisVideo_WatchVideo Content HasFolloerws MakeMoney InShortTime ButHow ThinkAboutIt
+
+        // SomeGood SomeBad AllBad ViewerLeave https://youtu.be/vK92mLFJVJs?t=413
+
+        // Strategy 
+        // 
+
+        // Tool
+        // 
+        // Create Script 
+        // 
+
+        /*
+        =========================== Strategy ========================
+        
+        Copy And Paste
+        https://youtu.be/Dbt94EhvRFo?t=179
+        https://youtu.be/FBniLhnuJR0?t=160
+
+
+        ======================== Topic =============================
+
+        Niche
+
+        https://youtu.be/VIu2dzOCRrw?t=471
+        https://youtu.be/8XIeElXiYx4?t=23
+        https://youtu.be/_0nm9_m3yyE?t=59
+
+        Algorithm Recommandation
+
+        https://youtu.be/s027zsl5d8Q?t=346
+
+        Long form Video And Short Form Video
+        https://youtu.be/s027zsl5d8Q?t=379
+
+        Hook
+        
+        https://youtu.be/mFZrGTmPSQ0?t=283
+
+        Retention
+        https://youtu.be/s027zsl5d8Q?t=339
+        https://youtu.be/lc4lygDmHbI?t=201
+
+        SEO
+        https://youtu.be/DRB8NJLAw6E?t=639
+
+        Marketing
+        https://youtu.be/ra0glXW0Aoo?t=557
+
+        Topic 
+
+        https://youtu.be/VIu2dzOCRrw?t=113
+        https://youtu.be/lc4lygDmHbI?t=36
+
+        
+        Video Idea
+
+        https://youtu.be/ra0glXW0Aoo?t=341
+
+         =========================== Tool ===========================
+
+        Search 
+
+        https://youtu.be/_0nm9_m3yyE?t=59
+        https://youtu.be/QNlL1wmEY9I?t=61 // 感觉和Topic差不多
+
+        Trends
+
+        https://youtu.be/_0nm9_m3yyE?t=154
+
+        Anysis Channel
+        https://youtu.be/8XIeElXiYx4?t=59
+
+        Create Accout 
+        
+        https://youtu.be/LEJGFnjIWmQ?t=112
+        https://youtu.be/ra0glXW0Aoo?t=269
+        https://youtu.be/DRB8NJLAw6E?t=72
+
+        View Money Statics
+        https://youtu.be/VIu2dzOCRrw?t=87
+
+        Tiktok CRP 
+        
+        https://youtu.be/km_xKwWBEr0?t=61
+
+        Extract Thumbnail
+
+        https://youtu.be/FBniLhnuJR0?t=250
+
+
+        
+        Shopify
+
+        https://youtu.be/Gwtj5IoA18Q?t=501
+        https://youtu.be/mFZrGTmPSQ0?t=136
+
+        Image 
+
+        Leonard https://youtu.be/LEJGFnjIWmQ?t=440
+        https://youtu.be/LEJGFnjIWmQ?t=539
+        https://youtu.be/aH-_PhP7_tI?t=178
+        https://youtu.be/pVykPqQDIe8?t=405
+        https://youtu.be/8XIeElXiYx4?t=111
+        https://youtu.be/8XIeElXiYx4?t=131
+        https://youtu.be/3Vzfoq73iYQ?t=565
+        https://youtu.be/Gwtj5IoA18Q?t=294
+        https://youtu.be/MgMoTXaWGRw?t=284
+        https://youtu.be/pT3ZUZ2DL3g?t=88
+
+
+        Voice Over 
+        
+        https://youtu.be/km_xKwWBEr0?t=351
+        https://youtu.be/-nEQf9kywoQ?t=184
+        https://youtu.be/ra0glXW0Aoo?t=384
+        https://youtu.be/DRB8NJLAw6E?t=371
+        https://youtu.be/pVykPqQDIe8?t=517
+        https://youtu.be/8rZHPdttLM8?t=204
+        https://youtu.be/VOfC13e3oHk?t=1542
+        https://youtu.be/pT3ZUZ2DL3g?t=158
+        https://youtu.be/QNlL1wmEY9I?t=213
+
+        Generate Video
+
+        https://youtu.be/-nEQf9kywoQ?t=125
+        https://youtu.be/ZmL48JRVre8?t=314
+        https://youtu.be/kQn4B4xwquE?t=188
+        https://youtu.be/VIu2dzOCRrw?t=248
+        https://youtu.be/_0nm9_m3yyE?t=171
+        https://youtu.be/3Vzfoq73iYQ?t=416
+        https://youtu.be/ORImeD8k3H4?t=580
+        https://youtu.be/MgMoTXaWGRw?t=717
+        https://youtu.be/VOfC13e3oHk?t=814
+         
+        Create Scripts
+         
+        https://youtu.be/km_xKwWBEr0?t=351
+        https://youtu.be/LEJGFnjIWmQ?t=183
+        https://youtu.be/DRB8NJLAw6E?t=308
+        https://youtu.be/pVykPqQDIe8?t=317
+        https://youtu.be/8XIeElXiYx4?t=100
+        https://youtu.be/_0nm9_m3yyE?t=59
+        https://youtu.be/_0nm9_m3yyE?t=578
+        https://youtu.be/3Vzfoq73iYQ?t=188
+        https://youtu.be/ORImeD8k3H4?t=251
+        https://youtu.be/MgMoTXaWGRw?t=152
+        https://youtu.be/VOfC13e3oHk?t=397
+        https://youtu.be/VOfC13e3oHk?t=1780
+        https://youtu.be/pT3ZUZ2DL3g?t=77
+        https://youtu.be/QNlL1wmEY9I?t=131
+
+        Edit
+
+        https://youtu.be/aH-_PhP7_tI?t=431
+        https://youtu.be/DRB8NJLAw6E?t=487
+        https://youtu.be/uxyqzNdNE6Q?t=352
+        https://youtu.be/pVykPqQDIe8?t=613
+        https://youtu.be/VIu2dzOCRrw?t=274
+        https://youtu.be/8XIeElXiYx4?t=162
+        https://youtu.be/mFZrGTmPSQ0?t=495
+        https://youtu.be/VOfC13e3oHk?t=291
+        https://youtu.be/VOfC13e3oHk?t=700
+        https://youtu.be/pT3ZUZ2DL3g?t=275
+        https://youtu.be/QNlL1wmEY9I?t=375
+
+        ThumbNail
+
+        https://youtu.be/VIu2dzOCRrw?t=401
+
+        Title Tags
+        https://youtu.be/VIu2dzOCRrw?t=429
+
+        Music
+        https://youtu.be/8XIeElXiYx4?t=187
+
+        
+
+        Publishing
+
+        https://youtu.be/ra0glXW0Aoo?t=534
+
+        
+        
+         
+         ====================================== Over ===========================
+         */
+
+        // https://youtu.be/znb3_gFSaac?t=89
+        // TheyDoBad
+
+        //https://youtu.be/LEJGFnjIWmQ?t=378
+
+        theSentences.Add(new SSSTR(SSblue.Tool_Full, new List<string>() {
+            " for _WhatItCanDo come to _PlatformName it has _WhatIsProduce." +
+            " sign up for for a free account and come to this page simply _HowToUse. _WhatIsProduce is perfect for our video" }));
+
+        // ThisChannelMakeMoney -> IReveal -> 3FrameWork -> Niche -> Topic -> Scripts 
+
+        /*
+         *
+         * ChatGpt Writting 
+         * 
+         * Pix Verse 
+        
+        Tool Structure
+
+        _PlatformName = 11 labs
+        _WhatIsProduce = perfect tones / voice
+        _WhatItCanDo = creating a voice
+        _HowToUse = copy your script one paragraph and paste
+        
+         step three creating the voice over for creating a voice come to 11 Labs it has perfect tone and sound just sign up for for a free account and come to this page simply copy your script one paragraph and paste it here this voice is perfect for our video 
+         
+         */
+
+        theSentences.Add(new SSSTR(SSblue.AnysisVideo_WatchVideo, new List<string>() { 
+            "take a look at this short and see if you can guess what mistake this Creator made",
+            "in my case I saw a huge surge in viral content related to health specifically from Andrew huberman",
+            "let me give you an example"}));
+        theSentences.Add(new SSSTR(SSblue.AnysisVideo_InShortTime, new List<string>() { "this short was posted a couple of days ago",
+        "I posted this video a couple of weeks ago"}));
+
+        theSentences.Add(new SSSTR(SSblue.AnysisVideo_HasFollowersView, new List<string>() {
+            "he's also a m of following of millions of people across different social media platforms",
+            "and today it has close to a million views", " and it was a great video I thought at least" }));
+        theSentences.Add(new SSSTR(SSblue.AnysisVideo_MakeMoney, new List<string>() { "now don't get me wrong this is a good topic" }));
+        theSentences.Add(new SSSTR(SSblue.AnysisVideo_ButHow, new List<string>() {
+            "so why did that video perform so much better even though the quality was worse",
+            "but what is it that made this hook perform so well let's break it down" }));
+
+        theSentences.Add(new SSSTR(SSblue.AnysisVideo_ThinkAboutIt, new List<string>() {
+            "hink of your core audience what experience are they looking for is it a slow samul Style video or a highp short like Mr Beast",
+            "understanding the current algorithm is crucial",
+            "let's stop right here before I reveal it just think to yourself if you can spot it drop a comment if you think you know and don't cheat" }));
+        theSentences.Add(new SSSTR(SSblue.AnysisVideo_SomeGood, new List<string>() { 
+            "now don't get me wrong this is a good topic",
+            
+        }));
+        theSentences.Add(new SSSTR(SSblue.AnysisVideo_ButAllBad, new List<string>() { "but it still would have never gone viral on any platform" }));
+        theSentences.Add(new SSSTR(SSblue.AnysisVideo_ViewrLeave, new List<string>() { "most viewers will just scroll past once they get the answer they came for which will kill your attention\n",
+        "don't do this it'll just leave the viewer frustrated and they'll probably click off before getting to the end of the video"}));
+
+        // First Step -> Tool Any Use -> use Detailed -> Any Use Different -> Result https://youtu.be/7B4xwHaz6ag?t=77
+        // _Tool: ChatGpt _Use: Image Generation _Goal: prompt _Material: bull and hybird
+        theSentences.Add(new SSSTR(SSblue.Tool_Any_Use, new List<string>() { "you can easily generate these by using chat GPT" }));
+        theSentences.Add(new SSSTR(SSblue.Tool_Any_UseDetailed, new List<string>() { "open chat GPT and ask for an image generation prompt for a bull and Scorpion hybrid" }));
+        theSentences.Add(new SSSTR(SSblue.Tool_Any_UseDifferent, new List<string>() { "if you want to create different hybrid animals just replace Bull and Scorpion with the animals of your choice" }));
+        theSentences.Add(new SSSTR(SSblue.Tool_Any_Result, new List<string>() { "now that you have the prompt " }));
+        
+        theSentences.Add(new SSSTR(SSblue.Tool_Any_AllPlatform, new List<string>() { "you can use platforms like Leonardo AI idiogram or mid Journey" }));
+        theSentences.Add(new SSSTR(SSblue.Tool_Any_IUseThisPlatform, new List<string>() { "for this demonstration I'll use idiogram " }));
+
+        theSentences.Add(new SSSTR(SSblue.Topic_NicheShouldBeGood, new List<string>() { " we need to conduct market research to ensure that we're selecting a niche with genuine viewer interest " }));
+        theSentences.Add(new SSSTR(SSblue.Topic_AVG, new List<string>() { " we need to conduct market research to ensure that we're selecting a niche with genuine viewer interest " }));
+
+
+        theSentences.Add(new SSSTR(SSblue.Research_SearchTrends, new List<string>() { " average view duration avd measures the time that the average viewer spends watching your video " }));
+        theSentences.Add(new SSSTR(SSblue.Research_YouShouldEnjoy, new List<string>() { " as always try to find a topic that you genuinely enjoy otherwise you might risk getting bored or or losing motivation " }));
+        theSentences.Add(new SSSTR(SSblue.Research_ISearchSoMuch, new List<string>() { "look after analyzing thousands of YouTube shorts" }));
+        theSentences.Add(new SSSTR(SSblue.Research_ISummary, new List<string>() { "I identified two critical factors for success __" }));
 
         // theSentences.Add(new SSSTR(SSblue.ThisChannelMakesMoney_Intro, new List<string>() { }));
         /*
+         * sstrs.Add(new SSTR(Sblue.WhatIsImportant, new List<string>() { "if we look at _websiteName website they're really nice",
+        "where I I've learned one very important secret that none of the gurus are telling you",
+        "the truth is you need a very strategic plan to get long-term results with YouTube automation",
+            "it's about having the right strategy from day one","so this is the most important part",
+            "believe it or not choosing a good Niche is one of the most critical steps in this framework",
+        "this is what I like to call a negative hook  nand it's one of the most powerful methods to hook people's attention",
+        "this is really important if your account has less than 10,000 followers "
+        }));
+         * 
+         sstrs.Add(new SSTR(Sblue.OtherGuruNotDoWell, new List<string>() { "coming up with good video ideas can be really tough",
+            "as you can see the algorithm realized that this post wasn't getting the same level of attention and that it would be pointless for them to continue showing it to more and more people and this second situation is what I see happen to most people on Instagram they spend so much time creating content that isn't optimized for the algorithm which leads to them getting no views and then wondering what went wrong",
+        "and I'm sure you've seen countless videos about the monetizable shorts but the sad truth is that not a single person has been able to monetize these videos to their maximum potential",
+        "I know what you're probably thinking there's already a few animal facts tutorials out on YouTube but here's the thing these so-called gurus are not transparent with you nobody shows you real step-by-step methods or how to create your first faceless YouTube business instead these clowns are just focused on their own views",
+        "t's top secret stuff on YouTube nobody else is talking about because it's that powerful and they don't want you to know using the same strategy "}));
+
          * 
          *       
         "so in this video I'm going to reveal the account, I'm going to show you how I made money from it, and I'm going to give you the entire framework",
@@ -970,7 +1419,7 @@ public class aichannel : MonoBehaviour
             "but guess what if you have the patience to watch this video Until the End you'll have the knowledge needed to start your own animal faceless YouTube automation business just like the channel",
         "but please forget this for now because if you skip this video you won't be able to generate similar images with these prompts your results will not be the same you need to know some tricks also you won't be able to learn how to make money with a similar account and you will miss some valuable information to make at least $5,000 per month with these videos so please don't skip the last part"}));
         sstrs.Add(new SSTR(Sblue.TheyAllSucceed, new List<string>() { "there are several accounts using this exact same strategy that she's using to make millions today" }));
-      
+
         sstrs.Add(new SSTR(Sblue.WeMustUnderStandHe, new List<string>() { "but first we need to understand what she's selling and how she's doing it",
         "before we get into my workflow creation process you should understand how your favorite creators are tricking you into watching their videos and you can do all of these things"}));
 
@@ -979,25 +1428,13 @@ public class aichannel : MonoBehaviour
         sstrs.Add(new SSTR(Sblue.ItIsGood, new List<string>() { "if we look at _websiteName website they're really nice" }));
         sstrs.Add(new SSTR(Sblue.ListenToTheEnd, new List<string>() { "make sure you stick around till the end",
         "so stick around because you don't want to miss these amazing secrets on how I made my channel a big hit with just 15,000 subs"}));
-        sstrs.Add(new SSTR(Sblue.WhatIsImportant, new List<string>() { "if we look at _websiteName website they're really nice",
-        "where I I've learned one very important secret that none of the gurus are telling you",
-        "the truth is you need a very strategic plan to get long-term results with YouTube automation",
-            "it's about having the right strategy from day one","so this is the most important part",
-            "believe it or not choosing a good Niche is one of the most critical steps in this framework",
-        "this is what I like to call a negative hook  nand it's one of the most powerful methods to hook people's attention",
-        "this is really important if your account has less than 10,000 followers "
-        }));
+
         sstrs.Add(new SSTR(Sblue.WhatShouldHappen, new List<string>() { "you need to get people to click on your video then watch your video, and finally enjoy their time watching your video",
         "well a good Niche needs to be something that is trending or that the world needs right now something that you can make money from something that you have skills and experience with"}));
         sstrs.Add(new SSTR(Sblue.ThinkAboutIt, new List<string>() { "you need to get people to click on your video then watch your video, and finally enjoy their time watching your video",
         "whenever you make a piece of content start by asking yourself these seven questions will someone stop scrolling and actually look at this post will someone spend a long time looking at this will someone want to save this for later will someone want to share this with a friend will someone comment something interesting on this will they feel satisfied that they consumed this and will they want to follow my account for more like this in the future if you can honestly answer yes to all seven of these questions then you have a viral post",
             "just think if you're passionate about something like high jump, that doesn't necessarily mean that high jump videos are a good Niche for Instagram,there are three other factors that are equally important",
         "before we get into my workflow creation process you should understand how your favorite creators are tricking you into watching their videos and you can do all of these things"}));
-        sstrs.Add(new SSTR(Sblue.OtherGuruNotDoWell, new List<string>() { "coming up with good video ideas can be really tough",
-            "as you can see the algorithm realized that this post wasn't getting the same level of attention and that it would be pointless for them to continue showing it to more and more people and this second situation is what I see happen to most people on Instagram they spend so much time creating content that isn't optimized for the algorithm which leads to them getting no views and then wondering what went wrong",
-        "and I'm sure you've seen countless videos about the monetizable shorts but the sad truth is that not a single person has been able to monetize these videos to their maximum potential",
-        "I know what you're probably thinking there's already a few animal facts tutorials out on YouTube but here's the thing these so-called gurus are not transparent with you nobody shows you real step-by-step methods or how to create your first faceless YouTube business instead these clowns are just focused on their own views",
-        "t's top secret stuff on YouTube nobody else is talking about because it's that powerful and they don't want you to know using the same strategy "}));
 
         sstrs.Add(new SSTR(Sblue.ItIsHard, new List<string>() { "coming up with good video ideas can be really tough" }));
 
@@ -1070,7 +1507,7 @@ public class aichannel : MonoBehaviour
         */
         /*
          The next step is to capture attention, but not just any attention—don’t aim for going viral. Instead, focus on crafting content that resonates with your ideal customer. Begin by sharing helpful insights, whether it’s through tweets, reels, YouTube videos, shorts, or LinkedIn posts. The key is to offer value that's relevant to your audience, as this will help position you as an expert in your field. When people recognize that you genuinely know your stuff, they’ll be more inclined to trust you, which can lead to future sales. You'll need to consistently do this over time.
-         
+
 
         We tell stories. Stories that resonate and hold up over time. Stories that are true, because we made them true with our actions and our products and our services.
 
