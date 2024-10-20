@@ -1254,6 +1254,7 @@ public class aichannel : MonoBehaviour
         https://youtu.be/VOfC13e3oHk?t=700
         https://youtu.be/pT3ZUZ2DL3g?t=275
         https://youtu.be/QNlL1wmEY9I?t=375
+        https://youtu.be/nsGvN6ZU-rE?t=404
 
         ThumbNail
 
