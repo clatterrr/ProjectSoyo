@@ -1166,3 +1166,105 @@ public class Days100: MonoBehaviour
     }
 }
 
+/*
+ 
+ ======================================= WokeUp ======================================
+
+    https://youtu.be/B4jcClJbkXw?t=89
+
+    WakeUp                  I awoke and saw that I was trapped on a dinner table inside a massive fossil
+    EnemeyAround            there were velociraptors all around looking hungrier than ever
+    Talk_Threathen          we got a big lunch today fellas
+    Talk_Threathen          I can't wait to eat that red thing
+    Talk_Threathen          I'm going to gain like 5 lb
+    IMustLeave              Oh no I got to get out of here
+    ChargeIn                all of the Raptors started to go to town
+    ChargeIn                 and one of them was charging right towards me
+ 
+ 
+ ======================================== Fight ============================
+
+    https://youtu.be/B4jcClJbkXw?t=167
+
+    SthHappen               but something began to happen
+    Attack                  I Unleashed a loud blood Roar
+    FightBack               which sent the dinosaur flying back
+    TalkingThreaten         what the our food's fed back
+    TalkBack                dude I'm not your food 
+    RunAway                 I quickly jumped off the table
+    EnemySpotMe             but because of this all the other Raptors took notice
+    TalkingThreaten         oh no you don't pal.  get him
+    RunAway                 I ran for my life
+    Chase                   as all of them were running towards me
+    TalkBack                stay away
+    EnemyChase              two of the Raptors then appeared on either side of me
+    FriendsSaveMe           but before I got caught I was pulled away
+ 
+============================== FindFriends =========================
+
+    https://youtu.be/B4jcClJbkXw?t=167
+
+    FriendsAppear           there with me was another small dinosaur
+    TalkFriendsAskMe        let me guess they're trying to eat you too
+    TalkFriendsSuperise      wait you're the blood dinosaur 
+    TalkISuperise           uh yeah you know who I am
+    FollowFriends           the small dinosaur signaled me to follow him 
+    ISee                    and it wasn't long until I saw that
+    _EnemyTakenWorld         the Raptors had taken the blood fossil
+    RunForObject            wo without hesitation I ran for it 
+    EnemySpotMe             which caused all of them to spot me
+    TalkEnemySpotMe         there he is. hey he's going after our new toy. stop him
+    RunForObject            I managed to reach the blood fossil
+    SthHappen               and as I collected it something began to happen
+ 
+ 
+    ====================== Grow ============================
+
+https://youtu.be/B4jcClJbkXw?t=190
+
+    GrowLarge               I grew larger in size
+    MoreHearts              and now had 10 Hearts 
+    FeelStronger            I felt stronger than ever
+    NewAbility               and could now perform my own blood slams whenever I wanted
+    TalkSuperise            W collecting the fossil just made me stronger
+    EnemyAttack             one of the Raptors caught up to me
+    WithNewAbility          but with my new blood stomp    
+    IAttackDown             I was able to take him down
+    TalkEnemyThreaten       take that
+    EnemyRunAway            without hesitation all of the other Raptors then ran away
+    TalkFriendsThank        oh thank goodness I ran into you
+    TalkISuperise           yeah now how do you know who I am
+    FollowFriends           the small dinosaur wanted me to follow them
+    Travel_ReachPoint       and as I did we made it all the way to a strange platform in the middle of a forest
+    ObjectMove               just then the blood fossil in my inventory shot out and placed itself on the platform
+    Talk_YouFindTreasture   wo you found the first of six blood fossils
+    Talk_TreasurePowerful    whoever is able to collect them all can forge the strongest dinosaur in the world
+    Talk_EnemyWantTreasure  the blood Beast everyone's looking for them especially the evil cavemen 
+    Talk_EnemyDestroyWorld  really if they make him they'll surely take down all the dinosaurs
+    Talk_IMust              I have to find them first and use it to take them down
+ 
+    FormTeam                the small dinosaur and I formed a team
+    BuildHome               we immediately went to work by building ourselves up our own homes to stay in
+    BuildFurniture          I built up a deadly looking blood Den
+    BuildFurniture          while the small dinosaur built a nice jungle area with its own Pond
+    Talk_EnemyKillFaimly    those cavemen took my family from me too
+    Talk_Revenge            I'll do do anything to stop them
+    Talk_CallMe             call me Brock
+    Talk_Hellow              nice to meet you Brock
+
+    EnemyAttack             just then crazy deadly Vines began to shoot out everywhere inside of our home
+    Talk_ISuperise          what the heck ? why is this happening 
+    Travel_FoundWay         I looked over and saw a Vine Trail leading out
+    Travel_FollowWay         so I better follow it
+    Travel_ReachPoint       I did and it wasn't long until I was in the middle of an underground tunnel
+    FindTreasure            and after following long enough I managed to find a another Blood fossil
+    Talk_SuperiseAboutT     wo what are the odds
+    TakeTreasure            I went over to pick it up
+    CantGetTreasure         but I just couldn't break through the vines
+    IDoBad                  yeah nothing I did was working
+    EnemyChargeIn           come on just then deadly Vines began to come out all around me
+    ITrapped                and before I knew it I was trapped
+    EnemyCatchMe            The Vines brought me above the ground to its main Hive mine
+    EnemyDestoryWorld       and I saw that they had claimed the entire jungle
+    
+ */
