@@ -826,11 +826,18 @@ public class Days100 : MonoBehaviour
         fight.Add(new List<string>() { "Enemy_Appear", "I_Talk_What", "I_Found_Enemy", "Enemy_Talk_Threaten", "Enemy_Attack_Me", "i_washurt", "I_Runaway" });
         fight.Add(new List<string>() { "enemy_chargein", "i_washurt", "i_runaway", "i_havepower", "i_needtools"});
         fight.Add(new List<string>() { "i_heardnoise", "enemy_chargein", "enemy_talk_threaten", "i_talk_againstthreaten"});
+        fight.Add(new List<string>() { "enemy_chargein", "enemy_talk_threaten", "enemy_attack", "i_attackquick", "i_talk_runaway" });
+        fight.Add(new List<string>() { "i_foundplace", "enemy_around", "enemy_describe", "i_washurt", "i_foundchest", "i_talk_heal", "i_attackfinal" });
+        fight.Add(new List<string>() { "enemy_talk_threaten", "i_talk_againstThreaten", "enemy_describe", "i_attackquick", "enemy_dropitem" });
 
 
         LARGE2SMALL lack = new LARGE2SMALL("Lack");
         lack.Add(new List<string>() { "i_needtool", "i_crafttable" });
         lack.Add(new List<string>() { "i_washungry", "i_crafttable" });
+
+
+        LARGE2SMALL findTreasure = new LARGE2SMALL("FindingTreasure");
+        findTreasure.Add(new List<string>() { "i_travelplace", "i_foundchest", "i_talk_scary", "i_lootchest", "i_needtreasure" });
 
 
         LARGE2SMALL findfood = new LARGE2SMALL("FindFoodInPlace");
@@ -841,12 +848,16 @@ public class Days100 : MonoBehaviour
         discussEnemy.Add(new List<string>() { "i_findfood", "friend_come", "i_talk_sorrystolefood" });
 
         LARGE2SMALL quickFight = new LARGE2SMALL("quickFight");
-        quickFight.Add(new List<string>() { "i_heardnoise", "enemy_chargein", "i_quickfight", "friendthank"});
+        quickFight.Add(new List<string>() { "i_heardnoise", "enemy_chargein", "i_attackquick", "friendthank"});
 
 
         LARGE2SMALL build = new LARGE2SMALL("building");
         quickFight.Add(new List<string>() { "i_needhome", "i_needtool", "i_crafttool", "i_buildhome", "i_buildfurniture", "i_completehome"});
+        quickFight.Add(new List<string>() { "enemy_chargein", "i_attackquick", "enemy_around", "i_needsafe", "i_strengthenbuild", "i_buildwall", "i_wassafe" });
 
+        LARGE2SMALL friendgiveitem = new LARGE2SMALL("FriendGiveItem");
+        friendgiveitem.Add(new List<string>() { "i_asknewfriend", "friend_notice_me", "friend_haveitemhelpme", "friend_giveitem", "i_tryuseitemmagic", "i_oldsaying", "i_talk_iamhero" });
+        friendgiveitem.Add(new List<string>() { "friend_tradable", "i_mineore", "friend_trade", "item_shouldhelp", "i_closetofinal"});
 
         List<LARGE2SMALL> toList = new List<LARGE2SMALL>();
         toList.Add(fight);
