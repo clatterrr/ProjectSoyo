@@ -294,11 +294,11 @@ public class aichannel : MonoBehaviour
     void Start()
     {
         
-        actorDesc.Add(new ActorDesc(MaterialType.IconYoutube, CreateCubeWithImage("Assets/AutoImages/youtube.png")));
+       // actorDesc.Add(new ActorDesc(MaterialType.IconYoutube, CreateCubeWithImage("Assets/AutoImages/youtube.png")));
 
         string specialFolderName = "Assets/AutoImages/";
         
-        actorDesc.Add(new ActorDesc(MaterialType.Account,  CreateCubeWithImage(specialFolderName + "accountMainPage.png")));
+     //   actorDesc.Add(new ActorDesc(MaterialType.Account,  CreateCubeWithImage(specialFolderName + "accountMainPage.png")));
 
         // 什么样的keyword 应该有什么样的小反应。大反应是直接更换背景图
         keyWords.Add(new KeyWord(MaterialType.IconYoutube, SpecialWord.platform, "youtube", Effect.Icon));
@@ -346,7 +346,7 @@ public class aichannel : MonoBehaviour
         for(int i = 0; i < splited.Length; i++)
         {
 
-            addShowWord(splited[i], i * 40, 40);
+            //addShowWord(splited[i], i * 40, 40);
         }
 
 

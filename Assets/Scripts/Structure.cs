@@ -1452,4 +1452,126 @@ public class Structure
 
     }
 
+    public struct TheEvent
+    {
+        public string bigEvent;
+        public List<string> middleEvent;
+        public List<string> smallEvent;
+
+        public TheEvent(string big)
+        {
+            bigEvent = big;
+            middleEvent = new List<string>();
+            smallEvent = new List<string>();
+        }
+    }
+
+    public static List<TheEvent> GetStory()
+    {
+        List<string> bigEvent = SelectBigEvent();
+        List<TheEvent> theEvents = new List<TheEvent>();
+        for (int i = 0; i < bigEvent.Count; i++)
+        {
+            TheEvent theEvent = new TheEvent(bigEvent[i]);
+            theEvent.middleEvent = SelectMiddleEvent(bigEvent[i]);
+            theEvents.Add(theEvent);
+        }
+        for(int i = 0; i < theEvents.Count; i++)
+        {
+            for(int j = 0; j < theEvents[i].middleEvent.Count; j++)
+            {
+                theEvents[i].smallEvent.Add(theEvents[i].middleEvent[j]);
+            }
+            
+        }
+        return theEvents;
+    }
+
+    public static string SelectSmallEvent(string middleEvent)
+    {
+        string path = "Assets/csv/output.csv";
+        if (File.Exists(path))
+        {
+            string[] lines = File.ReadAllLines(path);
+            int rowCount = lines.Length;
+
+            if (rowCount > 0)
+            {
+                List<string> possibleString = new List<string>();
+
+                for (int lineIndex = 0; lineIndex < rowCount; lineIndex++)
+                {
+                    string[] strs = lines[lineIndex].Split(',');
+                    if (strs[0].ToLower() == middleEvent.ToLower())
+                    {
+                        possibleString.Add(strs[1]);
+                    }
+
+                }
+                if(possibleString.Count > 0)
+                {
+                    int randomIndex = Random.Range(0, possibleString.Count);
+                    string selectString = possibleString[randomIndex];
+                    Debug.Log("Select String = " + selectString);
+                    return selectString;
+                }
+            }
+        }
+        return "";
+    }
+
+    public static List<string> SelectMiddleEvent(string BigEvent)
+    {
+        string path = "Assets/csv/big.csv";
+        if (File.Exists(path))
+        {
+            string[] lines = File.ReadAllLines(path);
+            int rowCount = lines.Length;
+
+            if (rowCount > 0)
+            {
+                for(int lineIndex = 0; lineIndex < rowCount; lineIndex++)
+                {
+                    string[] strs = lines[lineIndex].Split(',');
+                    if (strs[0].ToLower() == BigEvent.ToLower())
+                    {
+                        List<string> middleEvent = new List<string>();
+                        for (int i = 1; i < strs.Length; i++)
+                        {
+                            middleEvent.Add(strs[i]);
+                        }
+                        Debug.Log("select middle event " + lines[lineIndex]);
+                        return middleEvent;
+                    }
+                }
+            }
+        }
+        return new List<string>();
+    }
+
+    public static List<string> SelectBigEvent()
+    {
+        string path = "Assets/csv/day.csv";
+        if (File.Exists(path))
+        {
+            string[] lines = File.ReadAllLines(path);
+            int rowCount = lines.Length;
+
+            if (rowCount > 0)
+            {
+                System.Random random = new System.Random();
+                int randomIndex = random.Next(rowCount);
+                string[] strs = lines[randomIndex].Split(',');
+                List<string> bigEvent = new List<string>();
+                for(int i = 0; i < strs.Length; i++)
+                {
+                    bigEvent.Add(strs[i]);
+                }
+                Debug.Log("select big event: " + lines[randomIndex]);
+                return bigEvent;
+            }
+        }
+        return new List<string>();
+    }
+
 }

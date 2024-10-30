@@ -783,6 +783,89 @@ public class Days100 : MonoBehaviour
     void newStart()
     {
 
+        List<TheEvent> theEvents =  GetStory();
+
+        for(int bigIndex = 0; bigIndex <  theEvents.Count; bigIndex++)
+        {
+            TheEvent te = theEvents[bigIndex];
+            for(int middleIndex = 0; middleIndex < te.middleEvent.Count; middleIndex++)
+            {
+                string middleEvent = te.middleEvent[middleIndex];
+                string smallEvent = te.smallEvent[middleIndex];
+
+                middleEvent = middleEvent.ToLower();
+
+                if (middleEvent.Contains("talk"))
+                {
+                    // 直接选说话就行了，说话的句式固定，很简单
+                    string selectString = "i must get out of here";
+                }
+                else
+                {
+
+                    string[] splited = middleEvent.Split("_");
+                    string selectString = "_main_name template string _sub_me";
+
+                    /*
+                    for (int soulIndex = 0; soulIndex < souls.Count; soulIndex++)
+                    {
+                        string middleTemp = middleEvent.ToLower();
+                        if (middleTemp == "enemy_attack_me") middleTemp = "i_attack";
+                        if (souls[soulIndex].middle.ToLower() == middleTemp.ToLower())
+                        {
+                            int rii = Random.Range(0, souls[soulIndex].sentences.Count - 1);
+                            selectString = souls[soulIndex].sentences[rii];
+                            break;
+                        }
+                    }
+                    */
+
+
+                    // 首先要把 _main 和 _sub 替换成 _enemy _friend, _i
+
+
+                    string mainActor = splited[0];
+                    //string mainAct = splited[1];
+                    string subActor = "";
+                    if (splited.Length > 2) subActor = splited[2];
+
+                    selectString = selectString.Replace("_main", "_" + mainActor);
+                    selectString = selectString.Replace("_sub", "_" + subActor);
+
+                    string enemy_name = "dark monster";
+                    string friend_name = "rabbit";
+                    string i_name = "fire lion";
+
+
+                    selectString = selectString.Replace("_enemy_name", enemy_name);
+                    selectString = selectString.Replace("_friend_name", friend_name);
+                    selectString = selectString.Replace("_i_name", i_name);
+
+                    // 其他代词替换
+
+                    selectString = selectString.Replace("_enemy_i", "he");
+                    selectString = selectString.Replace("_enemy_my", "his");
+                    selectString = selectString.Replace("_enemy_me", "him");
+                    selectString = selectString.Replace("_enemy_mine", "him");
+
+
+                    selectString = selectString.Replace("_i_i", "i");
+                    selectString = selectString.Replace("_i_my", "my");
+                    selectString = selectString.Replace("_i_me", "me");
+                    selectString = selectString.Replace("_i_mine", "mine");
+
+
+                    selectString = selectString.Replace("_friend_i", "he");
+                    selectString = selectString.Replace("_friend_my", "his");
+                    selectString = selectString.Replace("_friend_me", "him");
+                    selectString = selectString.Replace("_friend_mine", "him");
+
+                    Debug.Log(" middle event = " + middleEvent);
+                    Debug.Log(" sentence = " + selectString);
+                }
+            }
+        }
+
         List<FeelMySoul> souls = PrepareSentences();
         // 可能的地点
         string[] placeList = new string[] { "Valley", "Cave", "WaterFall", "Temple", "Hideout" };
@@ -801,169 +884,7 @@ public class Days100 : MonoBehaviour
         // 应该以事件，还是应该以地点？
         // 还是以地点吧，这样同一个地点至少人相同
 
-        List<DayRecord> fireLions = new List<DayRecord>();
-        fireLions.Add(new DayRecord("IceSpikeBiome", "BornAlone", "BornAlone", null, null, null));
-        fireLions.Add(new DayRecord("Village", "FindFood", "FindFood_FriendDisscusEnemy_Fight", "villager_helpfight_thank", "zombie_enemy_none"));
-        fireLions.Add(new DayRecord("Cave", "FindOre", "MineOre_MakeTool_Fight", "frostman_enemy_none"));
-        fireLions.Add(new DayRecord("OwnHome", "Build", "BuildFarm_PlantFood_FindFriend_BuildFriendHome", "golem_protect_none"));
-        fireLions.Add(new DayRecord("OwnHome", "Build", "BuildWall_PlantFood_Fight", "firewalker_enemy_none"));
-        fireLions.Add(new DayRecord("Ocean", "Find", "FriendTalkEnemy_FindEnemy", "peguin_findenemy_none"));
-        fireLions.Add(new DayRecord("Village", "Find", "FriendTalkInfo_FriendTradeInfo", "villager_none_none"));
-        fireLions.Add(new DayRecord("Home", "Find", "QuickFight_BuildHome", "villager_none_none"));
-        fireLions.Add(new DayRecord("Home", "Find", "BuildHome_CollectWool", "villager_none_none"));
-        fireLions.Add(new DayRecord("Water", "Find", "QuickFightWrong_Heal", "witcher_enemy_none"));
-        // 比如fight 和 enemy 在一起的时候，就可以加一句 "enemy surround my home"
-        fireLions.Add(new DayRecord("Home", "Find", "BuildHome_QuickFight_KnowNoFood", "wolf_enemy_none"));
 
-
-
-
-
-        //todo: large 2 small
-
-        LARGE2SMALL fight = new LARGE2SMALL("fight");
-        fight.Add(new List<string>() { "Enemy_Appear", "Enemy_Talk_Threaten", "enemy_chargein", "I_Talk_RunAway", "I_RunAway" });
-        fight.Add(new List<string>() { "Enemy_Appear", "I_Talk_What", "I_Found_Enemy", "Enemy_Talk_Threaten", "Enemy_Attack_Me", "i_washurt", "I_Runaway" });
-        fight.Add(new List<string>() { "enemy_chargein", "i_washurt", "i_runaway", "i_havepower", "i_needtools"});
-        fight.Add(new List<string>() { "i_heardnoise", "enemy_chargein", "enemy_talk_threaten", "i_talk_againstthreaten"});
-        fight.Add(new List<string>() { "enemy_chargein", "enemy_talk_threaten", "enemy_attack", "i_attackquick", "i_talk_runaway" });
-        fight.Add(new List<string>() { "i_foundplace", "enemy_around", "enemy_describe", "i_washurt", "i_foundchest", "i_talk_heal", "i_attackfinal" });
-        fight.Add(new List<string>() { "enemy_talk_threaten", "i_talk_againstThreaten", "enemy_describe", "i_attackquick", "enemy_dropitem" });
-
-
-        LARGE2SMALL lack = new LARGE2SMALL("Lack");
-        lack.Add(new List<string>() { "i_needtool", "i_crafttable" });
-        lack.Add(new List<string>() { "i_washungry", "i_crafttable" });
-
-
-        LARGE2SMALL findTreasure = new LARGE2SMALL("FindingTreasure");
-        findTreasure.Add(new List<string>() { "i_travelplace", "i_foundchest", "i_talk_scary", "i_lootchest", "i_needtreasure" });
-
-
-        LARGE2SMALL findfood = new LARGE2SMALL("FindFoodInPlace");
-        findfood.Add(new List<string>() { "i_findfood", "friend_come", "i_talk_sorrystolefood" });
-
-        https://youtu.be/yqQuSPOua-0?t=38
-        LARGE2SMALL discussEnemy = new LARGE2SMALL("DiscussEnemy");
-        discussEnemy.Add(new List<string>() { "i_findfood", "friend_come", "i_talk_sorrystolefood" });
-
-        LARGE2SMALL quickFight = new LARGE2SMALL("quickFight");
-        quickFight.Add(new List<string>() { "i_heardnoise", "enemy_chargein", "i_attackquick", "friendthank"});
-
-
-        LARGE2SMALL build = new LARGE2SMALL("building");
-        quickFight.Add(new List<string>() { "i_needhome", "i_needtool", "i_crafttool", "i_buildhome", "i_buildfurniture", "i_completehome"});
-        quickFight.Add(new List<string>() { "enemy_chargein", "i_attackquick", "enemy_around", "i_needsafe", "i_strengthenbuild", "i_buildwall", "i_wassafe" });
-
-        LARGE2SMALL friendgiveitem = new LARGE2SMALL("FriendGiveItem");
-        friendgiveitem.Add(new List<string>() { "i_asknewfriend", "friend_notice_me", "friend_haveitemhelpme", "friend_giveitem", "i_tryuseitemmagic", "i_oldsaying", "i_talk_iamhero" });
-        friendgiveitem.Add(new List<string>() { "friend_tradable", "i_mineore", "friend_trade", "item_shouldhelp", "i_closetofinal"});
-
-        List<LARGE2SMALL> toList = new List<LARGE2SMALL>();
-        toList.Add(fight);
-        toList.Add(lack);
-        toList.Add(findfood);
-        toList.Add(discussEnemy);
-        toList.Add(quickFight);
-        for (int dayIndex = 0; dayIndex < fireLions.Count; dayIndex++)
-        {
-            DayRecord record = fireLions[dayIndex];
-            // string friends = record.actors[0];
-            //  string enemy = record.actors[1];
-
-            string[] events = record.WhatToDoThisPlace.Split('_');
-
-            for (int eventIndex = 0; eventIndex < events.Length; eventIndex++)
-            {
-                string theEvent = events[eventIndex];
-
-                Debug.Log(" Big Event = " + theEvent);
-
-                for (int toIndex = 0; toIndex < toList.Count; toIndex++)
-                {
-                    if (toList[toIndex].large.ToLower() == theEvent.ToLower())
-                    {
-                        int ri = Random.Range(0, toList[toIndex].middles.Count - 1);
-                        List<string> middleEventList = toList[toIndex].middles[ri];
-
-                        for (int middleIndex = 0; middleIndex < middleEventList.Count; middleIndex++)
-                        {
-                            string middleEvent = middleEventList[middleIndex];
-                            middleEvent = middleEvent.ToLower();
-
-                            if (middleEvent.Contains("talk"))
-                            {
-                                // 直接选说话就行了，说话的句式固定，很简单
-                                string selectString = "i must get out of here";
-                            }
-                            else
-                            {
-
-                                string[] splited = middleEvent.Split("_");
-                                string selectString = "_main_name template string _sub_me";
-
-                                for(int soulIndex = 0; soulIndex < souls.Count; soulIndex++)
-                                {
-                                    string middleTemp = middleEvent.ToLower();
-                                    if (middleTemp == "enemy_attack_me") middleTemp = "i_attack";
-                                    if(souls[soulIndex].middle.ToLower() == middleTemp.ToLower())
-                                    {
-                                        int rii = Random.Range(0, souls[soulIndex].sentences.Count - 1);
-                                        selectString = souls[soulIndex].sentences[rii];
-                                        break;
-                                    }
-                                }
-
-
-                                // 首先要把 _main 和 _sub 替换成 _enemy _friend, _i
-
-
-                                string mainActor = splited[0];
-                                //string mainAct = splited[1];
-                                string subActor = "";
-                                if (splited.Length > 2) subActor = splited[2];
-
-                                selectString = selectString.Replace("_main", "_" + mainActor);
-                                selectString = selectString.Replace("_sub", "_" + subActor);
-
-                                string enemy_name = "dark monster";
-                                string friend_name = "rabbit";
-                                string i_name = "fire lion";
-
-
-                                selectString = selectString.Replace("_enemy_name", enemy_name);
-                                selectString = selectString.Replace("_friend_name", friend_name);
-                                selectString = selectString.Replace("_i_name", i_name);
-
-                                // 其他代词替换
-
-                                selectString = selectString.Replace("_enemy_i", "he");
-                                selectString = selectString.Replace("_enemy_my", "his");
-                                selectString = selectString.Replace("_enemy_me", "him");
-                                selectString = selectString.Replace("_enemy_mine", "him");
-
-
-                                selectString = selectString.Replace("_i_i", "i");
-                                selectString = selectString.Replace("_i_my", "my");
-                                selectString = selectString.Replace("_i_me", "me");
-                                selectString = selectString.Replace("_i_mine", "mine");
-
-
-                                selectString = selectString.Replace("_friend_i", "he");
-                                selectString = selectString.Replace("_friend_my", "his");
-                                selectString = selectString.Replace("_friend_me", "him");
-                                selectString = selectString.Replace("_friend_mine", "him");
-
-                                Debug.Log(" middle event = " + middleEvent);
-                                Debug.Log(" sentence = " + selectString);
-                            }
-
-                        }
-                    }
-                }
-
-            }
-        }
 
 
 
