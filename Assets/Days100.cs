@@ -253,8 +253,10 @@ public class Days100 : MonoBehaviour
         WatchOverPlaceClose,
         WatchOverPlaceFar,
 
-        TalkPlace0,
-        TalkPlace1,
+        ITalkPlace,
+        EnemyTalkPlace,
+        IBackPlace,
+        EnemyPlace,
 
         RunAwayStart,
         RunAwayEnd,
@@ -859,16 +861,20 @@ public class Days100 : MonoBehaviour
 
                 middleEvent = middleEvent.ToLower();
 
-                // step1: actor move
+                // todo: step1: actor move
 
                 switch (middleEvent) {
-                    case "enemy_chargein":
-                        {
-                            // 随机选择一个摄像机机位
-                            // 如果是idle，仍然穿两个，不过不移动
-                            actorFastMove(0, 100, theEnemy, theAnim.ChargeIn, SP.ChargeInStart, SP.ChargeInEnd);
-                            break;
-                        }
+                    case "enemy_chargein":{actorFastMove(0, 100, theEnemy, theAnim.ChargeIn, SP.ChargeInStart, SP.ChargeInEnd);break; }
+                    case "enemy_talk_threaten": { actorFastMove(0, 100, theEnemy, theAnim.Idle, SP.EnemyTalkPlace, SP.ITalkPlace); break; }
+                    // attack，位置也不动
+                    case "enemy_attack": { actorFastMove(0, 100, theEnemy, theAnim.Attack0, SP.EnemyAttack, SP.IAttack); break; }
+                    // hurt，位置也不动
+                    case "i_washurt": { actorFastMove(0, 100, theMe, theAnim.Hurt, SP.IBackPlace, SP.EnemyAttack); break; }
+                    case "i_attack": { actorFastMove(0, 100, theMe, theAnim.Attack0, SP.IAttack, SP.EnemyAttack); break; }
+                    case "i_runaway": { actorFastMove(0, 100, theMe, theAnim.Walk, SP.RunAwayStart, SP.RunAwayEnd); break; }
+                    // idle 的话，一直在 sp0，但看向 enemy talk place
+                    case "i_talk_runaway":{ actorFastMove(0, 100, theMe, theAnim.Idle, SP.ITalkPlace, SP.EnemyTalkPlace);break;}
+
                     default: break;
                 }
 
@@ -1036,7 +1042,6 @@ public class Days100 : MonoBehaviour
             }
         }
 
-        List<FeelMySoul> souls = PrepareSentences();
         // 可能的地点
         string[] placeList = new string[] { "Valley", "Cave", "WaterFall", "Temple", "Hideout" };
 
@@ -1300,7 +1305,7 @@ public class Days100 : MonoBehaviour
             {
                 if (globalFrameCount == set.frameEnd)
                 {
-                    fellow.setState(set.type, set.animation, set.posEnd);
+                    //fellow.setState(set.type, set.animation, set.posEnd);
                 }
             }
         }
@@ -1316,373 +1321,6 @@ public class Days100 : MonoBehaviour
          */
 
     }
-
-    struct FeelMySoul
-    {
-        public string middle;
-        public List<string> sentences;
-
-        public FeelMySoul(string middle, List<string> sentences)
-        {
-            this.middle = middle;
-            this.sentences = sentences;
-        }
-    }
-
-    List<FeelMySoul> PrepareSentences()
-    {
-
-        List<FeelMySoul> souls = new List<FeelMySoul>() {
-            new FeelMySoul("i_talk_runaway", new List<string>() {"I got to find a way out of here", "Oh no I got to get out of here" }),
-            new FeelMySoul("i_talk_superiseattack", new List<string>() { "oh, what did i just do", "Oh no I got to get out of here" }),
-
-
-            new FeelMySoul("i_foundincage_friend", new List<string>(){"_i_i looked over to see a strange _sub_name stuck in cage" }),
-
-            new FeelMySoul("friend_talk_intro", new List<string>(){" i am _main_name" }),
-            new FeelMySoul("friend_talk_helpescape", new List<string>(){" come on let me out of here i can help you escape" }),
-
-            new FeelMySoul("i_wakeuptrapped", new List<string>(){" I awoke and saw that I was trapped inside a _trappedPlace" }),
-
-
-            new FeelMySoul("enemy_around", new List<string>(){" there were _enemy_name all around looking hungrier than ever","there are still a few _enemy_name around" }),
-
-            new FeelMySoul("enemy_chargein", new List<string>(){" all of the _main_name started to go to town",
-                "charging in entered a _enemy_name",
-                "_enemy_name were attacking the _defencePlace",
-                "a _enemy_name started attacking _sub_me",
-                "I was facing of against the _enemy_name",
-                "_enemy_name rushed in and we began to fight ",
-                "shortly followed by a bunch of _enemy_name. they immediately started to run through our field and begin to kill",
-                "I looked up and saw that _enemy_name was charging towards me ",
-                "just then the _enemy_name dropped down in front of me",
-                "_main_name rushed in",
-                "and one of _main_name was charging right towards _i_me"}),
-
-            new FeelMySoul("enemy_talk_threaten", new List<string>(){
-                " we got a big lunch today fellas", "I can't wait to eat that red thing",
-                "oh no you don't, pal.  get him",
-                "I was running for my life as I ran more of the Tigers kept charging through the bushes of the trees trying to slash me down",
-                "I began to run away but before I could they threw poison on me causing my vision to get blurry",
-                "I began to run away through the forest with the water tiger blasting at us from behind [we have to lose him]",
-                "okay just have to take him down this should be a piece of cake I walked in fully ready to face my foe",
-                "time to die" ,
-                "don`t let him go away" ,
-                "you just don't know when to quit. do you? ",
-                "I'll squash you like a bug",
-                "you are not going anywhere",
-                "you are not going anywhere",
-                "the boss going to love this new prize we found",
-                "our conquest for overworld has offically began",
-            }),
-
-
-            new FeelMySoul("i_talk_againstThreaten", new List<string>(){
-                " dude I'm not your food ", "stay away",
-                "Stay Away" ,
-                "You stay away from me",
-                " Stop it ",
-                "take that",
-                "No",
-                "I'm sorry but I have to do this I cannot die here",
-                "take this",
-                "I knew I had to do something",
-                "the wolves have found us we have to go",
-                "if they found us, we are done for",
-            }),
-
-            new FeelMySoul("i_attack", new List<string>(){
-               "_main_i begin to shoot out very powerful fire blasts" ,
-               "_main_i had control over the plant life around _main_me and would trap _sub_me in place",
-               "_main_i would use _main_my lava to cut _sub_me off from reaching _sub_me ",
-               "_main_i came in again and slashed _sub_me so hard",
-               "_main_i angrily began to attack _sub_me ",
-               "_main_i they kept trying to fight _sub_me ",
-               "_main_i ran in and started to fend _sub_me off",
-               "that's when  _main_i noticed a new ability in _main_my inventory a diamond slash. _main_i use it on _sub_me",
-               "_main_i then used a special ability on _sub_me which summoned void spikes from above",
-               "_main_i even sent out Undead beasts to outnumber _sub_me",
-               "_main_i rushed at me and bashed _main_me with _his claws ouch",
-               "_main_i Unleashed a loud blood Roar",
-               "but _main_i blasted out a strange skull ink explosion",}),
-
-            new FeelMySoul("quick_fight", new List<string>(){
-                "i fought them off quickly",
-                "i helped the _friend_name and fought off the _enemy_name"}),
-
-            new FeelMySoul("enemy_notice_me", new List<string>(){
-                "but because of this all the other _main_name took notice"}),
-
-            new FeelMySoul("i_runaway", new List<string>(){
-                "but i started to run",
-                "I ran for my life",
-                "I quickly jumped off the _attackPlace",}),
-
-
-            new FeelMySoul("enemy_chase", new List<string>(){
-                "as all of them were running towards me",
-                "two of the _enemy_name then appeared on either side of _i_me",
-            }),
-
-
-            new FeelMySoul("i_attackback", new List<string>(){
-                "which blasted them back",
-                "which sent the dinosaur flying back",
-                "I can't wait to eat that red thing",}),
-
-            new FeelMySoul("enemy_appear", new List<string>(){
-                "the door slammed open and the _enemy found us", "I can't wait to eat that red thing",}),
-
-            new FeelMySoul("friend_talk_thank", new List<string>(){
-                  "the villager was happy and offered me more of his food and invited me to his house",
-                  "yes we did it thank you so much it's true the lava wolf is a savior",
-                  "I'm just trying to do what's right why don't you guys stay with me for a while",
-                  "wao you did it thank you dearly go ahead the fragment is all yours",
-                  "thank you so much you have treated us too kindly",
-                  "Thanks for saving me, my name is ",
-                  "you did it",
-            }),
-
-            new FeelMySoul("i_reachPoint", new List<string>(){
-                  "_main_i found _main_myself in a large Village",
-                  "_main_i arrived at a large Coastal Village",
-                  "_main_i was traveling toward the pirate base",
-                  "_main_i reached the clearing",
-                  "the mushroom led _main_me over to a Strang looking Jungle Room",
-                  "_main_i entered themushroom's main home",
-            }),
-
-            new FeelMySoul("enemy_describe", new List<string>(){  
-                "_main_name were way stronger than my people and could took them out with ease" ,
-                "even though _main_i was a old man, he was tough",
-                "_main_i`s  massive size and speed were far greater than _sub_me",
-                "_main_i had deadly poisonous gas in his aresnel ",
-                "_main_i have the brute strength of nothing everyone had ever faced before ",
-                "_main_i had Incredible strength and abilities",
-            }),
-
-            new FeelMySoul("i_washurt", new List<string>(){
-                 "I wanted to fight back but the poison was extremely lethal towards me" ,
-                 "I had half a heart and was dodging each of its things left and right",
-                 "I was getting extremely low",
-                 "hit me off and it almost killed me",
-                 "I was knocked down to only one heart",
-                 "as soon as they hit I was blinded ah",
-                 "I thought I was surely done for",
-            }),
-
-           new FeelMySoul("i_havepower", new List<string>(){
-               "I ran in but out of anger I accidentally shot lava out everywhere wao I have lava Powers I can't control them",
-               "and then i realized what is this i can fly",
-            }),
-
-            new FeelMySoul("i_needtool", new List<string>(){
-               "wow i needed tools",
-            }),
-
-            new FeelMySoul("i_craftetable", new List<string>(){
-               "so i chopped down some wood and made a crafting table i was able to craft a bunch of wooden tools",
-            }),
-
-            new FeelMySoul("i_washungry", new List<string>(){
-               "i was really hungry and didn't want to eat any of the other mobs",
-            }),
-
-            new FeelMySoul("i_findfood", new List<string>(){
-               "so i headed to a village and i looked around and was able to find food",
-            }),
-
-            new FeelMySoul("friend_come", new List<string>(){
-               "i was approached by a villager",
-            }),
-
-            new FeelMySoul("i_talk_sorrystolefood", new List<string>(){
-               "i'm sorry i'm just so hungry",
-            }),
-
-            new FeelMySoul("i_heardnoise", new List<string>(){
-                "as nighttime came we heard a noise",
-               "I was about to go to sleep for the night when I heard screams in the distance",
-               "I heard loud howling going off in the distance",
-                " I heard a strange noise from inside the cave",
-            }),
-
-                      
-            
-            //todo: sentences
-            // python 1： 读取csv 文件，转变为给kimi 读取的 txt
-            // python 2: 给kimi，返回txt
-            // 修改txt
-            // python 4: 输出句子分类到 csv
-            // python 5: 输出事件顺序到 csv
-        };
-
-        return souls;
-    }
-
-    static void Prepare()
-    {
-
-
-        // 人物和角色动作不在这儿指定吗？
-        // 至少要指定人物大致动作
-        // 细致动作是WalkFast 或者WalkSlow
-        // 粗任务是follow the map, 细动作可以是跑，走，或者停在那儿四处张望
-        List<PS> pres = new List<PS>()
-        {
-            new PS("", PreScene.Spawn, new List<string>(){
-            "on day one I spawned in as a baby "  }),
-
-
-
-            new PS("", PreScene.Fight_RunForTart, new List<string>(){
-           "it wasn't long though until I came across the large lava Crystal I was looking for my leader wanted me to find this",
-                "[stay away] I ran throughout the hallways and managed to close a door behind me [open this door]",
-                "he tried to shoot out spews of poisonous gas at me but I did my best and dodged out of the way. [you're crazy man] after enough dodging I made it to the queen",}),
-
-             new PS("", PreScene.Travel_BackToHome, new List<string>(){
-          "I arrived back at the wasp's nest and they were so relieved to see that I took him down",
-                "I was able to bring my pack leader all the way back to my Hideout"}),
-
-             new PS("", PreScene.Self_GrowUp, new List<string>(){
-          "because of this I grew stronger once again I now had sharper Fang and a larger and stronger body with 15 hearts wo I feel amazing",
-             "because of my victory I grew into an adult-sized tiger I even gained five more Hearts",
-             "because of this my body began to change I gained five more hearts and turned into a larger Warden snake I even have little Warden antlers ",
-             }),
-
-                new PS("", PreScene.Talk_FriendsWeak, new List<string>(){
-          "I have taken too many hits in a matter of days I'm sad to say I will be gone",
-        }),
-                new PS("", PreScene.Fight_IBlockEnemy, new List<string>(){
-          "he tried his best to run away but we blocked him off and took him down",
-        }),
-
-        new PS("", PreScene.Talk_FuckEnmey, new List<string>(){
-          "who's larger now you punk" ,"you're crazy man",
-          "I was facing off against the Exterminator even though he was an old man he was tough he had deadly poisonous gas in his Arsenal and have the brute strength of nothing I'd ever faced before",
-        }),
-
-       new PS("", PreScene.Travel_Traveling, new List<string>(){
-          "_i was heading back to _my base teleporting through the world",}),
-
-              new PS("", PreScene.Travel_Arrived, new List<string>(){
-                    
-              }),
-
-                     new PS("", PreScene.Travel_FindSpot, new List<string>(){
-          "_i spotted a pirate ship nearby and knew that it must be the doing of _thehe and _his men",
-          "when _i spotted a village, this one looked as though it was starting to flood as well ",
-          "and saw that it was swarming with _thehe "
-          ,}),
-
-                            new PS("", PreScene.Travel_Confused, new List<string>(){
-          "_i looked around the village and things seemed to be different about this world",}),
-
-                                   new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-          new PS("", PreScene.Build_FindWool, new List<string>(){
-          "once I was finished I found a group of sheep and defeated them together Wool",}),
-
-                                   new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-          new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-
-            new PS("", PreScene.Build_FindWool, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-
-
-
-            new PS("", PreScene.Travel_SearchNoise, new List<string>(){
-          "oh no I need to go and see what's happening",
-            "and I began a search to investigate it",
-            }),
-
-            new PS("", PreScene.Travel_FoundNewFreind, new List<string>(){
-          "I found a strange Enderman creature",}),
-
-
-            new PS("", PreScene.Talk_HelloToFriend, new List<string>(){
-          "hey who Are You",}),
-
-            new PS("", PreScene.Travel_DropMap, new List<string>(){
-          "one of _thehe dropped a map. it looked like the coordinates to the pirate base",}),
-
-
-            new PS("", PreScene.Fight_SuccessCheer, new List<string>(){
-          "_theme started to cheer for _him and say _thehe was real",}),
-
-            new PS("", PreScene.Travel_Sneak, new List<string>(){
-          "_i used my teleportation abilities to sneak past _him and remain undetected",}),
-
-
-
-            new PS("", PreScene.Talk_FriendEncourage, new List<string>(){
-          "_theme assure _him that _he will be able to in time", "you have a long way to go but you are on your way"}),
-
-            new PS("", PreScene.Talk_FriendSad, new List<string>(){
-          "without the Elder there is surely no hope in winning this War",}),
-
-            new PS("", PreScene.Talk_FriendMission, new List<string>(){
-           "my family and I were separated from the war and I don't have a home" ,
-                        "this will take you to the first of five special Diamonds, the saber diamond. for each one you collect, the closer you will come to stopping the wolf Nation, do it for me, and end this war" ,
-                        "there is said to be five Warden scales in total each dropped down from past Ward and snake Warriors",
-                        "my son. you are very special. when it is time you shall be the one who takes the throne.",}),
-
-            new PS("", PreScene.Travel_FindTreasure, new List<string>(){
-          "and far off on the other side of it was a scale ",}),
-
-            new PS("", PreScene.Travel_TakeTreasure, new List<string>(){
-          "I did as ordered and went forward to pick it up",}),
-
-            new PS("", PreScene.Fight_FriendHelp, new List<string>(){
-          "but _friend stepped in the way and started to fight it off",}),
-
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-            // 你这个不得规定，主角是谁？在干啥？地点在哪儿？
-            // 要在这儿规定吗
-            new PS("", PreScene.Build_CraftTools, new List<string>(){
-          "i needed to upgrade my tools so i mined cobblestone",}),
-
-            new PS("", PreScene.Build_House, new List<string>(){
-          "i needed a home of my own",}),
-
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-
-            new PS("", PreScene.Talk_FriendsHappy, new List<string>(){
-          "_theme is real. we will it be saved",}),
-        };
-    }
+    
 }
 
