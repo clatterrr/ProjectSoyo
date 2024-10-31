@@ -21,25 +21,25 @@ i_wakeupincage,I awoke and saw that I was trapped inside a _trappedPlace
 i_wakeupincage,"I woke up inside of King gora's Volcano
 "
 enemy_around,there were _enemy_name all around looking hungrier than ever
-enemy_around,"staring me down on the other side of the bars was an admiral just
+enemy_around,"on the other side of the bars was an _enemy_name
 "
-enemy_around,"i dove down and there were tons of snow mobs everywhere
+enemy_around,"i dove down and there were tons of _enmey_name everywhere
 "
-enemy_around,"seemed like more and more fire miles are showing up
+enemy_around,"seemed like more and more _enemy_name are showing up
 "
 enemy_around,there are still a few _enemy_name around
 enemy_chargein,all of the _main_name started to go to town
-enemy_chargein,"as the ice Kaiju started to attack
+enemy_chargein,"as the _enemy_name started to attack
 "
-enemy_chargein,"siren head then sprinted towards me to attack
+enemy_chargein,"_enemy_name then sprinted towards me to attack
 "
-enemy_chargein,"one Mighty leap King Kong crashed down startling me
+enemy_chargein,"one _enemy_name crashed down startling me
 "
-enemy_chargein,"as I said this guillas jumped out from the trees Landing behind me
+enemy_chargein,"as I said this _enemy_name jumped out from the trees Landing behind me
 "
-enemy_chargein,"i found the frost moss standing at its entrance
+enemy_chargein,"i found the _enemy_name standing at its entrance
 "
-enemy_chargein,"more fire walkers showed up and started attacking my home
+enemy_chargein,"more _enemy_name showed up and started attacking my home
 "
 enemy_chargein,charging in entered a _enemy_name
 enemy_chargein,_enemy_name were attacking the _defencePlace
@@ -142,19 +142,19 @@ i_talk_againstThreaten,I knew I had to do something
 i_talk_againstThreaten,the wolves have found us we have to go
 i_talk_againstThreaten,"if they found us, we are done for"
 i_attack,_main_i begin to shoot out very powerful fire blasts
-i_attack,"we began to fight as I tried to slam and blast him with everything I could
+i_attack,"_main_i began to fight as I tried to slam and blast him with everything I could
 "
-i_attack,"I charged in recklessly infuriated by his words
+i_attack,"_main_i charged in recklessly infuriated by _sub_my words
 "
-i_attack,"I followed up with my diamond tail attack taking him down for good
+i_attack,"_main_i followed up with _main_my diamond tail attack taking _sub_me down for good
 "
-i_attack,"and unleash my diamond breath directly into his face stunning him
+i_attack,"and unleash _main_my diamond breath directly into _sub_my face stunning _sub_me
 "
-i_attack,"all I was doing was shaking the entire tree
+i_attack,"all _main_i was doing was shaking the entire tree
 "
-i_attack,"I used my diamond breath to try and break the tree limp
+i_attack,"_main_i used _main_my diamond breath to try and break the tree limp
 "
-i_attack,"the frost maw attacked me
+i_attack,"the _enemy_name attacked _sub_me
 "
 i_attack,_main_i had control over the plant life around _main_me and would trap _sub_me in place
 i_attack,_main_i would use _main_my lava to cut _sub_me off from reaching _sub_me

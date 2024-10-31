@@ -274,6 +274,17 @@ public class Days100 : MonoBehaviour
         // follow 和 lookat 是同一个所以省略
         FollowActorAhead,
         LookAheadMainActor,
+        //https://youtu.be/KuDtmmu4sow?t=41 
+        // Enemy Threaten
+        LookActorAheadAround,
+        // https://youtu.be/KuDtmmu4sow?t=43
+        //Two Fight
+        LookLeftCenterSlightlyMove,
+        LookRightCenterSlightlyMove,
+        // https://youtu.be/KuDtmmu4sow?t=46
+        // i_runaway
+        LookBehindActorFollow,
+        LookAheadActorFollow,
 
     }
 
@@ -349,7 +360,7 @@ public class Days100 : MonoBehaviour
     private TerrianCreator terrainCreator;
     struct AllMyFellow
     {
-        public List<ActorType> types;
+        public List<string> actorNames;
         public List<GameObject> actors;
         public List<bool> actives;
         public List<Vector3> pos;
@@ -358,7 +369,7 @@ public class Days100 : MonoBehaviour
         public List<theAnim> anim;
         public AllMyFellow(int count)
         {
-            this.types = new List<ActorType>();
+            this.actorNames = new List<string>();
             this.actors = new List<GameObject>();
             this.actives = new List<bool>();
             this.anim = new List<theAnim>();
@@ -366,12 +377,12 @@ public class Days100 : MonoBehaviour
             this.startSP = new List<SP>();
             this.endSP = new List<SP>();
         }
-        public void Add(ActorType type, string prefab_path)
+        public void Add(string actorName, string prefab_path)
         {
 
-            if (type == ActorType.CameraFollow || type == ActorType.CameraLookat)
+            if (actorName == "CameraFollow" || actorName == "CameraLookAt")
             {
-                GameObject itsmygo = new GameObject(type.ToString());
+                GameObject itsmygo = new GameObject(actorName);
                 itsmygo.AddComponent<AnimationSystem>();
                 actors.Add(itsmygo);
             }
@@ -382,7 +393,7 @@ public class Days100 : MonoBehaviour
             }
 
             actives.Add(false);
-            types.Add(type);
+            actorNames.Add(actorName);
             anim.Add(theAnim.Wait);
             pos.Add(Vector3.zero);
             startSP.Add(SP.None);
@@ -390,11 +401,11 @@ public class Days100 : MonoBehaviour
         }
 
 
-        public GameObject GetActor(ActorType type)
+        public GameObject GetActor(string actorName)
         {
             for (int i = 0; i < actors.Count; i++)
             {
-                if (types[i] == type)
+                if (actorNames[i] == actorName)
                 {
                     actives[i] = true;
                     return actors[i];
@@ -419,11 +430,11 @@ public class Days100 : MonoBehaviour
             //actorSettings.Add( new ActorSettings(frameStart, frameEnd, GetActor(actorType), animation, pos, pos, Quaternion.identity, Quaternion.identity, true, null));
         }
 
-        public void setState(ActorType type, theAnim anim, Vector3 pos)
+        public void setState(string actorName, theAnim anim, Vector3 pos)
         {
             for (int i = 0; i < actors.Count; i++)
             {
-                if (types[i] == type)
+                if (actorNames[i] == actorName)
                 {
                     this.anim[i] = anim;
                     this.pos[i] = pos;
@@ -431,11 +442,11 @@ public class Days100 : MonoBehaviour
             }
         }
 
-        public void setSP(ActorType type, SP sp0, SP sp1)
+        public void setSP(string actorName, SP sp0, SP sp1)
         {
             for (int i = 0; i < actors.Count; i++)
             {
-                if (types[i] == type)
+                if (actorNames[i] == actorName)
                 {
                     this.startSP[i] = sp0;
                     this.endSP[i] = sp1;
@@ -443,11 +454,11 @@ public class Days100 : MonoBehaviour
             }
         }
 
-        public List<SP> GetSP(ActorType type)
+        public List<SP> GetSP(string actorName)
         {
             for (int i = 0; i < actors.Count; i++)
             {
-                if (types[i] == type) return new List<SP>() { startSP[i], endSP[i] };
+                if (actorNames[i] == actorName) return new List<SP>() { startSP[i], endSP[i] };
             }
             return new List<SP>() { SP.None, SP.None };
         }
@@ -471,13 +482,13 @@ public class Days100 : MonoBehaviour
 
     void fastMove2(int startFrame, int endFrame, ActorType actor1, theAnim anim, SP sp0, SP sp1, ActorType actor2)
     {
-        fellow.setSP(actor1, sp0, sp1);
+        //fellow.setSP(actor1, sp0, sp1);
         //actorSettings.Add(addActorMove(startFrame, endFrame, fellow.GetActor(actor1), anim, terrainCreator.GetSPPos(sp0), terrainCreator.GetSPPos(sp1), fellow.GetActor(actor2)));
     }
 
-    void fastMove2(int startFrame, int endFrame, ActorType actor1, theAnim anim, SP sp0, SP sp1)
+    void actorFastMove(int startFrame, int endFrame, string actor, theAnim anim, SP sp0, SP sp1)
     {
-        //actorSettings.Add(addActorMove(startFrame, endFrame, fellow.GetActor(actor1), anim, GetPos(sp0), GetPos(sp1), null));
+        actorSettings.Add(addActorMove(startFrame, endFrame, fellow.GetActor(actor), anim, GetPos(sp0), GetPos(sp1), null));
     }
 
     void fastCamera(int startFrame, int endFrame, ActorType actor1, Vector3 pos0, Vector3 pos1)
@@ -780,20 +791,100 @@ public class Days100 : MonoBehaviour
     // Follow Friends
     // Find HideOut
     // Find Base
+
+    List<CA> middleEvent2CameraMoveList(string middleEvent)
+    {
+        switch (middleEvent) {
+            case "enemy_chargein": return new List<CA>() { CA.FollowActorAhead };
+            default: return new List<CA> { CA.FollowActorAhead };
+        }
+    }
     void newStart()
     {
 
+        fellow.Add("friend", "Assets/zombie.prefab");
+        fellow.Add("dark monster", "Assets/zombie.prefab");
+        fellow.Add("camera follow", "");
+        fellow.Add("camera lookat", "");
+
+        string[] fightPlaces = new string[] { "i_talk", "enemy_talk", "i_attack", "enemy_attack", "i_wasback", "enemy_wasback", "enemy_chargeinstart", "enemy_chargeinend" };
+ 
         List<TheEvent> theEvents =  GetStory();
 
         for(int bigIndex = 0; bigIndex <  theEvents.Count; bigIndex++)
         {
             TheEvent te = theEvents[bigIndex];
+            // big event 就要规定好 enemy 是谁，friend 是谁
+            // 存在一个结构体中？
+            string theEnemy = "dark monster";
+            string theMe = "i";
+
             for(int middleIndex = 0; middleIndex < te.middleEvent.Count; middleIndex++)
             {
                 string middleEvent = te.middleEvent[middleIndex];
                 string smallEvent = te.smallEvent[middleIndex];
 
                 middleEvent = middleEvent.ToLower();
+
+                // step1: actor move
+
+                switch (middleEvent) {
+                    case "enemy_chargein":
+                        {
+                            // 随机选择一个摄像机机位
+
+                            actorFastMove(0, 100, theEnemy, theAnim.ChargeIn, SP.ChargeInStart, SP.ChargeInEnd);
+                            break;
+                        }
+                    default: break;
+                }
+
+                // step2: camera move
+
+                List<CA> cameraMoves = middleEvent2CameraMoveList(middleEvent);
+                int cameraIndex = Random.Range(0, cameraMoves.Count - 1);
+                CA cameraMove = cameraMoves[cameraIndex];
+
+                switch (cameraMove)
+                {
+                    case CA.StaticAtStart:
+                        {
+                            break;
+                        }
+                    case CA.FollowCustomLookActorCloseToFar:
+                        {
+                            // 要做的，获取眼睛，手的位置
+                            List<SP> sps = fellow.GetSP(theMe);
+                            Vector3 playerForward = (GetPos(sps[1]) - GetPos(sps[0])).normalized;
+                            Vector3 startPos = GetPos(sps[0]) + playerForward * 2 + new Vector3(0, 2, 0);
+                            Vector3 endPos = GetPos(sps[1]) + playerForward * 10 + new Vector3(0, 8, 0);
+                            Debug.Log(" start pos = " + startPos + " end pos = " + endPos);
+                            fastCamera(0, 100, ActorType.CameraFollow, startPos, endPos);
+                            fastCamera(0, 100, ActorType.CameraLookat, GetPos(sps[0]), GetPos(sps[1]));
+
+                            break;
+
+                        }
+                    case CA.LookBehindActorFollow:
+                        {
+                            // get i start pos and end pos
+                            List<SP> sps = fellow.GetSP(theMe);
+                            Vector3 actorStartPos = GetPos(sps[0]);
+                            Vector3 actorEndPos = GetPos(sps[1]);
+                            Vector3 playerForward = (GetPos(sps[1]) - GetPos(sps[0])).normalized;
+                            Vector3 playerRightward = Vector3.Cross(playerForward, Vector3.up);
+                            float backwardScale = -2;
+                            float upwardScale = 5;
+                            float leftrightscale = 2;
+                            Vector3 cameraStartPos = actorStartPos + playerForward * backwardScale + playerRightward * leftrightscale + Vector3.up * upwardScale;
+                            Vector3 cameraEndPos = actorEndPos + playerForward * backwardScale + playerRightward * leftrightscale + Vector3.up * upwardScale;
+                            fastCamera(0, 100, ActorType.CameraLookat, actorStartPos, actorEndPos);
+                            fastCamera(0, 100, ActorType.CameraFollow, cameraStartPos, cameraEndPos);
+
+                            break;
+                        }
+                    default: break;
+                }
 
                 if (middleEvent.Contains("talk"))
                 {
@@ -804,7 +895,7 @@ public class Days100 : MonoBehaviour
                 {
 
                     string[] splited = middleEvent.Split("_");
-                    string selectString = "_main_name template string _sub_me";
+                    string selectString = smallEvent;
 
                     /*
                     for (int soulIndex = 0; soulIndex < souls.Count; soulIndex++)
@@ -861,7 +952,8 @@ public class Days100 : MonoBehaviour
                     selectString = selectString.Replace("_friend_mine", "him");
 
                     Debug.Log(" middle event = " + middleEvent);
-                    Debug.Log(" sentence = " + selectString);
+                    Debug.Log(" small event before = " + smallEvent);
+                    Debug.Log(" small event after = " + selectString);
                 }
             }
         }
@@ -926,13 +1018,6 @@ public class Days100 : MonoBehaviour
         ItIt itdad = new ItIt("friends", "chimmy", "he", "him", "his", "his");
 
         List<ItIt> itits = new List<ItIt>() { iti, itenemy, itdad };
-
-
-
-
-
-
-
     }
     void Start()
     {
@@ -954,10 +1039,6 @@ public class Days100 : MonoBehaviour
 
         // GameObject 直接读取预制体
         terrainCreator = gameObject.GetComponent<TerrianCreator>();
-        fellow.Add(ActorType.Player, "Assets/zombie.prefab");
-        fellow.Add(ActorType.Friend, "Assets/zombie.prefab");
-        fellow.Add(ActorType.CameraFollow, "");
-        fellow.Add(ActorType.CameraLookat, "");
 
         // 超级大纲，每天干什么
 
@@ -1074,20 +1155,7 @@ public class Days100 : MonoBehaviour
 
             switch (scenes[scene_index].ca)
             {
-                case CA.FollowCustomLookActorCloseToFar:
-                    {
-                        // 要做的，获取眼睛，手的位置
-                        List<SP> sps = fellow.GetSP(ActorType.Player);
-                        Vector3 playerForward = (GetPos(sps[1]) - GetPos(sps[0])).normalized;
-                        Vector3 startPos = GetPos(sps[0]) + playerForward * 2 + new Vector3(0, 2, 0);
-                        Vector3 endPos = GetPos(sps[1]) + playerForward * 10 + new Vector3(0, 8, 0);
-                        Debug.Log(" start pos = " + startPos + " end pos = " + endPos);
-                        fastCamera(0, 100, ActorType.CameraFollow, startPos, endPos);
-                        fastCamera(0, 100, ActorType.CameraLookat, GetPos(sps[0]), GetPos(sps[1]));
-
-                        break;
-
-                    }
+                
             }
 
             //fellow.SetFalse(0, 0, actorSettings);

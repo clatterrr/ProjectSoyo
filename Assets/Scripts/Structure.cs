@@ -1469,6 +1469,7 @@ public class Structure
     public static List<TheEvent> GetStory()
     {
         List<string> bigEvent = SelectBigEvent();
+        bigEvent = new List<string>() { "Fight" };
         List<TheEvent> theEvents = new List<TheEvent>();
         for (int i = 0; i < bigEvent.Count; i++)
         {
@@ -1480,7 +1481,7 @@ public class Structure
         {
             for(int j = 0; j < theEvents[i].middleEvent.Count; j++)
             {
-                theEvents[i].smallEvent.Add(theEvents[i].middleEvent[j]);
+                theEvents[i].smallEvent.Add(SelectSmallEvent(theEvents[i].middleEvent[j]));
             }
             
         }
@@ -1511,6 +1512,7 @@ public class Structure
                 if(possibleString.Count > 0)
                 {
                     int randomIndex = Random.Range(0, possibleString.Count);
+                    randomIndex = 0;
                     string selectString = possibleString[randomIndex];
                     Debug.Log("Select String = " + selectString);
                     return selectString;
