@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using static AnimationSystem;
+using static Days100;
 using static Structure;
 public class Days100 : MonoBehaviour
 {
@@ -265,28 +266,7 @@ public class Days100 : MonoBehaviour
     // follow empty and look some one
 
     // camera 中才去设置 CameraFollower 的位置
-    enum CA
-    {
-        LookBehind,
-        StaticAtStart,
-        //https://youtu.be/jCgRV9bRBt8?t=341
-        FollowCustomLookActorCloseToFar,
-        // follow 和 lookat 是同一个所以省略
-        FollowActorAhead,
-        LookAheadMainActor,
-        //https://youtu.be/KuDtmmu4sow?t=41 
-        // Enemy Threaten
-        LookActorAheadAround,
-        // https://youtu.be/KuDtmmu4sow?t=43
-        //Two Fight
-        LookLeftCenterSlightlyMove,
-        LookRightCenterSlightlyMove,
-        // https://youtu.be/KuDtmmu4sow?t=46
-        // i_runaway
-        LookBehindActorFollow,
-        LookAheadActorFollow,
 
-    }
 
     enum AC
     {
@@ -357,7 +337,7 @@ public class Days100 : MonoBehaviour
 
     private List<ActorSettings> actorSettings = new List<ActorSettings>();
     private List<CameraSetting> cameraSettings = new List<CameraSetting>();
-    private TerrianCreator terrainCreator;
+    private static TerrianCreator terrainCreator;
     struct AllMyFellow
     {
         public List<string> actorNames;
@@ -454,18 +434,47 @@ public class Days100 : MonoBehaviour
             }
         }
 
-        public List<SP> GetSP(string actorName)
+        public FilmPos GetSP(string actorName)
         {
             for (int i = 0; i < actors.Count; i++)
             {
-                if (actorNames[i] == actorName) return new List<SP>() { startSP[i], endSP[i] };
+                if (actorNames[i] == actorName)
+                {
+                    return new FilmPos(GetPos(startSP[i]), GetPos(endSP[i]));
+                };
             }
-            return new List<SP>() { SP.None, SP.None };
+            return new FilmPos(Vector3.zero, Vector3.zero);
         }
 
     }
 
-    Vector3 GetPos(SP sp)
+    struct FilmPos
+    {
+        public Vector3 startPos;
+        public Vector3 endPos;
+
+        public FilmPos(Vector3 start,  Vector3 end)
+        {
+            startPos = start;
+            endPos = end;
+        }
+
+        public Vector3 StartOffset(float forward, float rightward, float upward)
+        {
+            Vector3 playerForward = (endPos - startPos).normalized;
+            Vector3 playerRightward = Vector3.Cross(playerForward, Vector3.up);
+            return startPos + playerForward * forward + playerRightward * rightward + Vector3.up * upward;
+        }
+
+        public Vector3 EndOffset(float forward, float rightward, float upward)
+        {
+            Vector3 playerForward = (endPos - startPos).normalized;
+            Vector3 playerRightward = Vector3.Cross(playerForward, Vector3.up);
+            return endPos + playerForward * forward + playerRightward * rightward + Vector3.up * upward;
+        }
+    }
+
+    static Vector3 GetPos(SP sp)
     {
         return terrainCreator.CorretedHeights(sp);
     }
@@ -799,6 +808,30 @@ public class Days100 : MonoBehaviour
             default: return new List<CA> { CA.FollowActorAhead };
         }
     }
+
+    enum CA
+    {
+        LookBehind,
+        StaticAtStart,
+        //https://youtu.be/jCgRV9bRBt8?t=341
+        FollowCustomLookActorCloseToFar,
+        // follow 和 lookat 是同一个所以省略
+        FollowActorAhead,
+        LookAheadMainActor,
+        //https://youtu.be/KuDtmmu4sow?t=41 
+        // Enemy Threaten
+        LookActorAheadAround,
+        // https://youtu.be/KuDtmmu4sow?t=43
+        //Two Fight
+        LookCenterSlightlyMove,
+        // https://youtu.be/KuDtmmu4sow?t=46
+        // i_runaway
+        LookBehindActorFollow,
+        LookAheadActorFollow,
+        // https://youtu.be/KuDtmmu4sow?t=72
+        LookBehindActorStatic,
+        LookAheadActorStatic,
+    }
     void newStart()
     {
 
@@ -832,7 +865,7 @@ public class Days100 : MonoBehaviour
                     case "enemy_chargein":
                         {
                             // 随机选择一个摄像机机位
-
+                            // 如果是idle，仍然穿两个，不过不移动
                             actorFastMove(0, 100, theEnemy, theAnim.ChargeIn, SP.ChargeInStart, SP.ChargeInEnd);
                             break;
                         }
@@ -854,6 +887,7 @@ public class Days100 : MonoBehaviour
                     case CA.FollowCustomLookActorCloseToFar:
                         {
                             // 要做的，获取眼睛，手的位置
+                            /*
                             List<SP> sps = fellow.GetSP(theMe);
                             Vector3 playerForward = (GetPos(sps[1]) - GetPos(sps[0])).normalized;
                             Vector3 startPos = GetPos(sps[0]) + playerForward * 2 + new Vector3(0, 2, 0);
@@ -861,6 +895,7 @@ public class Days100 : MonoBehaviour
                             Debug.Log(" start pos = " + startPos + " end pos = " + endPos);
                             fastCamera(0, 100, ActorType.CameraFollow, startPos, endPos);
                             fastCamera(0, 100, ActorType.CameraLookat, GetPos(sps[0]), GetPos(sps[1]));
+                            */
 
                             break;
 
@@ -868,19 +903,62 @@ public class Days100 : MonoBehaviour
                     case CA.LookBehindActorFollow:
                         {
                             // get i start pos and end pos
-                            List<SP> sps = fellow.GetSP(theMe);
-                            Vector3 actorStartPos = GetPos(sps[0]);
-                            Vector3 actorEndPos = GetPos(sps[1]);
-                            Vector3 playerForward = (GetPos(sps[1]) - GetPos(sps[0])).normalized;
-                            Vector3 playerRightward = Vector3.Cross(playerForward, Vector3.up);
+                            FilmPos film = fellow.GetSP(theMe);
                             float backwardScale = -2;
                             float upwardScale = 5;
                             float leftrightscale = 2;
-                            Vector3 cameraStartPos = actorStartPos + playerForward * backwardScale + playerRightward * leftrightscale + Vector3.up * upwardScale;
-                            Vector3 cameraEndPos = actorEndPos + playerForward * backwardScale + playerRightward * leftrightscale + Vector3.up * upwardScale;
-                            fastCamera(0, 100, ActorType.CameraLookat, actorStartPos, actorEndPos);
+                            Vector3 cameraStartPos = film.StartOffset(backwardScale, leftrightscale, upwardScale);
+                            Vector3 cameraEndPos = film.EndOffset(backwardScale, leftrightscale, upwardScale);
+                            fastCamera(0, 100, ActorType.CameraLookat, film.startPos, film.endPos);
                             fastCamera(0, 100, ActorType.CameraFollow, cameraStartPos, cameraEndPos);
-
+                            break;
+                        }
+                    case CA.LookActorAheadAround:
+                        {
+                            FilmPos film = fellow.GetSP(theMe);
+                            float backwardScale = 2;
+                            float upwardScale = 5;
+                            float leftrightscale = 2;
+                            Vector3 cameraStartPos = film.StartOffset(backwardScale, leftrightscale, upwardScale);
+                            Vector3 cameraEndPos = film.EndOffset(backwardScale, leftrightscale, upwardScale);
+                            fastCamera(0, 100, ActorType.CameraLookat, film.startPos, film.endPos);
+                            fastCamera(0, 100, ActorType.CameraFollow, cameraStartPos, cameraEndPos);
+                            break;
+                        }
+                    case CA.LookCenterSlightlyMove:
+                        {
+                            FilmPos film0 = fellow.GetSP(theMe);
+                            FilmPos film1 = fellow.GetSP(theMe);
+                            FilmPos film2 = new FilmPos((film0.startPos + film1.startPos) * 0.5f, (film0.endPos + film1.endPos) * 0.5f);
+                            float forwardScale = 2;
+                            float rightScale = 2;
+                            float upwardScale = 5;
+                            Vector3 cameraStartPos = film2.StartOffset(forwardScale, rightScale, upwardScale);
+                            Vector3 cameraEndPos = film2.EndOffset(forwardScale, rightScale, upwardScale);
+                            fastCamera(0, 100, ActorType.CameraLookat, film2.startPos, film2.endPos);
+                            fastCamera(0, 100, ActorType.CameraFollow, cameraStartPos, cameraEndPos);
+                            break;
+                        }
+                    case CA.LookBehindActorStatic:
+                        {
+                            FilmPos film = fellow.GetSP(theMe);
+                            float forwardScale = -2;
+                            float rightScale = 2;
+                            float upwardScale = 5;
+                            Vector3 cameraPos = film.StartOffset(forwardScale, rightScale, upwardScale);
+                            fastCamera(0, 100, ActorType.CameraLookat, film.startPos, film.endPos);
+                            fastCamera(0, 100, ActorType.CameraFollow, cameraPos, cameraPos);
+                            break;
+                        }
+                    case CA.LookAheadActorStatic:
+                        {
+                            FilmPos film = fellow.GetSP(theMe);
+                            float forwardScale = 2;
+                            float rightScale = 2;
+                            float upwardScale = 5;
+                            Vector3 cameraPos = film.EndOffset(forwardScale, rightScale, upwardScale);
+                            fastCamera(0, 100, ActorType.CameraLookat, film.startPos, film.endPos);
+                            fastCamera(0, 100, ActorType.CameraFollow, cameraPos, cameraPos);
                             break;
                         }
                     default: break;
