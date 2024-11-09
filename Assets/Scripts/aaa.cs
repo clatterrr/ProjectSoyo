@@ -39,6 +39,12 @@ public class aaa : MonoBehaviour
 
     6. 修饰词也要能嵌套
 
+    原理就是，我一定知道比这要更多的信息
+
+    例如Open Website，那么后面一定接 FirstPage
+
+    例如 IAttackEnemy, FriendHelpMe, 那么Friend 一定AttackEnemy
+
     4. he give a book to me 分解为 he give book. book is for me.
 
     5. 
