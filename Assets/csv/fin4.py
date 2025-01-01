@@ -45,7 +45,7 @@ def add_to_csv(text_lines, csv_data):
     return csv_data
 
 text_file_path = 'test.txt'  # 文本文件路径
-csv_file_path = 'output.csv'  # CSV文件路径
+csv_file_path = 'StoryL2.xlsx'  # CSV文件路径
 
 # 读取文本文件和CSV文件
 text_lines = read_text_file(text_file_path)

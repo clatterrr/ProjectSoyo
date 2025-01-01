@@ -1452,23 +1452,42 @@ public class Structure
 
     }
 
+
+    public struct Character
+    {
+
+    }
+
+    public enum Identity
+    {
+         Friend,
+         Enemy,
+    }
     public struct TheEvent
     {
         public string bigEvent;
         public List<string> middleEvent;
         public List<string> smallEvent;
 
+
+        // 每个Big Event，都有一个人物，以及身份
+        public Character actor;
+        public Identity identity;
+        
         public TheEvent(string big)
         {
             bigEvent = big;
             middleEvent = new List<string>();
             smallEvent = new List<string>();
+            this.actor = new Character();
+            identity = new Identity();
         }
     }
 
     public static List<TheEvent> GetStory()
     {
         List<string> bigEvent = SelectBigEvent();
+        bigEvent = new List<string>() { "WasBorn","FightEnemy","CollectFood","FriendsTask","HelpFriendFightEnemy","FindTresure","FindTreasureFightEnemy","FightEnemy","TrappedInCage","FightEnemyFriendHelpMe" };
         bigEvent = new List<string>() { "Fight" };
         List<TheEvent> theEvents = new List<TheEvent>();
         for (int i = 0; i < bigEvent.Count; i++)
@@ -1551,6 +1570,7 @@ public class Structure
         return new List<string>();
     }
 
+    // 取消从csv 中获取，重新划分，重新设计剧情结构
     public static List<string> SelectBigEvent()
     {
         string path = "Assets/csv/day.csv";
@@ -1576,4 +1596,49 @@ public class Structure
         return new List<string>();
     }
 
+
+    public static GameObject CreateCubeWithImage(string texturePath)
+    {
+        Texture2D texture = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+        // 1. 创建一个材质，并将导入的Texture附加到材质上
+        Material material = new Material(Shader.Find("Standard"));
+        // 设置渲染模式为透明
+        material.SetFloat("_Mode", 3); // 3 = Transparent 模式
+        material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        material.SetInt("_ZWrite", 0);
+        material.DisableKeyword("_ALPHATEST_ON");
+        material.EnableKeyword("_ALPHABLEND_ON");
+        material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        material.renderQueue = 3000;
+        material.mainTexture = texture;
+
+
+        // 2. 创建一个Cube，并将材质应用到Cube上
+        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cube.GetComponent<Renderer>().material = material;
+        // Disable both shadow casting and receiving
+        cube.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        cube.GetComponent<Renderer>().receiveShadows = false;
+
+        // 3. 调整Cube的大小和位置以适应整个2D屏幕
+        Camera camera = Camera.main;
+        if (camera != null)
+        {
+            // 获取屏幕尺寸在世界空间中的大小
+            float screenHeight = camera.orthographicSize * 2;
+            float screenWidth = screenHeight * camera.aspect;
+
+            // 设置Cube大小为屏幕大小，并根据图片的宽高比例进行缩放
+            float imageAspect = (float)texture.width / texture.height;
+            cube.transform.localScale = new Vector3(screenHeight * imageAspect, screenHeight, 0.01f);
+            cube.transform.rotation = Quaternion.Euler(0, 0, 180);
+
+            // 设置Cube的位置，使它位于相机前面并正好覆盖屏幕
+            cube.transform.position = new Vector3(1000, 1000, 1000); // new Vector3(camera.transform.position.x, camera.transform.position.y, camera.transform.position.z + camera.nearClipPlane + 1);
+        }
+
+        // 4. 返回创建的Cube的GameObject
+        return cube;
+    }
 }

@@ -371,7 +371,7 @@ public class Days100 : MonoBehaviour
             else
             {
                 GameObject selectedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path);
-                actors.Add(Instantiate(selectedPrefab, new Vector3(0, 0, 0), Quaternion.identity));
+               // actors.Add(Instantiate(selectedPrefab, new Vector3(0, 0, 0), Quaternion.identity));
             }
 
             actives.Add(false);
@@ -1163,6 +1163,7 @@ public class Days100 : MonoBehaviour
             fellow.SetAllActiveFalse();
             switch (scenes[scene_index].sc)
             {
+                /*
                 // Scene 就不应该包含Camera 信息。要有角色信息
                 case SC.HeroEntrance: // 最好不要Entrance
                     {
@@ -1233,6 +1234,8 @@ public class Days100 : MonoBehaviour
                         break;
                     }
                     //https://youtu.be/jCgRV9bRBt8?t=340
+
+                    */
             }
 
 

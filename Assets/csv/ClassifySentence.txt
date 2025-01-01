@@ -1,0 +1,36 @@
+def classify_sentence(sentence):
+    # 常见描述性动词和特征
+    descriptive_keywords = ["is", "are", "started", "found", "attacking", "was", "were", "charging", "rushed", "looked"]
+    # 常见叙事性（带情绪或命令）关键词
+    narrative_keywords = ["yes", "no", "shut up", "finish", "kill", "stay away", "what are you doing", 
+                          "I am", "with this power", "you think", "oh", "ah", "nice work", "you shall", "come with us"]
+    
+    # 将句子转换为小写，方便匹配
+    sentence_lower = sentence.lower()
+    
+    # 判断是否包含情绪化关键词
+    if any(keyword in sentence_lower for keyword in narrative_keywords):
+        return "叙事性（带情绪或命令）"
+    
+    # 判断是否包含描述性关键词
+    elif any(keyword in sentence_lower for keyword in descriptive_keywords):
+        return "描述性"
+    
+    # 如果无法判断，标记为未知
+    else:
+        return "未知类别"
+
+# 示例输入
+test_sentences = [
+    "there are still a few _enemy_name around",
+    "yes gadora",
+    "siren head then sprinted towards me to attack",
+    "oh shut up you're a monster just like that Wicked King gadora",
+    "I looked up and saw that _enemy_name was charging towards me",
+    "stay away from my tree"
+]
+
+# 分类结果
+for sentence in test_sentences:
+    result = classify_sentence(sentence)
+    print(f"句子: \"{sentence}\" -> 分类: {result}")

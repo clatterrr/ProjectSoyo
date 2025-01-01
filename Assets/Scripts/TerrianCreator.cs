@@ -132,8 +132,8 @@ public class TerrianCreator : MonoBehaviour
             case SP.WatchOverPlaceClose: return new Vector3(3, 0, 2);
             case SP.WatchOverPlaceFar: return new Vector3(9, 0, 2);
                 // Talk 一般都是Talk 后打怪的
-            case SP.TalkPlace0: return new Vector3(2, 0, 2);
-            case SP.TalkPlace1: return new Vector3(3, 0, 2);
+        //   case SP.TalkPlace0: return new Vector3(2, 0, 2);
+         //   case SP.TalkPlace1: return new Vector3(3, 0, 2);
 
 
             case SP.ChaseStart: return new Vector3(3, 0, 2);
